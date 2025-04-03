@@ -1,0 +1,17 @@
+services:
+  database:
+    image: 'postgres:17'
+    ports:
+      - "15432:5432"
+    networks:
+      - postgres-network
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - ./db-data/:/var/lib/postgresql/data/
+
+networks:
+  postgres-network:
+    driver: bridge
