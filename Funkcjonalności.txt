@@ -1,0 +1,25 @@
+Platforma kursów online 
+
+Ogólny opis systemu: 
+
+Platforma kursów online umożliwia rejestrację, zapisy na kursy i ich tworzenie. Obsługuje współtworzenie kursów, śledzenie postępów, komunikację między użytkownikami i twórcami oraz system ocen i statystyk. 
+
+Funkcjonalności: 
+
+Użytkownik może się zarejestrować i zalogować do aplikacji. 
+
+Użytkownik przegląda dostępne kursy oraz może się na nie zapisać. 
+
+Użytkownik może stworzyć kurs (zostać twórcą kursu). 
+
+Użytkownik może zaliczać etapy, których postępy będą zapisywane,  
+
+Użytkownik może napisać do twórcy o pomoc w kursie. 
+
+Wielu twórców może tworzyć jeden kurs. 
+
+Użytkownik może wystawić opinię o danym kursie, w którym uczestniczył. 
+
+Twórca może skontaktować się z użytkownikami kursu wysyłając wiadomości. 
+
+Twórca może monitorować statystyki uczestników kursu. 
