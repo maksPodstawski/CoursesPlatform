@@ -43,6 +43,10 @@ namespace DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.ToTable("Chats");
@@ -98,17 +102,33 @@ namespace DAL.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
-                    b.Property<Guid?>("SubcategoryId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
+                    b.ToTable("Courses");
+                });
+
+            modelBuilder.Entity("Model.CourseSubcategory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SubcategoryId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
                     b.HasIndex("SubcategoryId");
 
-                    b.ToTable("Courses");
+                    b.ToTable("CourseSubcategory");
                 });
 
             modelBuilder.Entity("Model.Message", b =>
@@ -331,11 +351,23 @@ namespace DAL.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Model.Course", b =>
+            modelBuilder.Entity("Model.CourseSubcategory", b =>
                 {
-                    b.HasOne("Model.Subcategory", null)
+                    b.HasOne("Model.Course", "Course")
+                        .WithMany("CourseSubcategories")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Model.Subcategory", "Subcategory")
                         .WithMany("Courses")
-                        .HasForeignKey("SubcategoryId");
+                        .HasForeignKey("SubcategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("Subcategory");
                 });
 
             modelBuilder.Entity("Model.Message", b =>
@@ -450,6 +482,8 @@ namespace DAL.Migrations
 
             modelBuilder.Entity("Model.Course", b =>
                 {
+                    b.Navigation("CourseSubcategories");
+
                     b.Navigation("Reviews");
 
                     b.Navigation("Stages");

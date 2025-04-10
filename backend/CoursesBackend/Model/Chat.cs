@@ -14,6 +14,7 @@ namespace Model
         [Key]
         public Guid Id { get; set; }
 
+        public string Name { get; set; } = string.Empty;
         public ICollection<ChatUser>? Users { get; set; } = new List<ChatUser>();
         public ICollection<Message>? Messages { get; set; } = new List<Message>();
     }

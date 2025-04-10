@@ -15,6 +15,6 @@ namespace Model
         public Guid CategoryId { get; set; }
         [ForeignKey(nameof(CategoryId))]
         public Category Category { get; set; }
-        public List<Course>? Courses { get; set; } = new List<Course>();
+        public List<CourseSubcategory>? Courses { get; set; } = new List<CourseSubcategory>();
     }
 }

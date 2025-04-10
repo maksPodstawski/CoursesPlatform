@@ -22,5 +22,6 @@ namespace Model
         public DateTime? UpdatedAt { get; set; } = null;
         public ICollection<Review>? Reviews { get; set; } = new List<Review>();
         public ICollection<Stage>? Stages { get; set; } = new List<Stage>();
+        public ICollection<CourseSubcategory>? CourseSubcategories { get; set; } = new List<CourseSubcategory>();
     }
 }
