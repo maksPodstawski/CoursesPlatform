@@ -20,10 +20,29 @@ namespace BL
         {
             return _userRepository.GetUsersAsync();
         }
-        public Task<User?> GetUserByIdAsync(Guid id)
+        public Task<User?> GetUserByIdAsync(Guid userId)
         {
-            return _userRepository.GetUserByIDAsync(id);
+            return _userRepository.GetUserByIDAsync(userId);
         }
+        public Task<User?> GetUserByEmailAsync(string email)  
+        {
+            return _userRepository.GetUserByEmailAsync(email);
+        }
+        public Task<IEnumerable<User>> GetUsersByFirstNameAsync(string firstName)  
+        {
+            return _userRepository.GetUsersByFirstNameAsync(firstName);
+        }
+        public Task<IEnumerable<User>> GetUsersByLastNameAsync(string lastName) 
+        {
+            return _userRepository.GetUsersByLastNameAsync(lastName);
+        }
+        public Task<IEnumerable<User>> GetUsersByCourseIdAsync(Guid courseId) 
+        {
+            return _userRepository.GetUsersByCourseIdAsync(courseId);
+        }
+
+
+
         public async Task<User> AddUserAsync(User user)
         {
             await _userRepository.AddUserAsync(user);
@@ -38,13 +57,13 @@ namespace BL
             await _userRepository.UpdateUserAsync(user);
             return user;
         }
-        public async Task<User?> DeleteUserAsync(Guid id)
+        public async Task<User?> DeleteUserAsync(Guid userId)
         {
-            var user = await _userRepository.GetUserByIDAsync(id);
+            var user = await _userRepository.GetUserByIDAsync(userId);
             if (user == null)
                 return null;
 
-            await _userRepository.DeleteUserAsync(id);
+            await _userRepository.DeleteUserAsync(userId);
             return user;
         }
     }
