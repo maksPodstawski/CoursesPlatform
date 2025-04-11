@@ -13,7 +13,53 @@ namespace DAL
         {
             _context = context;
         }
+        
+        public async Task<Course?> GetCourseByIDAsync(Guid courseID)
+        {
+            return await _context.Courses.FindAsync(courseID);
+        }
+        public async Task<IEnumerable<Course>> GetCoursesAsync()
+        {
+            return await _context.Courses.ToListAsync();
+        }
+        public async Task<IEnumerable<Course>> GetCoursesByTitleAsync(string title)  
+        {
+            return await _context.Courses
+                .Where(c => c.Name.Contains(title))
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<Course>> GetCoursesByPriceRangeAsync(decimal minPrice, decimal maxPrice)
+        {
+            return await _context.Courses
+                .Where(c => c.Price >= minPrice && c.Price <= maxPrice)
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<Course>> GetCoursesByAverageRatingAsync(double rating)  
+        {
+            return await _context.Courses
+                .Where(c => c.Reviews != null && c.Reviews.Average(r => r.Rating) >= rating)
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<Course>> GetCoursesByCreatorAsync(Guid creatorId)  
+        {
+            return await _context.Creators
+                .Where(c => c.UserId == creatorId)  
+                .Select(c => c.Course)  
+                .ToListAsync();
+        }
 
+
+
+        public async Task AddCourseAsync(Course course)
+        {
+            await _context.Courses.AddAsync(course);
+            await _context.SaveChangesAsync();
+        }
+        public async Task UpdateCourseAsync(Course course)
+        {
+            _context.Entry(course).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+        }
         public async Task DeleteCourseAsync(Guid courseID)
         {
             var course = await _context.Courses.FindAsync(courseID);
@@ -23,28 +69,5 @@ namespace DAL
                 await _context.SaveChangesAsync();
             }
         }
-
-        public async Task<Course?> GetCourseByIDAsync(Guid courseID)
-        {
-            return await _context.Courses.FindAsync(courseID);
-        }
-
-        public async Task<IEnumerable<Course>> GetCoursesAsync()
-        {
-            return await _context.Courses.ToListAsync();
-        }
-
-        public async Task InsertCourseAsync(Course course)
-        {
-            await _context.Courses.AddAsync(course);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateCourseAsync(Course course)
-        {
-            _context.Entry(course).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-        }
-
     }
 }

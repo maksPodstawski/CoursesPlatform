@@ -11,6 +11,10 @@ namespace IDAL
     {
         Task<IEnumerable<Category>> GetCategoriesAsync();
         Task<Category?> GetCategoryByIDAsync(Guid categoryID);
+        Task<Category?> GetCategoryByNameAsync(string name);  
+        Task<IEnumerable<Subcategory>> GetSubcategoriesByCategoryIdAsync(Guid categoryId);
+
+
         Task AddCategoryAsync(Category category);
         Task UpdateCategoryAsync(Category category);
         Task DeleteCategoryAsync(Guid categoryID);

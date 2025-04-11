@@ -22,6 +22,21 @@ public class StageRepository : IStageRepository
     {
         return await _context.Stages.FindAsync(stageId);
     }
+    public async Task<IEnumerable<Stage>> GetStagesByNameAsync(string name)
+    {
+        return await _context.Stages
+            .Where(s => s.Name.Contains(name))
+            .ToListAsync();
+    }
+    public async Task<IEnumerable<Stage>> GetStagesByCourseIdAsync(Guid courseId)
+    {
+        return await _context.Stages
+            .Where(s => s.CourseId == courseId)
+            .ToListAsync();
+    }
+
+
+
 
     public async Task AddStageAsync(Stage stage)
     {
