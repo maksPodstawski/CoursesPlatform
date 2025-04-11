@@ -11,8 +11,8 @@ namespace IDAL
     {
         Task<IEnumerable<Course>> GetCoursesAsync();
         Task<Course?> GetCourseByIDAsync(Guid courseID);
-        Task<IEnumerable<Course>> GetCoursesByTitleAsync(string title);  
-        Task<IEnumerable<Course>> GetCoursesByPriceAsync(decimal price);  
+        Task<IEnumerable<Course>> GetCoursesByTitleAsync(string title);
+        Task<IEnumerable<Course>> GetCoursesByPriceRangeAsync(decimal minPrice, decimal maxPrice);
         Task<IEnumerable<Course>> GetCoursesByAverageRatingAsync(double rating);  
         Task<IEnumerable<Course>> GetCoursesByCreatorAsync(Guid creatorId);  
 

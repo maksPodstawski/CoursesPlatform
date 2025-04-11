@@ -28,10 +28,10 @@ namespace DAL
                 .Where(c => c.Name.Contains(title))
                 .ToListAsync();
         }
-        public async Task<IEnumerable<Course>> GetCoursesByPriceAsync(decimal price)  
+        public async Task<IEnumerable<Course>> GetCoursesByPriceRangeAsync(decimal minPrice, decimal maxPrice)
         {
             return await _context.Courses
-                .Where(c => c.Price == price)
+                .Where(c => c.Price >= minPrice && c.Price <= maxPrice)
                 .ToListAsync();
         }
         public async Task<IEnumerable<Course>> GetCoursesByAverageRatingAsync(double rating)  

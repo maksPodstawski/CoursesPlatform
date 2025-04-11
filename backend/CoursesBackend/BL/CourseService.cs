@@ -24,9 +24,9 @@ namespace BL
         {
             return _courseRepository.GetCoursesByTitleAsync(title);
         }
-        public Task<IEnumerable<Course>> GetCoursesByPriceAsync(decimal price)
+        public async Task<IEnumerable<Course>> GetCoursesByPriceRangeAsync(decimal minPrice, decimal maxPrice)
         {
-            return _courseRepository.GetCoursesByPriceAsync(price);
+            return await _courseRepository.GetCoursesByPriceRangeAsync(minPrice, maxPrice);
         }
         public Task<IEnumerable<Course>> GetCoursesByAverageRatingAsync(double rating)
         {
