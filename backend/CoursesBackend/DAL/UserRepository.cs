@@ -7,42 +7,43 @@ namespace DAL
     public class UserRepository : IUserRepository
     {
 
-        private CoursesPlatformContext _context;
+        private readonly CoursesPlatformContext _context;
 
         public UserRepository(CoursesPlatformContext context)
         {
             _context = context;
         }
 
-        public void DeleteUser(Guid userID)
+        public async Task<IEnumerable<User>> GetUsersAsync()
         {
-            User user = _context.Users.Find(userID);
-            _context.Users.Remove(user);
-
-        }
-        public User GetUserByID(Guid userID)
-        {
-            return _context.Users.Find(userID);
+            return await _context.Users.ToListAsync();
         }
 
-        public IEnumerable<User> GetUsers()
+        public async Task<User?> GetUserByIDAsync(Guid userID)
         {
-            return _context.Users.ToList();
+            return await _context.Users.FindAsync(userID);
         }
 
-        public void InsertUser(User user)
+        public async Task AddUserAsync(User user)
         {
-            _context.Users.Add(user);
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
         }
 
-        public void Save()
-        {
-            _context.SaveChanges();
-        }
-
-        public void UpdateUser(User user)
+        public async Task UpdateUserAsync(User user)
         {
             _context.Entry(user).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteUserAsync(Guid userID)
+        {
+            var user = await GetUserByIDAsync(userID);
+            if (user != null)
+            {
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }
