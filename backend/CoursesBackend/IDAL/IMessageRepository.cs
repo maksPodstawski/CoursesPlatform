@@ -9,10 +9,10 @@ namespace IDAL
 {
     public interface IMessageRepository
     {
-        Task<IEnumerable<Message>> GetAllAsync();
-        Task<Message?> GetByIdAsync(Guid id);
-        Task AddAsync(Message message);
-        Task UpdateAsync(Message message);
-        Task DeleteAsync(Guid id);
+        Task<IEnumerable<Message>> GetMessagesAsync();
+        Task<Message?> GetMessageByIdAsync(Guid messageId);
+        Task AddMessageAsync(Message message);
+        Task UpdateMessageAsync(Message message);
+        Task DeleteMessageAsync(Guid messageId);
     }
 }

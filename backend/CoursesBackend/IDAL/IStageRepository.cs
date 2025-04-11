@@ -4,9 +4,9 @@ namespace IDAL;
 
 public interface IStageRepository
 {
-    Task<IEnumerable<Stage>> GetAllAsync();
-    Task<Stage?> GetByIdAsync(Guid id);
-    Task AddAsync(Stage stage);
-    Task UpdateAsync(Stage stage);
-    Task DeleteAsync(Guid id);
+    Task<IEnumerable<Stage>> GetStagesAsync();
+    Task<Stage?> GetStageByIdAsync(Guid stageId);
+    Task AddStageAsync(Stage stage);
+    Task UpdateStageAsync(Stage stage);
+    Task DeleteStageAsync(Guid stageId);
 }

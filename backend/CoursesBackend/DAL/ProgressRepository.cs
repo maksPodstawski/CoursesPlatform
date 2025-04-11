@@ -13,31 +13,31 @@ public class ProgressRepository : IProgressRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Progress>> GetAllAsync()
+    public async Task<IEnumerable<Progress>> GetProgressesAsync()
     {
         return await _context.Progresses.ToListAsync();
     }
 
-    public async Task<Progress?> GetByIdAsync(Guid id)
+    public async Task<Progress?> GetProgressByIdAsync(Guid progressId)
     {
-        return await _context.Progresses.FindAsync(id);
+        return await _context.Progresses.FindAsync(progressId);
     }
 
-    public async Task AddAsync(Progress progress)
+    public async Task AddProgressAsync(Progress progress)
     {
         await _context.Progresses.AddAsync(progress);
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(Progress progress)
+    public async Task UpdateProgressAsync(Progress progress)
     {
         _context.Progresses.Update(progress);
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteProgressAsync(Guid progressId)
     {
-        var progress = await GetByIdAsync(id);
+        var progress = await GetProgressByIdAsync(progressId);
         if (progress != null)
         {
             _context.Progresses.Remove(progress);

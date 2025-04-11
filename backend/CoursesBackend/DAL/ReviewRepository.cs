@@ -13,31 +13,31 @@ public class ReviewRepository : IReviewRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Review>> GetAllAsync()
+    public async Task<IEnumerable<Review>> GetReviewsAsync()
     {
         return await _context.Reviews.ToListAsync();
     }
 
-    public async Task<Review?> GetByIdAsync(Guid id)
+    public async Task<Review?> GetReviewByIdAsync(Guid reviewId)
     {
-        return await _context.Reviews.FindAsync(id);
+        return await _context.Reviews.FindAsync(reviewId);
     }
 
-    public async Task AddAsync(Review review)
+    public async Task AddReviewAsync(Review review)
     {
         await _context.Reviews.AddAsync(review);
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(Review review)
+    public async Task UpdateReviewAsync(Review review)
     {
         _context.Reviews.Update(review);
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteReviewAsync(Guid reviewId)
     {
-        var review = await GetByIdAsync(id);
+        var review = await GetReviewByIdAsync(reviewId);
         if (review != null)
         {
             _context.Reviews.Remove(review);

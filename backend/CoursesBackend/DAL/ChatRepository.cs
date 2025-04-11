@@ -13,31 +13,31 @@ public class ChatRepository : IChatRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Chat>> GetAllAsync()
+    public async Task<IEnumerable<Chat>> GetChatsAsync()
     {
         return await _context.Chats.ToListAsync();
     }
 
-    public async Task<Chat?> GetByIdAsync(Guid id)
+    public async Task<Chat?> GetChatByIdAsync(Guid chatId)
     {
-        return await _context.Chats.FindAsync(id);
+        return await _context.Chats.FindAsync(chatId);
     }
 
-    public async Task AddAsync(Chat chat)
+    public async Task AddChatAsync(Chat chat)
     {
         await _context.Chats.AddAsync(chat);
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(Chat chat)
+    public async Task UpdateChatAsync(Chat chat)
     {
         _context.Chats.Update(chat);
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteChatAsync(Guid chatId)
     {
-        var chat = await GetByIdAsync(id);
+        var chat = await GetChatByIdAsync(chatId);
         if (chat != null)
         {
             _context.Chats.Remove(chat);

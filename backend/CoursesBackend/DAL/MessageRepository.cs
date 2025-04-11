@@ -13,31 +13,31 @@ public class MessageRepository : IMessageRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Message>> GetAllAsync()
+    public async Task<IEnumerable<Message>> GetMessagesAsync()
     {
         return await _context.Messages.ToListAsync();
     }
 
-    public async Task<Message?> GetByIdAsync(Guid id)
+    public async Task<Message?> GetMessageByIdAsync(Guid messageId)
     {
-        return await _context.Messages.FindAsync(id);
+        return await _context.Messages.FindAsync(messageId);
     }
 
-    public async Task AddAsync(Message message)
+    public async Task AddMessageAsync(Message message)
     {
         await _context.Messages.AddAsync(message);
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(Message message)
+    public async Task UpdateMessageAsync(Message message)
     {
         _context.Messages.Update(message);
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteMessageAsync(Guid messageId)
     {
-        var message = await GetByIdAsync(id);
+        var message = await GetMessageByIdAsync(messageId);
         if (message != null)
         {
             _context.Messages.Remove(message);

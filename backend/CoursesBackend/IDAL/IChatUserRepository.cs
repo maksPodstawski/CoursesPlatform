@@ -9,10 +9,10 @@ namespace IDAL
 {
     public interface IChatUserRepository
     {
-        Task<IEnumerable<ChatUser>> GetAllAsync();
-        Task<ChatUser?> GetByIdAsync(Guid id);
-        Task AddAsync(ChatUser chatUser);
-        Task UpdateAsync(ChatUser chatUser);
-        Task DeleteAsync(Guid id);
+        Task<IEnumerable<ChatUser>> GetChatUsersAsync();
+        Task<ChatUser?> GetChatUserByIdAsync(Guid chatUserId);
+        Task AddChatUserAsync(ChatUser chatUser);
+        Task UpdateChatUserAsync(ChatUser chatUser);
+        Task DeleteChatUserAsync(Guid chatUserId);
     }
 }
