@@ -20,6 +20,18 @@ namespace BL
         {
             return _categoryRepository.GetCategoryByIDAsync(id);
         }
+        public Task<Category?> GetCategoryByNameAsync(string name)
+        {
+            return _categoryRepository.GetCategoryByNameAsync(name);
+        }
+        public Task<IEnumerable<Subcategory>> GetSubcategoriesByCategoryIdAsync(Guid categoryId)
+        {
+            return _categoryRepository.GetSubcategoriesByCategoryIdAsync(categoryId);
+        }
+
+
+
+
         public async Task<Category> AddCategoryAsync(Category category)
         {
             await _categoryRepository.AddCategoryAsync(category);

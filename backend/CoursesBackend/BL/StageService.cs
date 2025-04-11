@@ -20,6 +20,18 @@ namespace BL
         {
             return _stageRepository.GetStageByIdAsync(id);
         }
+        public async Task<IEnumerable<Stage>> GetStagesByNameAsync(string name)
+        {
+            return await _stageRepository.GetStagesByNameAsync(name); 
+        }
+        public async Task<IEnumerable<Stage>> GetStagesByCourseIdAsync(Guid courseId)
+        {
+            return await _stageRepository.GetStagesByCourseIdAsync(courseId); 
+        }
+
+
+
+
         public async Task<Stage> AddStageAsync(Stage stage)
         {
             await _stageRepository.AddStageAsync(stage);

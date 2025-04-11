@@ -20,6 +20,26 @@ namespace BL
         {
             return _courseRepository.GetCourseByIDAsync(id);
         }
+        public Task<IEnumerable<Course>> GetCoursesByTitleAsync(string title)
+        {
+            return _courseRepository.GetCoursesByTitleAsync(title);
+        }
+        public Task<IEnumerable<Course>> GetCoursesByPriceAsync(decimal price)
+        {
+            return _courseRepository.GetCoursesByPriceAsync(price);
+        }
+        public Task<IEnumerable<Course>> GetCoursesByAverageRatingAsync(double rating)
+        {
+            return _courseRepository.GetCoursesByAverageRatingAsync(rating);
+        }
+        public Task<IEnumerable<Course>> GetCoursesByCreatorAsync(Guid creatorId)
+        {
+            return _courseRepository.GetCoursesByCreatorAsync(creatorId);
+        }
+
+
+
+
         public async Task<Course> AddCourseAsync(Course course)
         {
             await _courseRepository.AddCourseAsync(course);
