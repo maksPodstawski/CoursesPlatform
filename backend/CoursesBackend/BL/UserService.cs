@@ -24,20 +24,29 @@ namespace BL
         {
             return _userRepository.GetUserByID(id);
         }
-        public void AddUser(User user)
+        public User AddUser(User user)
         {
             _userRepository.InsertUser(user);
             _userRepository.Save();
+            return user;
         }
-        public void UpdateUser(User user)
+        public User? UpdateUser(User user)
         {
+            var existing = _userRepository.GetUserByID(user.Id);
+            if (existing == null) return null;
+
             _userRepository.UpdateUser(user);
             _userRepository.Save();
+            return user;
         }
-        public void DeleteUser(Guid id)
+        public User? DeleteUser(Guid id)
         {
+            var user = _userRepository.GetUserByID(id);
+            if (user == null) return null;
+
             _userRepository.DeleteUser(id);
             _userRepository.Save();
+            return user;
         }
     }
 }
