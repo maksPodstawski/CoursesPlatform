@@ -7,42 +7,43 @@ namespace DAL
 {
     public class CourseRepository : ICourseRepository
     {
-        private CoursesPlatformContext _context;
+        private readonly CoursesPlatformContext _context;
 
         public CourseRepository(CoursesPlatformContext context)
         {
             _context = context;
         }
 
-        public void DeleteCourse(Guid courseID)
+        public async Task DeleteCourseAsync(Guid courseID)
         {
-            Course course = _context.Courses.Find(courseID);
-            _context.Courses.Remove(course);
+            var course = await _context.Courses.FindAsync(courseID);
+            if (course != null)
+            {
+                _context.Courses.Remove(course);
+                await _context.SaveChangesAsync();
+            }
         }
 
-        public Course GetCourseByID(Guid courseID)
+        public async Task<Course?> GetCourseByIDAsync(Guid courseID)
         {
-            return _context.Courses.Find(courseID);
+            return await _context.Courses.FindAsync(courseID);
         }
 
-        public IEnumerable<Course> GetCourses()
+        public async Task<IEnumerable<Course>> GetCoursesAsync()
         {
-            return _context.Courses.ToList();
+            return await _context.Courses.ToListAsync();
         }
 
-        public void InsertCourse(Course course)
+        public async Task InsertCourseAsync(Course course)
         {
-            _context.Courses.Add(course);
+            await _context.Courses.AddAsync(course);
+            await _context.SaveChangesAsync();
         }
 
-        public void Save()
-        {
-            _context.SaveChanges();
-        }
-
-        public void UpdateCourse(Course course)
+        public async Task UpdateCourseAsync(Course course)
         {
             _context.Entry(course).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
         }
 
     }
