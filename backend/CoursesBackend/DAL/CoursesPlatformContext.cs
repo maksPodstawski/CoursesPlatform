@@ -16,7 +16,9 @@ namespace DAL
         public DbSet<Category> Categories { get; set; }
         public DbSet<Subcategory> Subcategories { get; set; }
         public DbSet<PurchasedCourses> PurchasedCourses { get; set; }
-
+        public DbSet<Creator> Creators { get; set; }
+        public DbSet<CourseSubcategory> CourseSubcategories { get; set; }
+        
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseNpgsql("Server=localhost;Port=15432;Database=postgres;User Id=postgres;Password=postgres");
