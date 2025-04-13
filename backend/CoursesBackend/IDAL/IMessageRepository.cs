@@ -14,5 +14,6 @@ namespace IDAL
         Task AddMessageAsync(Message message);
         Task UpdateMessageAsync(Message message);
         Task DeleteMessageAsync(Guid messageId);
+        Task<IEnumerable<Message>> GetMessagesByChatIdAsync(Guid chatId);
     }
 }

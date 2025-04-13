@@ -1,21 +1,20 @@
-﻿using System;
+﻿using Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Model;
 
-namespace IDAL
+namespace IBL
 {
-    public interface IChatRepository
+    public interface IChatService
     {
-        Task<IEnumerable<Chat>> GetChatsAsync();
+        Task<IEnumerable<Chat>> GetAllChatsAsync();
         Task<Chat?> GetChatByIdAsync(Guid chatId);
         Task AddChatAsync(Chat chat);
-        Task UpdateChatAsync(Chat chat);
-        Task DeleteChatAsync(Guid chatId);
+        Task<Chat?> DeleteChatAsync(Guid chatId);
         Task<IEnumerable<User>> GetUsersInChatAsync(Guid chatId);
-        Task<bool> IsUserInChatAsync(Guid chatId, Guid userId);
+        Task RenameChatAsync(Guid chatId, string chatName);
         Task<bool> ChatExistsAsync(Guid chatId);
     }
 }

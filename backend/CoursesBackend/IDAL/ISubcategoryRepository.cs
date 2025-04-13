@@ -14,5 +14,6 @@ namespace IDAL
         Task InsertSubcategoryAsync(Subcategory subcategory);
         Task DeleteSubcategoryAsync(Guid subcategoryID);
         Task UpdateSubcategoryAsync(Subcategory subcategory);
+        Task AddSubcategoryAsync(Subcategory subcategory);
     }
 }

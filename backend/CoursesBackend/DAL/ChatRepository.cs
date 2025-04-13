@@ -44,4 +44,23 @@ public class ChatRepository : IChatRepository
             await _context.SaveChangesAsync();
         }
     }
+
+    public async Task<IEnumerable<User>> GetUsersInChatAsync(Guid chatId)
+    {
+        return await _context.ChatUsers
+            .Where(cu => cu.ChatId == chatId)
+            .Select(cu => cu.User)
+            .ToListAsync();
+    }
+
+    public async Task<bool> IsUserInChatAsync(Guid chatId, Guid userId)
+    {
+        return await _context.ChatUsers
+            .AnyAsync(cu => cu.ChatId == chatId && cu.UserId == userId);
+    }
+
+    public async Task<bool> ChatExistsAsync(Guid chatId)
+    {
+        return await _context.Chats.AnyAsync(c => c.Id == chatId);
+    }
 }

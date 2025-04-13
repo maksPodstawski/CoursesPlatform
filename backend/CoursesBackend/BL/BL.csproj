@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DAL\DAL.csproj" />
     <ProjectReference Include="..\IBL\IBL.csproj" />
     <ProjectReference Include="..\IDAL\IDAL.csproj" />
     <ProjectReference Include="..\Model\Model.csproj" />

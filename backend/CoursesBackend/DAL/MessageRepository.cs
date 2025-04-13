@@ -44,4 +44,11 @@ public class MessageRepository : IMessageRepository
             await _context.SaveChangesAsync();
         }
     }
+    public async Task<IEnumerable<Message>> GetMessagesByChatIdAsync(Guid chatId)
+    {
+        return await _context.Messages
+            .Where(m => m.ChatId == chatId && !m.IsDeleted)
+            .OrderBy(m => m.CreatedAt)
+            .ToListAsync();
+    }
 }
