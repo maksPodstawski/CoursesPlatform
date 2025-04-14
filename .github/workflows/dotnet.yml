@@ -24,6 +24,8 @@ jobs:
       working-directory: backend/CoursesBackend
       run: dotnet restore
     - name: Build
+      working-directory: backend/CoursesBackend
       run: dotnet build --no-restore
     - name: Test
+      working-directory: backend/CoursesBackend
       run: dotnet test --no-build --verbosity normal
