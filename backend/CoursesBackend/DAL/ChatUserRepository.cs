@@ -44,4 +44,5 @@ public class ChatUserRepository : IChatUserRepository
             await _context.SaveChangesAsync();
         }
     }
+   
 }

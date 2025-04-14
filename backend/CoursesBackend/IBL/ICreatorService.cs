@@ -1,0 +1,21 @@
+﻿using Model;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace IBL
+{
+    public interface ICreatorService
+    {
+        Task<IEnumerable<Creator>> GetAllCreatorsAsync();
+        Task<Creator?> GetCreatorByIdAsync(Guid creatorId);
+        Task AddCreatorAsync(Creator creator);
+        Task<bool> DeleteCreatorAsync(Guid creatorId);
+        Task<IEnumerable<Course>> GetCoursesByCreatorAsync(Guid userId);
+        Task<bool> IsUserCreatorOfCourseAsync(Guid userId, Guid courseId);
+
+        Task<Creator> AddCreatorFromUserAsync(Guid userId, Guid courseId);
+    }
+}

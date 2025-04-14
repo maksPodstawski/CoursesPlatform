@@ -44,5 +44,10 @@ namespace DAL
                 await _context.SaveChangesAsync();
             }
         }
+
+        public Task InsertSubcategoryAsync(Subcategory subcategory)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
