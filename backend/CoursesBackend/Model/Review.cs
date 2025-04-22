@@ -13,11 +13,16 @@ namespace Model
     {
         [Key]
         public Guid Id { get; set; }
+        [Required]
         public int Rating { get; set; }
+        [MaxLength(250)]
+        [Required]
         public string Comment { get; set; } = string.Empty;
+        [Required]
         public Guid UserId { get; set; }
         [ForeignKey(nameof(UserId))]
         public User User { get; set; }
+        [Required]
         public Guid CourseId { get; set; }
 
         [ForeignKey(nameof(CourseId))]

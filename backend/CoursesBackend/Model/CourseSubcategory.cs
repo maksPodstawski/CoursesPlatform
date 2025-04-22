@@ -13,11 +13,13 @@ namespace Model
         [Key]
         public Guid Id { get; set; }
 
+        [Required]
         public Guid CourseId { get; set; }
 
         [ForeignKey(nameof(CourseId))]
         public Course Course { get; set; }
 
+        [Required]
         public Guid SubcategoryId { get; set; }
         [ForeignKey(nameof(SubcategoryId))]
         public Subcategory Subcategory { get; set; }
