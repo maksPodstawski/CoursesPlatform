@@ -13,9 +13,9 @@ public class ProgressRepository : IProgressRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Progress>> GetProgressesAsync()
+    public IQueryable<Progress> GetProgresses()
     {
-        return await _context.Progresses.ToListAsync();
+        return _context.Progresses.AsQueryable();
     }
 
     public async Task<Progress?> GetProgressByIdAsync(Guid progressId)

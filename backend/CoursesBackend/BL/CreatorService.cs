@@ -20,9 +20,9 @@ namespace BL
             _courseRepository = courseRepository;
         }
 
-        public async Task<IEnumerable<Creator>> GetAllCreatorsAsync()
+        public IQueryable<Creator> GetAllCreatorsAsync()
         {
-            return await _creatorRepository.GetCreatorsAsync();
+            return _creatorRepository.GetCreators();
         }
 
         public async Task<Creator?> GetCreatorByIdAsync(Guid creatorId)
@@ -44,21 +44,21 @@ namespace BL
             return true;
         }
 
-        public async Task<IEnumerable<Course>> GetCoursesByCreatorAsync(Guid userId)
+        public IQueryable<Course> GetCoursesByCreatorAsync(Guid userId)
         {
-            var creators = await _creatorRepository.GetCreatorsAsync();
+            var creators =  _creatorRepository.GetCreators();
             var courseIds = creators
                 .Where(c => c.UserId == userId)
                 .Select(c => c.CourseId)
                 .ToList();
 
-            var allCourses = await _courseRepository.GetCoursesAsync();
+            var allCourses =  _courseRepository.GetCourses();
             return allCourses.Where(c => courseIds.Contains(c.Id));
         }
 
-        public async Task<bool> IsUserCreatorOfCourseAsync(Guid userId, Guid courseId)
+        public bool IsUserCreatorOfCourseAsync(Guid userId, Guid courseId)
         {
-            var creators = await _creatorRepository.GetCreatorsAsync();
+            var creators =  _creatorRepository.GetCreators();
             return creators.Any(c => c.UserId == userId && c.CourseId == courseId);
         }
         public async Task<Creator> AddCreatorFromUserAsync(Guid userId, Guid courseId)

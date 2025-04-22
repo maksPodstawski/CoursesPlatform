@@ -17,9 +17,9 @@ namespace BL
             _chatUserRepository = chatUserRepository;
         }
 
-        public async Task<IEnumerable<ChatUser>> GetAllAsync()
+        public IQueryable<ChatUser> GetAllAsync()
         {
-            return await _chatUserRepository.GetChatUsersAsync();
+            return _chatUserRepository.GetChatUsers();
         }
 
         public async Task<ChatUser?> GetByIdAsync(Guid chatUserId)
@@ -29,7 +29,7 @@ namespace BL
 
         public async Task AddUserToChatAsync(Guid chatId, Guid userId)
         {
-            var isInChat = await IsUserInChatAsync(chatId, userId);
+            var isInChat = IsUserInChatAsync(chatId, userId);
             if (!isInChat)
             {
                 var chatUser = new ChatUser
@@ -46,7 +46,7 @@ namespace BL
 
         public async Task RemoveUserFromChatAsync(Guid chatId, Guid userId)
         {
-            var chatUsers = await _chatUserRepository.GetChatUsersAsync();
+            var chatUsers =  _chatUserRepository.GetChatUsers();
             var target = chatUsers.FirstOrDefault(cu => cu.ChatId == chatId && cu.UserId == userId);
 
             if (target != null)
@@ -55,9 +55,9 @@ namespace BL
             }
         }
 
-        public async Task<bool> IsUserInChatAsync(Guid chatId, Guid userId)
+        public bool IsUserInChatAsync(Guid chatId, Guid userId)
         {
-            var chatUsers = await _chatUserRepository.GetChatUsersAsync();
+            var chatUsers =  _chatUserRepository.GetChatUsers();
             return chatUsers.Any(cu => cu.ChatId == chatId && cu.UserId == userId);
         }
     }

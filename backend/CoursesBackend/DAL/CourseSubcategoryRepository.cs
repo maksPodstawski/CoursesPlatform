@@ -13,14 +13,14 @@ namespace DAL
             _context = context;
         }
 
-        public async Task<IEnumerable<CourseSubcategory>> GetCourseSubcategoriesAsync()
+        public IQueryable<CourseSubcategory> GetCourseSubcategories()
         {
-            return await _context.CourseSubcategories.ToListAsync();
+            return _context.CourseSubcategories.AsQueryable();
         }
 
-        public async Task<CourseSubcategory?> GetCourseSubcategoryByIDAsync(Guid courseSubcategoryID)
+        public async Task<CourseSubcategory?> GetCourseSubcategoryByIdAsync(Guid courseSubcategoryId)
         {
-            return await _context.CourseSubcategories.FindAsync(courseSubcategoryID);
+            return await _context.CourseSubcategories.FindAsync(courseSubcategoryId);
         }
 
         public async Task AddCourseSubcategoryAsync(CourseSubcategory courseSubcategory)
@@ -35,9 +35,9 @@ namespace DAL
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteCourseSubcategoryAsync(Guid courseSubcategoryID)
+        public async Task DeleteCourseSubcategoryAsync(Guid courseSubcategoryId)
         {
-            var courseSubcategory = await GetCourseSubcategoryByIDAsync(courseSubcategoryID);
+            var courseSubcategory = await GetCourseSubcategoryByIdAsync(courseSubcategoryId);
             if (courseSubcategory != null)
             {
                 _context.CourseSubcategories.Remove(courseSubcategory);

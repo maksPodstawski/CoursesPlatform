@@ -13,9 +13,9 @@ public class ChatRepository : IChatRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Chat>> GetChatsAsync()
+    public IQueryable<Chat> GetChats()
     {
-        return await _context.Chats.ToListAsync();
+        return _context.Chats.AsQueryable();
     }
 
     public async Task<Chat?> GetChatByIdAsync(Guid chatId)
@@ -43,24 +43,5 @@ public class ChatRepository : IChatRepository
             _context.Chats.Remove(chat);
             await _context.SaveChangesAsync();
         }
-    }
-
-    public async Task<IEnumerable<User>> GetUsersInChatAsync(Guid chatId)
-    {
-        return await _context.ChatUsers
-            .Where(cu => cu.ChatId == chatId)
-            .Select(cu => cu.User)
-            .ToListAsync();
-    }
-
-    public async Task<bool> IsUserInChatAsync(Guid chatId, Guid userId)
-    {
-        return await _context.ChatUsers
-            .AnyAsync(cu => cu.ChatId == chatId && cu.UserId == userId);
-    }
-
-    public async Task<bool> ChatExistsAsync(Guid chatId)
-    {
-        return await _context.Chats.AnyAsync(c => c.Id == chatId);
     }
 }

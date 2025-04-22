@@ -11,14 +11,14 @@ namespace BL
         {
             _userRepository = userRepository;
         }
-        public async Task<int> GetUserCountAsync()
+        public int GetUserCountAsync()
         {
-            var users = await _userRepository.GetUsersAsync();
+            var users =  _userRepository.GetUsers();
             return users.Count();
         }
-        public Task<IEnumerable<User>> GetAllUsersAsync()
+        public IQueryable<User> GetAllUsersAsync()
         {
-            return _userRepository.GetUsersAsync();
+            return _userRepository.GetUsers();
         }
         public Task<User?> GetUserByIdAsync(Guid userId)
         {
@@ -28,20 +28,21 @@ namespace BL
         {
             return _userRepository.GetUserByEmailAsync(email);
         }
-        public Task<IEnumerable<User>> GetUsersByFirstNameAsync(string firstName)  
+        public IQueryable<User> GetUsersByFirstNameAsync(string firstName)
         {
-            return _userRepository.GetUsersByFirstNameAsync(firstName);
+            var users =  _userRepository.GetUsers();
+            return users.Where(u => u.FirstName.Equals(firstName, StringComparison.OrdinalIgnoreCase));
         }
-        public Task<IEnumerable<User>> GetUsersByLastNameAsync(string lastName) 
+        public IQueryable<User> GetUsersByLastNameAsync(string lastName)
         {
-            return _userRepository.GetUsersByLastNameAsync(lastName);
+            var users =  _userRepository.GetUsers();
+            return users.Where(u => u.LastName.Equals(lastName, StringComparison.OrdinalIgnoreCase));
         }
-        public Task<IEnumerable<User>> GetUsersByCourseIdAsync(Guid courseId) 
+        public IQueryable<User> GetUsersByCourseIdAsync(Guid courseId)
         {
-            return _userRepository.GetUsersByCourseIdAsync(courseId);
+            var users =  _userRepository.GetUsers();
+            return users.Where(u => u.Reviews != null && u.Reviews.Any(r => r.CourseId == courseId));
         }
-
-
 
         public async Task<User> AddUserAsync(User user)
         {

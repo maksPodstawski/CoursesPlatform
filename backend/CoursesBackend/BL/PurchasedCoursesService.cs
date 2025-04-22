@@ -12,9 +12,9 @@ namespace BL
             _purchasedCoursesRepository = purchasedCoursesRepository;
         }
 
-        public Task<IEnumerable<PurchasedCourses>> GetAllPurchasedCoursesAsync()
+        public IQueryable<PurchasedCourses> GetAllPurchasedCoursesAsync()
         {
-            return _purchasedCoursesRepository.GetPurchasedCoursesAsync();
+            return _purchasedCoursesRepository.GetPurchasedCourses();
         }
         public Task<PurchasedCourses?> GetPurchasedCourseByIdAsync(Guid id)
         {

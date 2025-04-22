@@ -9,14 +9,11 @@ namespace IDAL
 {
     public interface ICategoryRepository
     {
-        Task<IEnumerable<Category>> GetCategoriesAsync();
-        Task<Category?> GetCategoryByIDAsync(Guid categoryID);
+        IQueryable<Category> GetCategories();
+        Task<Category?> GetCategoryByIdAsync(Guid categoryID);
         Task<Category?> GetCategoryByNameAsync(string name);  
-        Task<IEnumerable<Subcategory>> GetSubcategoriesByCategoryIdAsync(Guid categoryId);
-
-
         Task AddCategoryAsync(Category category);
         Task UpdateCategoryAsync(Category category);
-        Task DeleteCategoryAsync(Guid categoryID);
+        Task DeleteCategoryAsync(Guid categoryId);
     }
 }

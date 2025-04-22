@@ -13,30 +13,15 @@ public class StageRepository : IStageRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Stage>> GetStagesAsync()
+    public IQueryable<Stage> GetStages()
     {
-        return await _context.Stages.ToListAsync();
+        return _context.Stages.AsQueryable();
     }
 
     public async Task<Stage?> GetStageByIdAsync(Guid stageId)
     {
         return await _context.Stages.FindAsync(stageId);
     }
-    public async Task<IEnumerable<Stage>> GetStagesByNameAsync(string name)
-    {
-        return await _context.Stages
-            .Where(s => s.Name.Contains(name))
-            .ToListAsync();
-    }
-    public async Task<IEnumerable<Stage>> GetStagesByCourseIdAsync(Guid courseId)
-    {
-        return await _context.Stages
-            .Where(s => s.CourseId == courseId)
-            .ToListAsync();
-    }
-
-
-
 
     public async Task AddStageAsync(Stage stage)
     {

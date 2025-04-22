@@ -18,11 +18,12 @@ namespace DAL
             _context = context;
         }
 
-        public async Task<IEnumerable<Category>> GetCategoriesAsync()
+        public IQueryable<Category> GetCategories()
         {
-            return await _context.Categories.ToListAsync();
+            return _context.Categories.AsQueryable();
         }
-        public async Task<Category?> GetCategoryByIDAsync(Guid categoryID)
+
+        public async Task<Category?> GetCategoryByIdAsync(Guid categoryID)
         {
             return await _context.Categories.FindAsync(categoryID);
         }
@@ -31,14 +32,6 @@ namespace DAL
             return await _context.Categories
                 .FirstOrDefaultAsync(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         }
-        public async Task<IEnumerable<Subcategory>> GetSubcategoriesByCategoryIdAsync(Guid categoryId)
-        {
-            return await _context.Subcategories
-                .Where(s => s.CategoryId == categoryId)
-                .ToListAsync();
-        }
-
-
 
         public async Task AddCategoryAsync(Category category)
         {
@@ -50,9 +43,9 @@ namespace DAL
             _context.Entry(category).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
-        public async Task DeleteCategoryAsync(Guid categoryID)
+        public async Task DeleteCategoryAsync(Guid categoryId)
         {
-            var category = await GetCategoryByIDAsync(categoryID);
+            var category = await GetCategoryByIdAsync(categoryId);
             if (category != null)
             {
                 _context.Categories.Remove(category);

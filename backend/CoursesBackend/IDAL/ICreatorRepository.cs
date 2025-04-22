@@ -9,7 +9,7 @@ namespace IDAL
 {
     public interface ICreatorRepository
     {
-        Task<IEnumerable<Creator>> GetCreatorsAsync();
+        IQueryable<Creator> GetCreators();
         Task<Creator?> GetCreatorByIDAsync(Guid creatorID);
         Task AddCreatorAsync(Creator creator);
         Task UpdateCreatorAsync(Creator creator);

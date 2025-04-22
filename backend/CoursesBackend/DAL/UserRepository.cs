@@ -13,10 +13,9 @@ namespace DAL
         {
             _context = context;
         }
-
-        public async Task<IEnumerable<User>> GetUsersAsync()
+        public IQueryable<User> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            return _context.Users.AsQueryable();
         }
 
         public async Task<User?> GetUserByIDAsync(Guid userID)
@@ -27,25 +26,6 @@ namespace DAL
         public async Task<User?> GetUserByEmailAsync(string email)
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-        }
-        public async Task<IEnumerable<User>> GetUsersByFirstNameAsync(string firstName)
-        {
-            return await _context.Users
-                .Where(u => u.FirstName.Contains(firstName))
-                .ToListAsync();
-        }
-        public async Task<IEnumerable<User>> GetUsersByLastNameAsync(string lastName)
-        {
-            return await _context.Users
-                .Where(u => u.LastName.Contains(lastName))
-                .ToListAsync();
-        }
-        public async Task<IEnumerable<User>> GetUsersByCourseIdAsync(Guid courseId)
-        {
-            return await _context.PurchasedCourses
-                .Where(pc => pc.CourseId == courseId)
-                .Select(pc => pc.User)  
-                .ToListAsync();
         }
         public async Task AddUserAsync(User user)
         {

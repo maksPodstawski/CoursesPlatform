@@ -9,9 +9,8 @@ namespace IDAL
 {
     public interface ISubcategoryRepository
     {
-        Task<IEnumerable<Subcategory>> GetSubcategoriesAsync();
+        IQueryable<Subcategory> GetSubcategories();
         Task<Subcategory> GetSubcategoryByIDAsync(Guid subcategoryID);
-        Task InsertSubcategoryAsync(Subcategory subcategory);
         Task DeleteSubcategoryAsync(Guid subcategoryID);
         Task UpdateSubcategoryAsync(Subcategory subcategory);
         Task AddSubcategoryAsync(Subcategory subcategory);

@@ -18,9 +18,9 @@ namespace BL
             _chatRepository = chatRepository;
         }
 
-        public async Task<IEnumerable<Chat>> GetAllChatsAsync()
+        public IQueryable<Chat> GetAllChatsAsync()
         {
-            return await _chatRepository.GetChatsAsync();
+            return _chatRepository.GetChats();
         }
 
         public async Task<Chat?> GetChatByIdAsync(Guid chatId)
@@ -45,7 +45,14 @@ namespace BL
 
         public async Task<IEnumerable<User>> GetUsersInChatAsync(Guid chatId)
         {
-            return await _chatRepository.GetUsersInChatAsync(chatId);
+            var chat = await _chatRepository.GetChatByIdAsync(chatId);
+
+
+            if (chat == null || chat.Users == null)
+            {
+                return Enumerable.Empty<User>();
+            }
+            return chat.Users.Select(chatUser => chatUser.User);
         }
 
 
@@ -61,7 +68,8 @@ namespace BL
 
         public async Task<bool> ChatExistsAsync(Guid chatId)
         {
-            return await _chatRepository.ChatExistsAsync(chatId);
+            var chat = await _chatRepository.GetChatByIdAsync(chatId);
+            return chat != null;
         }
     }
 }

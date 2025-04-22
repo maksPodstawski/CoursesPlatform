@@ -18,9 +18,9 @@ namespace BL
             _subcategoryRepository = subcategoryRepository;
         }
 
-        public async Task<IEnumerable<Subcategory>> GetAllSubcategoriesAsync()
+        public  IQueryable<Subcategory> GetAllSubcategoriesAsync()
         {
-            return await _subcategoryRepository.GetSubcategoriesAsync();
+            return  _subcategoryRepository.GetSubcategories();
         }
 
         public async Task<Subcategory?> GetSubcategoryByIdAsync(Guid subcategoryId)
@@ -28,9 +28,9 @@ namespace BL
             return await _subcategoryRepository.GetSubcategoryByIDAsync(subcategoryId);
         }
 
-        public async Task<IEnumerable<Subcategory>> GetSubcategoriesByCategoryIdAsync(Guid categoryId)
+        public IQueryable<Subcategory> GetSubcategoriesByCategoryIdAsync(Guid categoryId)
         {
-            var all = await _subcategoryRepository.GetSubcategoriesAsync();
+            var all =  _subcategoryRepository.GetSubcategories();
             return all.Where(s => s.CategoryId == categoryId);
         }
 

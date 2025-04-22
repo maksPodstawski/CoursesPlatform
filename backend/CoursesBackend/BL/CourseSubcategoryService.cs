@@ -12,13 +12,13 @@ namespace BL
             _courseSubcategoryRepository = courseSubcategoryRepository;
         }
 
-        public Task<IEnumerable<CourseSubcategory>> GetAllCourseSubcategoriesAsync()
+        public IQueryable<CourseSubcategory> GetAllCourseSubcategoriesAsync()
         {
-            return _courseSubcategoryRepository.GetCourseSubcategoriesAsync();
+            return _courseSubcategoryRepository.GetCourseSubcategories();
         }
         public Task<CourseSubcategory?> GetCourseSubcategoryByIdAsync(Guid id)
         {
-            return _courseSubcategoryRepository.GetCourseSubcategoryByIDAsync(id);
+            return _courseSubcategoryRepository.GetCourseSubcategoryByIdAsync(id);
         }
         public async Task<CourseSubcategory> AddCourseSubcategoryAsync(CourseSubcategory courseSubcategory)
         {
@@ -27,7 +27,7 @@ namespace BL
         }
         public async Task<CourseSubcategory?> UpdateCourseSubcategoryAsync(CourseSubcategory courseSubcategory)
         {
-            var existing = await _courseSubcategoryRepository.GetCourseSubcategoryByIDAsync(courseSubcategory.Id);
+            var existing = await _courseSubcategoryRepository.GetCourseSubcategoryByIdAsync(courseSubcategory.Id);
             if (existing == null)
                 return null;
 
@@ -36,7 +36,7 @@ namespace BL
         }
         public async Task<CourseSubcategory?> DeleteCourseSubcategoryAsync(Guid id)
         {
-            var existing = await _courseSubcategoryRepository.GetCourseSubcategoryByIDAsync(id);
+            var existing = await _courseSubcategoryRepository.GetCourseSubcategoryByIdAsync(id);
             if (existing == null)
                 return null;
 

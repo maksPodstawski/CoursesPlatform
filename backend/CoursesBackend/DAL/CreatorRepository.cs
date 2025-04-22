@@ -13,9 +13,9 @@ namespace DAL
             _context = context;
         }
 
-        public async Task<IEnumerable<Creator>> GetCreatorsAsync()
+        public IQueryable<Creator> GetCreators()
         {
-            return await _context.Creators.ToListAsync();
+            return _context.Creators.AsQueryable();
         }
 
         public async Task<Creator?> GetCreatorByIDAsync(Guid creatorID)

@@ -13,9 +13,9 @@ namespace DAL
             _context = context;
         }
 
-        public async Task<IEnumerable<PurchasedCourses>> GetPurchasedCoursesAsync()
+        public IQueryable<PurchasedCourses> GetPurchasedCourses()
         {
-            return await _context.PurchasedCourses.ToListAsync();
+            return _context.PurchasedCourses.AsQueryable();
         }
 
         public async Task<PurchasedCourses?> GetPurchasedCourseByIDAsync(Guid purchasedCourseID)

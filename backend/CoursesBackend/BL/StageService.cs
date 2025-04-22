@@ -12,25 +12,24 @@ namespace BL
             _stageRepository = stageRepository;
         }
 
-        public Task<IEnumerable<Stage>> GetAllStagesAsync()
+        public IQueryable<Stage> GetAllStagesAsync()
         {
-            return _stageRepository.GetStagesAsync();
+            return _stageRepository.GetStages();
         }
         public Task<Stage?> GetStageByIdAsync(Guid id)
         {
             return _stageRepository.GetStageByIdAsync(id);
         }
-        public async Task<IEnumerable<Stage>> GetStagesByNameAsync(string name)
+        public IQueryable<Stage> GetStagesByNameAsync(string name)
         {
-            return await _stageRepository.GetStagesByNameAsync(name); 
+            var stages =  _stageRepository.GetStages();
+            return stages.Where(s => s.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
         }
-        public async Task<IEnumerable<Stage>> GetStagesByCourseIdAsync(Guid courseId)
+        public IQueryable<Stage> GetStagesByCourseIdAsync(Guid courseId)
         {
-            return await _stageRepository.GetStagesByCourseIdAsync(courseId); 
+            var stages =  _stageRepository.GetStages();
+            return stages.Where(s => s.CourseId == courseId);
         }
-
-
-
 
         public async Task<Stage> AddStageAsync(Stage stage)
         {

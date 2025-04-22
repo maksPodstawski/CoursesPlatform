@@ -13,9 +13,9 @@ public class ChatUserRepository : IChatUserRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<ChatUser>> GetChatUsersAsync()
+    public IQueryable<ChatUser> GetChatUsers()
     {
-        return await _context.ChatUsers.ToListAsync();
+        return _context.ChatUsers.AsQueryable();
     }
 
     public async Task<ChatUser?> GetChatUserByIdAsync(Guid chatUserId)

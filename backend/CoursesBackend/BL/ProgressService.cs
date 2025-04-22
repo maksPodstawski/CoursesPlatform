@@ -18,9 +18,9 @@ namespace BL
             _progressRepository = progressRepository;
         }
 
-        public async Task<IEnumerable<Progress>> GetAllProgressesAsync()
+        public IQueryable<Progress> GetAllProgressesAsync()
         {
-            return await _progressRepository.GetProgressesAsync();
+            return  _progressRepository.GetProgresses();
         }
 
         public async Task<Progress?> GetProgressByIdAsync(Guid progressId)
@@ -28,15 +28,15 @@ namespace BL
             return await _progressRepository.GetProgressByIdAsync(progressId);
         }
 
-        public async Task<IEnumerable<Progress>> GetProgressByUserIdAsync(Guid userId)
+        public IQueryable<Progress> GetProgressByUserIdAsync(Guid userId)
         {
-            var progresses = await _progressRepository.GetProgressesAsync();
+            var progresses = _progressRepository.GetProgresses();
             return progresses.Where(p => p.UserId == userId);
         }
 
-        public async Task<IEnumerable<Progress>> GetProgressByStageIdAsync(Guid stageId)
+        public IQueryable<Progress> GetProgressByStageIdAsync(Guid stageId)
         {
-            var progresses = await _progressRepository.GetProgressesAsync();
+            var progresses =  _progressRepository.GetProgresses();
             return progresses.Where(p => p.StageId == stageId);
         }
 
@@ -60,7 +60,7 @@ namespace BL
 
         public async Task MarkStageAsCompletedAsync(Guid userId, Guid stageId)
         {
-            var progresses = await _progressRepository.GetProgressesAsync();
+            var progresses = _progressRepository.GetProgresses();
             var progress = progresses.FirstOrDefault(p => p.UserId == userId && p.StageId == stageId);
 
             if (progress != null)
