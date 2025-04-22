@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,8 @@ namespace Model
     public class Subcategory
     {
         public Guid Id { get; set; }
+        [MaxLength(50)]
+        [Required]
         public string Name { get; set; } = string.Empty;
         public Guid CategoryId { get; set; }
         [ForeignKey(nameof(CategoryId))]

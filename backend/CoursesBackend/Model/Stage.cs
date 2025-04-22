@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -15,8 +16,14 @@ namespace Model
         [ForeignKey(nameof(CourseId))]
         public Course Course { get; set; }
 
+        [MaxLength(50)]
+        [Required]
         public string Name { get; set; } = string.Empty;
+        [MaxLength(250)]
+        [Required]
         public string Description { get; set; } = string.Empty;
+        [Required]
         public double Duration { get; set; }
+        public string? VideoPath { get; set; }
     }
 }
