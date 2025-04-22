@@ -17,9 +17,9 @@ namespace BL
             _chatUserRepository = chatUserRepository;
         }
 
-        public async Task<IEnumerable<ChatUser>> GetAllAsync()
+        public IQueryable<ChatUser> GetAllAsync()
         {
-            return await _chatUserRepository.GetChatUsersAsync();
+            return _chatUserRepository.GetChatUsers();
         }
 
         public async Task<ChatUser?> GetByIdAsync(Guid chatUserId)

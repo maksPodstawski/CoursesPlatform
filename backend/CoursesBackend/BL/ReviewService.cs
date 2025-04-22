@@ -18,9 +18,9 @@ namespace BL
             _reviewRepository = reviewRepository;
         }
 
-        public async Task<IEnumerable<Review>> GetAllReviewsAsync()
+        public  IQueryable<Review> GetAllReviewsAsync()
         {
-            return await _reviewRepository.GetReviewsAsync();
+            return  _reviewRepository.GetReviews();
         }
 
         public async Task<Review?> GetReviewByIdAsync(Guid reviewId)
@@ -28,15 +28,15 @@ namespace BL
             return await _reviewRepository.GetReviewByIdAsync(reviewId);
         }
 
-        public async Task<IEnumerable<Review>> GetReviewsByCourseIdAsync(Guid courseId)
+        public IQueryable<Review> GetReviewsByCourseIdAsync(Guid courseId)
         {
-            var reviews = await _reviewRepository.GetReviewsAsync();
+            var reviews =  _reviewRepository.GetReviews();
             return reviews.Where(r => r.CourseId == courseId);
         }
 
-        public async Task<IEnumerable<Review>> GetReviewsByUserIdAsync(Guid userId)
+        public IQueryable<Review> GetReviewsByUserIdAsync(Guid userId)
         {
-            var reviews = await _reviewRepository.GetReviewsAsync();
+            var reviews =  _reviewRepository.GetReviews();
             return reviews.Where(r => r.UserId == userId);
         }
 

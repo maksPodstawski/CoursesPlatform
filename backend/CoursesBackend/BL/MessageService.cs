@@ -18,9 +18,10 @@ namespace BL
         {
             _messageRepository = messageRepository;
         }
-        public async Task<IEnumerable<Message>> GetMessagesByChatIdAsync(Guid chatId)
+        public IQueryable<Message> GetMessagesByChatIdAsync(Guid chatId)
         {
-            return await _messageRepository.GetMessagesByChatIdAsync(chatId);
+            var messages =  _messageRepository.GetMessages();
+            return messages.Where(message => message.ChatId == chatId && !message.IsDeleted);
         }
 
         public async Task<Message?> GetMessageByIdAsync(Guid messageId)

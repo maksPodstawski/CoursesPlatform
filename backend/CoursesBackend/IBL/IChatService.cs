@@ -9,7 +9,7 @@ namespace IBL
 {
     public interface IChatService
     {
-        Task<IEnumerable<Chat>> GetAllChatsAsync();
+        IQueryable<Chat> GetAllChatsAsync();
         Task<Chat?> GetChatByIdAsync(Guid chatId);
         Task AddChatAsync(Chat chat);
         Task<Chat?> DeleteChatAsync(Guid chatId);

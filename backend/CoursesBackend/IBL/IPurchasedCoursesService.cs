@@ -4,7 +4,7 @@ namespace IBL
 {
     public interface IPurchasedCoursesService
     {
-        Task<IEnumerable<PurchasedCourses>> GetAllPurchasedCoursesAsync();
+        IQueryable<PurchasedCourses> GetAllPurchasedCoursesAsync();
         Task<PurchasedCourses?> GetPurchasedCourseByIdAsync(Guid id);
         Task<PurchasedCourses> AddPurchasedCourseAsync(PurchasedCourses purchasedCourse);
         Task<PurchasedCourses?> UpdatePurchasedCourseAsync(PurchasedCourses purchasedCourse);

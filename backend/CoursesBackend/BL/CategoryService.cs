@@ -12,25 +12,30 @@ namespace BL
             _categoryRepository = categoryRepository;
         }
 
-        public Task<IEnumerable<Category>> GetAllCategoriesAsync()
+        public IQueryable<Category> GetAllCategoriesAsync()
         {
-            return _categoryRepository.GetCategoriesAsync();
+            return _categoryRepository.GetCategories();
         }
         public Task<Category?> GetCategoryByIdAsync(Guid id)
         {
-            return _categoryRepository.GetCategoryByIDAsync(id);
+            return _categoryRepository.GetCategoryByIdAsync(id);
         }
         public Task<Category?> GetCategoryByNameAsync(string name)
         {
             return _categoryRepository.GetCategoryByNameAsync(name);
         }
-        public Task<IEnumerable<Subcategory>> GetSubcategoriesByCategoryIdAsync(Guid categoryId)
+        public async Task<IEnumerable<Subcategory>> GetSubcategoriesByCategoryIdAsync(Guid categoryId)
         {
-            return _categoryRepository.GetSubcategoriesByCategoryIdAsync(categoryId);
+
+            var category = await _categoryRepository.GetCategoryByIdAsync(categoryId);
+
+            if (category == null || category.Subcategories == null)
+            {
+                return Enumerable.Empty<Subcategory>();
+            }
+
+            return category.Subcategories;
         }
-
-
-
 
         public async Task<Category> AddCategoryAsync(Category category)
         {
@@ -39,7 +44,7 @@ namespace BL
         }
         public async Task<Category?> UpdateCategoryAsync(Category category)
         {
-            var existing = await _categoryRepository.GetCategoryByIDAsync(category.Id);
+            var existing = await _categoryRepository.GetCategoryByIdAsync(category.Id);
             if (existing == null)
                 return null;
 
@@ -48,7 +53,7 @@ namespace BL
         }
         public async Task<Category?> DeleteCategoryAsync(Guid id)
         {
-            var category = await _categoryRepository.GetCategoryByIDAsync(id);
+            var category = await _categoryRepository.GetCategoryByIdAsync(id);
             if (category == null)
                 return null;
 

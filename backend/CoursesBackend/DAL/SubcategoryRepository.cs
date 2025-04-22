@@ -13,10 +13,11 @@ namespace DAL
             _context = context;
         }
 
-        public async Task<IEnumerable<Subcategory>> GetSubcategoriesAsync()
+        public IQueryable<Subcategory> GetSubcategories()
         {
-            return await _context.Subcategories.ToListAsync();
+            return _context.Subcategories.AsQueryable();
         }
+
 
         public async Task<Subcategory?> GetSubcategoryByIDAsync(Guid subcategoryID)
         {
@@ -43,11 +44,6 @@ namespace DAL
                 _context.Subcategories.Remove(subcategory);
                 await _context.SaveChangesAsync();
             }
-        }
-
-        public Task InsertSubcategoryAsync(Subcategory subcategory)
-        {
-            throw new NotImplementedException();
         }
     }
 }

@@ -4,10 +4,10 @@ namespace IBL
 {
     public interface IStageService
     {
-        Task<IEnumerable<Stage>> GetAllStagesAsync();
+        IQueryable<Stage> GetAllStagesAsync();
         Task<Stage?> GetStageByIdAsync(Guid id);
-        Task<IEnumerable<Stage>> GetStagesByNameAsync(string name); 
-        Task<IEnumerable<Stage>> GetStagesByCourseIdAsync(Guid courseId); 
+        IQueryable<Stage> GetStagesByNameAsync(string name); 
+        IQueryable<Stage> GetStagesByCourseIdAsync(Guid courseId); 
 
 
         Task<Stage> AddStageAsync(Stage stage);

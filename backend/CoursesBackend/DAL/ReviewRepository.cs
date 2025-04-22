@@ -13,10 +13,11 @@ public class ReviewRepository : IReviewRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Review>> GetReviewsAsync()
+    public IQueryable<Review> GetReviews()
     {
-        return await _context.Reviews.ToListAsync();
+        return _context.Reviews.AsQueryable();
     }
+
 
     public async Task<Review?> GetReviewByIdAsync(Guid reviewId)
     {

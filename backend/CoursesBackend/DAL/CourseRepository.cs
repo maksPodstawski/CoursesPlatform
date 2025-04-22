@@ -14,41 +14,14 @@ namespace DAL
             _context = context;
         }
         
-        public async Task<Course?> GetCourseByIDAsync(Guid courseID)
+        public async Task<Course?> GetCourseByIdAsync(Guid courseId)
         {
-            return await _context.Courses.FindAsync(courseID);
+            return await _context.Courses.FindAsync(courseId);
         }
-        public async Task<IEnumerable<Course>> GetCoursesAsync()
+        public IQueryable<Course> GetCourses()
         {
-            return await _context.Courses.ToListAsync();
+            return _context.Courses.AsQueryable();
         }
-        public async Task<IEnumerable<Course>> GetCoursesByTitleAsync(string title)  
-        {
-            return await _context.Courses
-                .Where(c => c.Name.Contains(title))
-                .ToListAsync();
-        }
-        public async Task<IEnumerable<Course>> GetCoursesByPriceRangeAsync(decimal minPrice, decimal maxPrice)
-        {
-            return await _context.Courses
-                .Where(c => c.Price >= minPrice && c.Price <= maxPrice)
-                .ToListAsync();
-        }
-        public async Task<IEnumerable<Course>> GetCoursesByAverageRatingAsync(double rating)  
-        {
-            return await _context.Courses
-                .Where(c => c.Reviews != null && c.Reviews.Average(r => r.Rating) >= rating)
-                .ToListAsync();
-        }
-        public async Task<IEnumerable<Course>> GetCoursesByCreatorAsync(Guid creatorId)  
-        {
-            return await _context.Creators
-                .Where(c => c.UserId == creatorId)  
-                .Select(c => c.Course)  
-                .ToListAsync();
-        }
-
-
 
         public async Task AddCourseAsync(Course course)
         {
@@ -60,9 +33,9 @@ namespace DAL
             _context.Entry(course).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
-        public async Task DeleteCourseAsync(Guid courseID)
+        public async Task DeleteCourseAsync(Guid courseId)
         {
-            var course = await _context.Courses.FindAsync(courseID);
+            var course = await _context.Courses.FindAsync(courseId);
             if (course != null)
             {
                 _context.Courses.Remove(course);

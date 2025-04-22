@@ -13,9 +13,9 @@ public class MessageRepository : IMessageRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Message>> GetMessagesAsync()
+    public IQueryable<Message> GetMessages()
     {
-        return await _context.Messages.ToListAsync();
+        return _context.Messages.AsQueryable();
     }
 
     public async Task<Message?> GetMessageByIdAsync(Guid messageId)
@@ -43,12 +43,5 @@ public class MessageRepository : IMessageRepository
             _context.Messages.Remove(message);
             await _context.SaveChangesAsync();
         }
-    }
-    public async Task<IEnumerable<Message>> GetMessagesByChatIdAsync(Guid chatId)
-    {
-        return await _context.Messages
-            .Where(m => m.ChatId == chatId && !m.IsDeleted)
-            .OrderBy(m => m.CreatedAt)
-            .ToListAsync();
     }
 }

@@ -9,7 +9,7 @@ namespace IDAL
 {
     public interface IPurchasedCoursesRepository
     {
-        Task<IEnumerable<PurchasedCourses>> GetPurchasedCoursesAsync();
+        IQueryable<PurchasedCourses> GetPurchasedCourses();
         Task<PurchasedCourses?> GetPurchasedCourseByIDAsync(Guid purchasedCourseID);
         Task AddPurchasedCourseAsync(PurchasedCourses purchasedCourse);
         Task DeletePurchasedCourseAsync(Guid purchasedCourseID);

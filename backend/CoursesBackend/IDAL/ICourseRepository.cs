@@ -9,16 +9,10 @@ namespace IDAL
 {
     public interface ICourseRepository
     {
-        Task<IEnumerable<Course>> GetCoursesAsync();
-        Task<Course?> GetCourseByIDAsync(Guid courseID);
-        Task<IEnumerable<Course>> GetCoursesByTitleAsync(string title);
-        Task<IEnumerable<Course>> GetCoursesByPriceRangeAsync(decimal minPrice, decimal maxPrice);
-        Task<IEnumerable<Course>> GetCoursesByAverageRatingAsync(double rating);  
-        Task<IEnumerable<Course>> GetCoursesByCreatorAsync(Guid creatorId);  
-
-
+        IQueryable<Course> GetCourses();
+        Task<Course?> GetCourseByIdAsync(Guid courseId);
         Task AddCourseAsync(Course course);
         Task UpdateCourseAsync(Course course);
-        Task DeleteCourseAsync(Guid courseID);
+        Task DeleteCourseAsync(Guid courseId);
     }
 }

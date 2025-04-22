@@ -4,13 +4,13 @@ namespace IBL
 {
     public interface IUserService
     {
-        Task<int> GetUserCountAsync();
-        Task<IEnumerable<User>> GetAllUsersAsync();
+        int GetUserCountAsync();
+        IQueryable<User> GetAllUsersAsync();
         Task<User?> GetUserByIdAsync(Guid userId);
         Task<User?> GetUserByEmailAsync(string email);  
-        Task<IEnumerable<User>> GetUsersByFirstNameAsync(string firstName);  
-        Task<IEnumerable<User>> GetUsersByLastNameAsync(string lastName);  
-        Task<IEnumerable<User>> GetUsersByCourseIdAsync(Guid courseId);  
+        IQueryable<User> GetUsersByFirstNameAsync(string firstName);  
+        IQueryable<User> GetUsersByLastNameAsync(string lastName);  
+        IQueryable<User> GetUsersByCourseIdAsync(Guid courseId);  
 
 
         Task<User> AddUserAsync(User user);
