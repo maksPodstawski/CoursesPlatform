@@ -14,11 +14,12 @@ namespace Model
         [Key]
         public Guid Id { get; set; }
 
+        [Required]
         public Guid UserId { get; set; }
         [ForeignKey(nameof(UserId))]
         public User User { get; set; }
 
-
+        [Required]
         public Guid ChatId { get; set; }
         [ForeignKey(nameof(ChatId))]
         public Chat Chat { get; set; }

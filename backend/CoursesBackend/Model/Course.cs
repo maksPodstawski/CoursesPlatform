@@ -13,11 +13,18 @@ namespace Model
     {
         [Key]
         public Guid Id { get; set; }
+        [MaxLength(50)]
+        [Required]
         public string Name { get; set; } = string.Empty;
+        [MaxLength(250)]
         public string? Description { get; set; }
+        [Required]
         public string ImageUrl { get; set; } = string.Empty;
+        [Required]
         public int Duration { get; set; }
+        [Required]
         public decimal Price { get; set; }
+        [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; } = null;
         public ICollection<Review>? Reviews { get; set; } = new List<Review>();
