@@ -18,5 +18,6 @@ namespace Model
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public double Duration { get; set; }
+        public string? VideoPath { get; set; }
     }
 }
