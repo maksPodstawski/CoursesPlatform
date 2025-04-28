@@ -13,40 +13,46 @@ namespace DAL
         {
             _context = context;
         }
+
+
         public IQueryable<User> GetUsers()
         {
-            return _context.Users.AsQueryable();
+            return _context.Users;
+        }
+        public User? GetUserByID(Guid userID)
+        {
+            return _context.Users.FirstOrDefault(u => u.Id == userID);
         }
 
-        public async Task<User?> GetUserByIDAsync(Guid userID)
+        public User AddUser(User user)
         {
-            return await _context.Users.FindAsync(userID);
+            _context.Users.Add(user);
+            _context.SaveChanges();
+            return user;
+        }
+        public User? UpdateUser(User user)
+        {
+            var existingUser = _context.Users.FirstOrDefault(u => u.Id == user.Id);
+            if (existingUser == null)
+                return null;
+
+            existingUser.FirstName = user.FirstName;
+            existingUser.LastName = user.LastName;
+            existingUser.Email = user.Email;
+
+            _context.SaveChanges();
+            return existingUser;
+        }
+        public User? DeleteUser(Guid userID)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Id == userID);
+            if (user == null)
+                return null;
+
+            _context.Users.Remove(user);
+            _context.SaveChanges();
+            return user;
         }
 
-        public async Task<User?> GetUserByEmailAsync(string email)
-        {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-        }
-        public async Task AddUserAsync(User user)
-        {
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateUserAsync(User user)
-        {
-            _context.Entry(user).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteUserAsync(Guid userID)
-        {
-            var user = await GetUserByIDAsync(userID);
-            if (user != null)
-            {
-                _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
-            }
-        }
     }
 }
