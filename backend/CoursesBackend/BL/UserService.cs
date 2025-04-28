@@ -19,57 +19,53 @@ namespace BL
 
         public async Task<int> GetUserCountAsync()
         {
-            return await Task.Run(() => _userRepository.GetUsers().Count());
+            return (await _userRepository.GetUsers().ToListAsync()).Count;
         }
         public async Task<List<User>> GetAllUsersAsync()
         {
-            return await Task.Run(() => _userRepository.GetUsers().ToList());
+            return await _userRepository.GetUsers().ToListAsync();
         }
         public async Task<User?> GetUserByIdAsync(Guid userId)
         {
-            return await Task.Run(() => _userRepository.GetUserByID(userId));
+            return await Task.FromResult(_userRepository.GetUserByID(userId));
         }
         public async Task<User?> GetUserByEmailAsync(string email)
         {
-            return await Task.Run(() => _userRepository.GetUsers()
-                .FirstOrDefault(u => u.Email == email));
+            return await _userRepository.GetUsers().FirstOrDefaultAsync(u => u.Email == email);
         }
         public async Task<List<User>> GetUsersByFirstNameAsync(string firstName)
         {
-            return await Task.Run(() => _userRepository.GetUsers()
+            return await _userRepository.GetUsers()
                 .Where(u => u.FirstName == firstName)
-                .ToList());
+                .ToListAsync();
         }
         public async Task<List<User>> GetUsersByLastNameAsync(string lastName)
         {
-            return await Task.Run(() => _userRepository.GetUsers()
+            return await _userRepository.GetUsers()
                 .Where(u => u.LastName == lastName)
-                .ToList());
+                .ToListAsync();
         }
         public async Task<List<User>> GetUsersByCourseIdAsync(Guid courseId)
         {
-            return await Task.Run(() =>
-                _purchasedCoursesRepository.GetPurchasedCourses()
-                    .Where(pc => pc.CourseId == courseId)
-                    .Select(pc => pc.User)
-                    .Distinct()
-                    .ToList()
-            );
+            return await _purchasedCoursesRepository.GetPurchasedCourses()
+                .Where(pc => pc.CourseId == courseId)
+                .Select(pc => pc.User)
+                .Distinct()
+                .ToListAsync();
         }
-
 
 
         public async Task<User> AddUserAsync(User user)
         {
-            return await Task.Run(() => _userRepository.AddUser(user));
+            return await Task.FromResult(_userRepository.AddUser(user));
         }
         public async Task<User?> UpdateUserAsync(User user)
         {
-            return await Task.Run(() => _userRepository.UpdateUser(user));
+            return await Task.FromResult(_userRepository.UpdateUser(user));
         }
         public async Task<User?> DeleteUserAsync(Guid userId)
         {
-            return await Task.Run(() => _userRepository.DeleteUser(userId));
+            return await Task.FromResult(_userRepository.DeleteUser(userId));
         }
     }
 }
