@@ -10,9 +10,9 @@ namespace IDAL
     public interface ICourseRepository
     {
         IQueryable<Course> GetCourses();
-        Task<Course?> GetCourseByIdAsync(Guid courseId);
-        Task AddCourseAsync(Course course);
-        Task UpdateCourseAsync(Course course);
-        Task DeleteCourseAsync(Guid courseId);
+        Course? GetCourseById(Guid courseId);
+        Course AddCourse(Course course);
+        Course? UpdateCourse(Course course);
+        Course? DeleteCourse(Guid courseId);
     }
 }
