@@ -30,5 +30,6 @@ namespace Model
         public ICollection<Review>? Reviews { get; set; } = new List<Review>();
         public ICollection<Stage>? Stages { get; set; } = new List<Stage>();
         public ICollection<CourseSubcategory>? CourseSubcategories { get; set; } = new List<CourseSubcategory>();
+        public ICollection<Creator> Creators { get; set; } = new List<Creator>();
     }
 }

@@ -5,8 +5,8 @@ namespace IDAL;
 public interface IReviewRepository
 {
     IQueryable<Review> GetReviews();
-    Task<Review?> GetReviewByIdAsync(Guid reviewId);
-    Task AddReviewAsync(Review review);
-    Task UpdateReviewAsync(Review review);
-    Task DeleteReviewAsync(Guid reviewId);
+    Review? GetReviewById(Guid reviewId);
+    Review AddReview(Review review);
+    Review? UpdateReview(Review review);
+    Review? DeleteReview(Guid reviewId);
 }

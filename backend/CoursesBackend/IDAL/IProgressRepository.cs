@@ -10,9 +10,9 @@ namespace IDAL
     public interface IProgressRepository
     {
         IQueryable<Progress> GetProgresses();
-        Task<Progress?> GetProgressByIdAsync(Guid progressId);
-        Task AddProgressAsync(Progress progress);
-        Task UpdateProgressAsync(Progress progress);
-        Task DeleteProgressAsync(Guid progressId);
+        Progress? GetProgressById(Guid progressId);
+        Progress AddProgress(Progress progress);
+        Progress? UpdateProgress(Progress progress);
+        Progress? DeleteProgress(Guid progressId);
     }
 }

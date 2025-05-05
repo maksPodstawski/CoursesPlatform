@@ -15,33 +15,40 @@ public class ProgressRepository : IProgressRepository
 
     public IQueryable<Progress> GetProgresses()
     {
-        return _context.Progresses.AsQueryable();
+        return _context.Progresses;
     }
 
-    public async Task<Progress?> GetProgressByIdAsync(Guid progressId)
+    public Progress? GetProgressById(Guid progressId)
     {
-        return await _context.Progresses.FindAsync(progressId);
+        return _context.Progresses.FirstOrDefault(p => p.Id == progressId);
     }
 
-    public async Task AddProgressAsync(Progress progress)
+    public Progress AddProgress(Progress progress)
     {
-        await _context.Progresses.AddAsync(progress);
-        await _context.SaveChangesAsync();
+        _context.Progresses.Add(progress);
+        _context.SaveChanges();
+        return progress;
     }
 
-    public async Task UpdateProgressAsync(Progress progress)
+    public Progress? UpdateProgress(Progress progress)
     {
+        var existing = _context.Progresses.FirstOrDefault(p => p.Id == progress.Id);
+        if (existing == null)
+            return null;
+
         _context.Progresses.Update(progress);
-        await _context.SaveChangesAsync();
+        _context.SaveChanges();
+        return progress;
     }
 
-    public async Task DeleteProgressAsync(Guid progressId)
+    public Progress? DeleteProgress(Guid progressId)
     {
-        var progress = await GetProgressByIdAsync(progressId);
-        if (progress != null)
-        {
-            _context.Progresses.Remove(progress);
-            await _context.SaveChangesAsync();
-        }
+        var progress = _context.Progresses.FirstOrDefault(p => p.Id == progressId);
+        if (progress == null)
+            return null;
+
+        _context.Progresses.Remove(progress);
+        _context.SaveChanges();
+        return progress;
     }
 }

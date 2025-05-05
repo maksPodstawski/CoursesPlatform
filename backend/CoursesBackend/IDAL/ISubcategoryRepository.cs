@@ -10,9 +10,9 @@ namespace IDAL
     public interface ISubcategoryRepository
     {
         IQueryable<Subcategory> GetSubcategories();
-        Task<Subcategory> GetSubcategoryByIDAsync(Guid subcategoryID);
-        Task DeleteSubcategoryAsync(Guid subcategoryID);
-        Task UpdateSubcategoryAsync(Subcategory subcategory);
-        Task AddSubcategoryAsync(Subcategory subcategory);
+        Subcategory GetSubcategoryByID(Guid subcategoryID);
+        Subcategory? DeleteSubcategory(Guid subcategoryID);
+        Subcategory? UpdateSubcategory(Subcategory subcategory);
+        Subcategory AddSubcategory(Subcategory subcategory);
     }
 }

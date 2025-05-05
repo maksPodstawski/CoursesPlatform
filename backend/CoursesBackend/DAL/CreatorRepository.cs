@@ -15,34 +15,41 @@ namespace DAL
 
         public IQueryable<Creator> GetCreators()
         {
-            return _context.Creators.AsQueryable();
+            return _context.Creators;
         }
 
-        public async Task<Creator?> GetCreatorByIDAsync(Guid creatorID)
+        public Creator? GetCreatorByID(Guid creatorID)
         {
-            return await _context.Creators.FindAsync(creatorID);
+            return _context.Creators.FirstOrDefault(c => c.Id == creatorID);
         }
 
-        public async Task AddCreatorAsync(Creator creator)
+        public Creator AddCreator(Creator creator)
         {
-            await _context.Creators.AddAsync(creator);
-            await _context.SaveChangesAsync();
+             _context.Creators.Add(creator);
+             _context.SaveChanges();
+             return creator;
         }
 
-        public async Task UpdateCreatorAsync(Creator creator)
+        public Creator? UpdateCreator(Creator creator)
         {
-            _context.Entry(creator).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            var existing = _context.Creators.FirstOrDefault(c => c.Id == creator.Id);
+            if (existing == null)
+                return null;
+
+            _context.Creators.Update(creator);
+            _context.SaveChanges();
+            return creator;
         }
 
-        public async Task DeleteCreatorAsync(Guid creatorID)
+        public Creator? DeleteCreator(Guid creatorID)
         {
-            var creator = await GetCreatorByIDAsync(creatorID);
-            if (creator != null)
-            {
-                _context.Creators.Remove(creator);
-                await _context.SaveChangesAsync();
-            }
+            var creator = _context.Creators.FirstOrDefault(c => c.Id == creatorID);
+            if (creator == null)
+                return null;
+
+            _context.Creators.Remove(creator);
+            _context.SaveChanges();
+            return creator;
         }
     }
 }

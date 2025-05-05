@@ -1,6 +1,7 @@
 ﻿using IDAL;
 using Microsoft.EntityFrameworkCore;
 using Model;
+using System;
 
 namespace DAL;
 
@@ -15,34 +16,41 @@ public class ChatUserRepository : IChatUserRepository
 
     public IQueryable<ChatUser> GetChatUsers()
     {
-        return _context.ChatUsers.AsQueryable();
+        return _context.ChatUsers;
     }
 
-    public async Task<ChatUser?> GetChatUserByIdAsync(Guid chatUserId)
+    public ChatUser? GetChatUserById(Guid chatUserId)
     {
-        return await _context.ChatUsers.FindAsync(chatUserId);
+        return _context.ChatUsers.FirstOrDefault(c => c.Id == chatUserId);
     }
 
-    public async Task AddChatUserAsync(ChatUser chatUser)
+    public ChatUser AddChatUser(ChatUser chatUser)
     {
-        await _context.ChatUsers.AddAsync(chatUser);
-        await _context.SaveChangesAsync();
+        _context.ChatUsers.Add(chatUser);
+        _context.SaveChanges();
+        return chatUser;
     }
 
-    public async Task UpdateChatUserAsync(ChatUser chatUser)
+    public ChatUser? UpdateChatUser(ChatUser chatUser)
     {
+        var existing = _context.ChatUsers.FirstOrDefault(c => c.Id == chatUser.Id);
+        if (existing == null)
+            return null;
+
         _context.ChatUsers.Update(chatUser);
-        await _context.SaveChangesAsync();
+        _context.SaveChanges();
+        return chatUser;
     }
 
-    public async Task DeleteChatUserAsync(Guid chatUserId)
+    public ChatUser? DeleteChatUser(Guid chatUserId)
     {
-        var chatUser = await GetChatUserByIdAsync(chatUserId);
-        if (chatUser != null)
-        {
-            _context.ChatUsers.Remove(chatUser);
-            await _context.SaveChangesAsync();
-        }
+        var chatUser = _context.ChatUsers.FirstOrDefault(c => c.Id == chatUserId);
+        if (chatUser == null)
+            return null;
+
+        _context.ChatUsers.Remove(chatUser);
+        _context.SaveChanges();
+        return chatUser;
     }
    
 }
