@@ -19,9 +19,16 @@ namespace DAL
         public DbSet<Creator> Creators { get; set; }
         public DbSet<CourseSubcategory> CourseSubcategories { get; set; }
         
+        public CoursesPlatformContext() { }
+        
+        public CoursesPlatformContext(DbContextOptions<CoursesPlatformContext> options) : base(options) { }
+        
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("Server=localhost;Port=15432;Database=postgres;User Id=postgres;Password=postgres");
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseNpgsql("Server=localhost;Port=15432;Database=postgres;User Id=postgres;Password=postgres");
+            }
         }
     }
 }
