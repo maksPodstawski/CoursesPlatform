@@ -1,5 +1,6 @@
 ﻿using IBL;
 using IDAL;
+using Microsoft.EntityFrameworkCore;
 using Model;
 
 namespace BL
@@ -12,57 +13,53 @@ namespace BL
             _courseRepository = courseRepository;
         }
 
-        public IQueryable<Course> GetAllCoursesAsync()
+
+        public async Task<List<Course>> GetAllCoursesAsync()
         {
-            return _courseRepository.GetCourses();
+            return await _courseRepository.GetCourses().ToListAsync();
         }
-        public Task<Course?> GetCourseByIdAsync(Guid id)
+        public async Task<Course?> GetCourseByIdAsync(Guid id)
         {
-            return _courseRepository.GetCourseByIdAsync(id);
+            return await Task.FromResult(_courseRepository.GetCourseById(id));
         }
-        public IQueryable<Course> GetCoursesByTitleAsync(string title)
+        public async Task<List<Course>> GetCoursesByTitleAsync(string title)
         {
-            var courses =  _courseRepository.GetCourses();
-            return courses.Where(c => c.Name.Contains(title, StringComparison.OrdinalIgnoreCase));
+            return await _courseRepository.GetCourses()
+                .Where(c => c.Name.Contains(title, StringComparison.OrdinalIgnoreCase))
+                .ToListAsync();
         }
-        public IQueryable<Course> GetCoursesByPriceRangeAsync(decimal minPrice, decimal maxPrice)
+        public async Task<List<Course>> GetCoursesByPriceRangeAsync(decimal minPrice, decimal maxPrice)
         {
-            var courses =  _courseRepository.GetCourses();
-            return courses.Where(c => c.Price >= minPrice && c.Price <= maxPrice);
+            return await _courseRepository.GetCourses()
+                .Where(c => c.Price >= minPrice && c.Price <= maxPrice)
+                .ToListAsync();
         }
-        public IQueryable<Course> GetCoursesByAverageRatingAsync(double rating)
+        public async Task<List<Course>> GetCoursesByAverageRatingAsync(double rating)
         {
-            var courses =  _courseRepository.GetCourses();
-            return courses.Where(c => c.Reviews != null && c.Reviews.Any() && c.Reviews.Average(r => r.Rating) >= rating);
+            return await _courseRepository.GetCourses()
+                .Where(c => c.Reviews != null && c.Reviews.Any() && c.Reviews.Average(r => r.Rating) >= rating)
+                .ToListAsync();
         }
-        public IQueryable<Course> GetCoursesByCreatorAsync(Guid creatorId)
+        public async Task<List<Course>> GetCoursesByCreatorAsync(Guid creatorId)
         {
-            var courses =  _courseRepository.GetCourses();
-            return courses.Where(c => c.Stages != null && c.Stages.Any(s => s.CourseId == creatorId));
+            return await _courseRepository.GetCourses()
+                .Where(c => c.Stages != null && c.Stages.Any(s => s.CourseId == creatorId))
+                .ToListAsync();
         }
+
+
 
         public async Task<Course> AddCourseAsync(Course course)
         {
-            await _courseRepository.AddCourseAsync(course);
-            return course;
+            return await Task.FromResult(_courseRepository.AddCourse(course));
         }
         public async Task<Course?> UpdateCourseAsync(Course course)
         {
-            var existing = await _courseRepository.GetCourseByIdAsync(course.Id);
-            if (existing == null)
-                return null;
-
-            await _courseRepository.UpdateCourseAsync(course);
-            return course;
+            return await Task.FromResult(_courseRepository.UpdateCourse(course));
         }
         public async Task<Course?> DeleteCourseAsync(Guid id)
         {
-            var course = await _courseRepository.GetCourseByIdAsync(id);
-            if (course == null)
-                return null;
-
-            await _courseRepository.DeleteCourseAsync(id);
-            return course;
+            return await Task.FromResult(_courseRepository.DeleteCourse(id));
         }
     }
 }

@@ -15,34 +15,41 @@ namespace DAL
 
         public IQueryable<CourseSubcategory> GetCourseSubcategories()
         {
-            return _context.CourseSubcategories.AsQueryable();
+            return _context.CourseSubcategories;
+        }
+        public CourseSubcategory? GetCourseSubcategoryByID(Guid courseSubcategoryId)
+        {
+            return _context.CourseSubcategories.FirstOrDefault(c => c.Id == courseSubcategoryId);
         }
 
-        public async Task<CourseSubcategory?> GetCourseSubcategoryByIdAsync(Guid courseSubcategoryId)
-        {
-            return await _context.CourseSubcategories.FindAsync(courseSubcategoryId);
-        }
 
-        public async Task AddCourseSubcategoryAsync(CourseSubcategory courseSubcategory)
+        public CourseSubcategory AddCourseSubcategory(CourseSubcategory courseSubcategory)
         {
-            await _context.CourseSubcategories.AddAsync(courseSubcategory);
-            await _context.SaveChangesAsync();
+            _context.CourseSubcategories.Add(courseSubcategory);
+            _context.SaveChanges();
+            return courseSubcategory;
         }
-
-        public async Task UpdateCourseSubcategoryAsync(CourseSubcategory courseSubcategory)
+        public CourseSubcategory? UpdateCourseSubcategory(CourseSubcategory courseSubcategory)
         {
-            _context.Entry(courseSubcategory).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            var existing = _context.CourseSubcategories.FirstOrDefault(c => c.Id == courseSubcategory.Id);
+            if (existing == null)
+                return null;
+
+            existing.CourseId = courseSubcategory.CourseId;
+            existing.SubcategoryId = courseSubcategory.SubcategoryId;
+
+            _context.SaveChanges();
+            return existing;
         }
-
-        public async Task DeleteCourseSubcategoryAsync(Guid courseSubcategoryId)
+        public CourseSubcategory? DeleteCourseSubcategory(Guid courseSubcategoryId)
         {
-            var courseSubcategory = await GetCourseSubcategoryByIdAsync(courseSubcategoryId);
-            if (courseSubcategory != null)
-            {
-                _context.CourseSubcategories.Remove(courseSubcategory);
-                await _context.SaveChangesAsync();
-            }
+            var subcategory = _context.CourseSubcategories.FirstOrDefault(c => c.Id == courseSubcategoryId);
+            if (subcategory == null)
+                return null;
+
+            _context.CourseSubcategories.Remove(subcategory);
+            _context.SaveChanges();
+            return subcategory;
         }
     }
 }

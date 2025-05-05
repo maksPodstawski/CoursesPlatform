@@ -1,5 +1,6 @@
 ﻿using IBL;
 using IDAL;
+using Microsoft.EntityFrameworkCore;
 using Model;
 
 namespace BL
@@ -12,47 +13,41 @@ namespace BL
             _stageRepository = stageRepository;
         }
 
-        public IQueryable<Stage> GetAllStagesAsync()
+
+        public async Task<List<Stage>> GetAllStagesAsync()
         {
-            return _stageRepository.GetStages();
+            return await _stageRepository.GetStages().ToListAsync();
         }
-        public Task<Stage?> GetStageByIdAsync(Guid id)
+        public async Task<Stage?> GetStageByIdAsync(Guid id)
         {
-            return _stageRepository.GetStageByIdAsync(id);
+            return await Task.FromResult(_stageRepository.GetStageById(id));
         }
-        public IQueryable<Stage> GetStagesByNameAsync(string name)
+        public async Task<List<Stage>> GetStagesByNameAsync(string name)
         {
-            var stages =  _stageRepository.GetStages();
-            return stages.Where(s => s.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+            return await _stageRepository.GetStages()
+                .Where(s => s.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
+                .ToListAsync();
         }
-        public IQueryable<Stage> GetStagesByCourseIdAsync(Guid courseId)
+        public async Task<List<Stage>> GetStagesByCourseIdAsync(Guid courseId)
         {
-            var stages =  _stageRepository.GetStages();
-            return stages.Where(s => s.CourseId == courseId);
+            return await _stageRepository.GetStages()
+                .Where(s => s.CourseId == courseId)
+                .ToListAsync();
         }
+
+
 
         public async Task<Stage> AddStageAsync(Stage stage)
         {
-            await _stageRepository.AddStageAsync(stage);
-            return stage;
+            return await Task.FromResult(_stageRepository.AddStage(stage));
         }
         public async Task<Stage?> UpdateStageAsync(Stage stage)
         {
-            var existing = await _stageRepository.GetStageByIdAsync(stage.Id);
-            if (existing == null)
-                return null;
-
-            await _stageRepository.UpdateStageAsync(stage);
-            return stage;
+            return await Task.FromResult(_stageRepository.UpdateStage(stage));
         }
         public async Task<Stage?> DeleteStageAsync(Guid id)
         {
-            var stage = await _stageRepository.GetStageByIdAsync(id);
-            if (stage == null)
-                return null;
-
-            await _stageRepository.DeleteStageAsync(id);
-            return stage;
+            return await Task.FromResult(_stageRepository.DeleteStage(id));
         }
     }
 }

@@ -4,12 +4,12 @@ namespace IBL
 {
     public interface ICourseService
     {
-        IQueryable<Course> GetAllCoursesAsync();
+        Task<List<Course>> GetAllCoursesAsync();
         Task<Course?> GetCourseByIdAsync(Guid id);
-        IQueryable<Course> GetCoursesByTitleAsync(string title);
-        IQueryable<Course> GetCoursesByPriceRangeAsync(decimal minPrice, decimal maxPrice);
-        IQueryable<Course> GetCoursesByAverageRatingAsync(double rating);
-        IQueryable<Course> GetCoursesByCreatorAsync(Guid creatorId);
+        Task<List<Course>> GetCoursesByTitleAsync(string title);
+        Task<List<Course>> GetCoursesByPriceRangeAsync(decimal minPrice, decimal maxPrice);
+        Task<List<Course>> GetCoursesByAverageRatingAsync(double rating);
+        Task<List<Course>> GetCoursesByCreatorAsync(Guid creatorId);
         Task<Course> AddCourseAsync(Course course);
         Task<Course?> UpdateCourseAsync(Course course);
         Task<Course?> DeleteCourseAsync(Guid id);

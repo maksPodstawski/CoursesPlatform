@@ -1,5 +1,6 @@
 ﻿using IBL;
 using IDAL;
+using Microsoft.EntityFrameworkCore;
 using Model;
 
 namespace BL
@@ -12,36 +13,41 @@ namespace BL
             _courseSubcategoryRepository = courseSubcategoryRepository;
         }
 
-        public IQueryable<CourseSubcategory> GetAllCourseSubcategoriesAsync()
+
+        public async Task<List<CourseSubcategory>> GetAllCourseSubcategoriesAsync()
         {
-            return _courseSubcategoryRepository.GetCourseSubcategories();
+            return await _courseSubcategoryRepository.GetCourseSubcategories().ToListAsync();
         }
-        public Task<CourseSubcategory?> GetCourseSubcategoryByIdAsync(Guid id)
+        public async Task<CourseSubcategory?> GetCourseSubcategoryByIdAsync(Guid id)
         {
-            return _courseSubcategoryRepository.GetCourseSubcategoryByIdAsync(id);
+            return await Task.FromResult(_courseSubcategoryRepository.GetCourseSubcategoryByID(id));
         }
+        public async Task<List<CourseSubcategory>> GetByCourseIdAsync(Guid courseId)
+        {
+            return await _courseSubcategoryRepository.GetCourseSubcategories()
+                .Where(cs => cs.CourseId == courseId)
+                .ToListAsync();
+        }
+        public async Task<List<CourseSubcategory>> GetBySubcategoryIdAsync(Guid subcategoryId)
+        {
+            return await _courseSubcategoryRepository.GetCourseSubcategories()
+                .Where(cs => cs.SubcategoryId == subcategoryId)
+                .ToListAsync();
+        }
+
+
+
         public async Task<CourseSubcategory> AddCourseSubcategoryAsync(CourseSubcategory courseSubcategory)
         {
-            await _courseSubcategoryRepository.AddCourseSubcategoryAsync(courseSubcategory);
-            return courseSubcategory;
+            return await Task.FromResult(_courseSubcategoryRepository.AddCourseSubcategory(courseSubcategory));
         }
         public async Task<CourseSubcategory?> UpdateCourseSubcategoryAsync(CourseSubcategory courseSubcategory)
         {
-            var existing = await _courseSubcategoryRepository.GetCourseSubcategoryByIdAsync(courseSubcategory.Id);
-            if (existing == null)
-                return null;
-
-            await _courseSubcategoryRepository.UpdateCourseSubcategoryAsync(courseSubcategory);
-            return courseSubcategory;
+            return await Task.FromResult(_courseSubcategoryRepository.UpdateCourseSubcategory(courseSubcategory));
         }
         public async Task<CourseSubcategory?> DeleteCourseSubcategoryAsync(Guid id)
         {
-            var existing = await _courseSubcategoryRepository.GetCourseSubcategoryByIdAsync(id);
-            if (existing == null)
-                return null;
-
-            await _courseSubcategoryRepository.DeleteCourseSubcategoryAsync(id);
-            return existing;
+            return await Task.FromResult(_courseSubcategoryRepository.DeleteCourseSubcategory(id));
         }
     }
 }

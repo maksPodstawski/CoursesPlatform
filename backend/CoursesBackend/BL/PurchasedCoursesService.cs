@@ -1,5 +1,6 @@
 ﻿using IBL;
 using IDAL;
+using Microsoft.EntityFrameworkCore;
 using Model;
 
 namespace BL
@@ -12,36 +13,65 @@ namespace BL
             _purchasedCoursesRepository = purchasedCoursesRepository;
         }
 
-        public IQueryable<PurchasedCourses> GetAllPurchasedCoursesAsync()
+
+        public async Task<List<PurchasedCourses>> GetAllPurchasedCoursesAsync()
         {
-            return _purchasedCoursesRepository.GetPurchasedCourses();
+            return await _purchasedCoursesRepository.GetPurchasedCourses().ToListAsync();
         }
-        public Task<PurchasedCourses?> GetPurchasedCourseByIdAsync(Guid id)
+        public async Task<PurchasedCourses?> GetPurchasedCourseByIdAsync(Guid id)
         {
-            return _purchasedCoursesRepository.GetPurchasedCourseByIDAsync(id);
+            return await Task.FromResult(_purchasedCoursesRepository.GetPurchasedCourseByID(id));
         }
+        public async Task<List<PurchasedCourses>> GetPurchasedCoursesByUserIdAsync(Guid userId)
+        {
+            return await _purchasedCoursesRepository.GetPurchasedCourses()
+                .Where(pc => pc.UserId == userId)
+                .ToListAsync();
+        }
+        public async Task<List<PurchasedCourses>> GetPurchasedCoursesByCourseIdAsync(Guid courseId)
+        {
+            return await _purchasedCoursesRepository.GetPurchasedCourses()
+                .Where(pc => pc.CourseId == courseId)
+                .ToListAsync();
+        }
+        public async Task<List<PurchasedCourses>> GetActivePurchasedCoursesAsync()
+        {
+            return await _purchasedCoursesRepository.GetPurchasedCourses()
+                .Where(pc => pc.IsActive)
+                .ToListAsync();
+        }
+        public async Task<List<PurchasedCourses>> GetExpiredPurchasedCoursesAsync()
+        {
+            return await _purchasedCoursesRepository.GetPurchasedCourses()
+                .Where(pc => pc.ExpirationDate.HasValue && pc.ExpirationDate < DateTime.UtcNow)
+                .ToListAsync();
+        }
+        public async Task<List<PurchasedCourses>> GetActiveCoursesByUserSortedAsync(Guid userId)
+        {
+            return await _purchasedCoursesRepository.GetPurchasedCourses()
+                .Where(pc => pc.UserId == userId && pc.IsActive)
+                .OrderByDescending(pc => pc.PurchasedAt)
+                .ToListAsync();
+        }
+        public async Task<bool> HasUserPurchasedCourseAsync(Guid userId, Guid courseId)
+        {
+            return await _purchasedCoursesRepository.GetPurchasedCourses()
+                .AnyAsync(pc => pc.UserId == userId && pc.CourseId == courseId);
+        }
+
+
+
         public async Task<PurchasedCourses> AddPurchasedCourseAsync(PurchasedCourses purchasedCourse)
         {
-            await _purchasedCoursesRepository.AddPurchasedCourseAsync(purchasedCourse);
-            return purchasedCourse;
+            return await Task.FromResult(_purchasedCoursesRepository.AddPurchasedCourse(purchasedCourse));
         }
         public async Task<PurchasedCourses?> UpdatePurchasedCourseAsync(PurchasedCourses purchasedCourse)
         {
-            var existing = await _purchasedCoursesRepository.GetPurchasedCourseByIDAsync(purchasedCourse.Id);
-            if (existing == null)
-                return null;
-
-            await _purchasedCoursesRepository.UpdatePurchasedCourseAsync(purchasedCourse);
-            return purchasedCourse;
+            return await Task.FromResult(_purchasedCoursesRepository.UpdatePurchasedCourse(purchasedCourse));
         }
         public async Task<PurchasedCourses?> DeletePurchasedCourseAsync(Guid id)
         {
-            var existing = await _purchasedCoursesRepository.GetPurchasedCourseByIDAsync(id);
-            if (existing == null)
-                return null;
-
-            await _purchasedCoursesRepository.DeletePurchasedCourseAsync(id);
-            return existing;
+            return await Task.FromResult(_purchasedCoursesRepository.DeletePurchasedCourse(id));
         }
     }
 }

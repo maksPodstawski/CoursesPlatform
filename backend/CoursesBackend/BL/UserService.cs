@@ -1,5 +1,7 @@
-﻿using IBL;
+﻿using DAL;
+using IBL;
 using IDAL;
+using Microsoft.EntityFrameworkCore;
 using Model;
 
 namespace BL
@@ -7,65 +9,63 @@ namespace BL
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository)
+        private readonly IPurchasedCoursesRepository _purchasedCoursesRepository;
+
+        public UserService(IUserRepository userRepository, IPurchasedCoursesRepository purchasedCoursesRepository)
         {
             _userRepository = userRepository;
+            _purchasedCoursesRepository = purchasedCoursesRepository;
         }
-        public int GetUserCountAsync()
+
+        public async Task<int> GetUserCountAsync()
         {
-            var users =  _userRepository.GetUsers();
-            return users.Count();
+            return (await _userRepository.GetUsers().ToListAsync()).Count;
         }
-        public IQueryable<User> GetAllUsersAsync()
+        public async Task<List<User>> GetAllUsersAsync()
         {
-            return _userRepository.GetUsers();
+            return await _userRepository.GetUsers().ToListAsync();
         }
-        public Task<User?> GetUserByIdAsync(Guid userId)
+        public async Task<User?> GetUserByIdAsync(Guid userId)
         {
-            return _userRepository.GetUserByIDAsync(userId);
+            return await Task.FromResult(_userRepository.GetUserByID(userId));
         }
-        public Task<User?> GetUserByEmailAsync(string email)  
+        public async Task<User?> GetUserByEmailAsync(string email)
         {
-            return _userRepository.GetUserByEmailAsync(email);
+            return await _userRepository.GetUsers().FirstOrDefaultAsync(u => u.Email == email);
         }
-        public IQueryable<User> GetUsersByFirstNameAsync(string firstName)
+        public async Task<List<User>> GetUsersByFirstNameAsync(string firstName)
         {
-            var users =  _userRepository.GetUsers();
-            return users.Where(u => u.FirstName.Equals(firstName, StringComparison.OrdinalIgnoreCase));
+            return await _userRepository.GetUsers()
+                .Where(u => u.FirstName == firstName)
+                .ToListAsync();
         }
-        public IQueryable<User> GetUsersByLastNameAsync(string lastName)
+        public async Task<List<User>> GetUsersByLastNameAsync(string lastName)
         {
-            var users =  _userRepository.GetUsers();
-            return users.Where(u => u.LastName.Equals(lastName, StringComparison.OrdinalIgnoreCase));
+            return await _userRepository.GetUsers()
+                .Where(u => u.LastName == lastName)
+                .ToListAsync();
         }
-        public IQueryable<User> GetUsersByCourseIdAsync(Guid courseId)
+        public async Task<List<User>> GetUsersByCourseIdAsync(Guid courseId)
         {
-            var users =  _userRepository.GetUsers();
-            return users.Where(u => u.Reviews != null && u.Reviews.Any(r => r.CourseId == courseId));
+            return await _purchasedCoursesRepository.GetPurchasedCourses()
+                .Where(pc => pc.CourseId == courseId)
+                .Select(pc => pc.User)
+                .Distinct()
+                .ToListAsync();
         }
+
 
         public async Task<User> AddUserAsync(User user)
         {
-            await _userRepository.AddUserAsync(user);
-            return user;
+            return await Task.FromResult(_userRepository.AddUser(user));
         }
         public async Task<User?> UpdateUserAsync(User user)
         {
-            var existing = await _userRepository.GetUserByIDAsync(user.Id);
-            if (existing == null)
-                return null;
-
-            await _userRepository.UpdateUserAsync(user);
-            return user;
+            return await Task.FromResult(_userRepository.UpdateUser(user));
         }
         public async Task<User?> DeleteUserAsync(Guid userId)
         {
-            var user = await _userRepository.GetUserByIDAsync(userId);
-            if (user == null)
-                return null;
-
-            await _userRepository.DeleteUserAsync(userId);
-            return user;
+            return await Task.FromResult(_userRepository.DeleteUser(userId));
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using IBL;
 using IDAL;
+using Microsoft.EntityFrameworkCore;
 using Model;
 
 namespace BL
@@ -12,53 +13,44 @@ namespace BL
             _categoryRepository = categoryRepository;
         }
 
-        public IQueryable<Category> GetAllCategoriesAsync()
+        public async Task<List<Category>> GetAllCategoriesAsync()
         {
-            return _categoryRepository.GetCategories();
+            return await _categoryRepository.GetCategories().ToListAsync();
         }
-        public Task<Category?> GetCategoryByIdAsync(Guid id)
+
+        public async Task<Category?> GetCategoryByIdAsync(Guid id)
         {
-            return _categoryRepository.GetCategoryByIdAsync(id);
+            return await Task.FromResult(_categoryRepository.GetCategoryById(id));
         }
-        public Task<Category?> GetCategoryByNameAsync(string name)
+
+        public async Task<Category?> GetCategoryByNameAsync(string name)
         {
-            return _categoryRepository.GetCategoryByNameAsync(name);
+            return await _categoryRepository.GetCategories()
+                .FirstOrDefaultAsync(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         }
+
         public async Task<IEnumerable<Subcategory>> GetSubcategoriesByCategoryIdAsync(Guid categoryId)
         {
-
-            var category = await _categoryRepository.GetCategoryByIdAsync(categoryId);
-
+            var category = _categoryRepository.GetCategoryById(categoryId);
             if (category == null || category.Subcategories == null)
-            {
                 return Enumerable.Empty<Subcategory>();
-            }
 
-            return category.Subcategories;
+            return await Task.FromResult(category.Subcategories);
         }
+
+
 
         public async Task<Category> AddCategoryAsync(Category category)
         {
-            await _categoryRepository.AddCategoryAsync(category);
-            return category;
+            return await Task.FromResult(_categoryRepository.AddCategory(category));
         }
         public async Task<Category?> UpdateCategoryAsync(Category category)
         {
-            var existing = await _categoryRepository.GetCategoryByIdAsync(category.Id);
-            if (existing == null)
-                return null;
-
-            await _categoryRepository.UpdateCategoryAsync(category);
-            return category;
+            return await Task.FromResult(_categoryRepository.UpdateCategory(category));
         }
         public async Task<Category?> DeleteCategoryAsync(Guid id)
         {
-            var category = await _categoryRepository.GetCategoryByIdAsync(id);
-            if (category == null)
-                return null;
-
-            await _categoryRepository.DeleteCategoryAsync(id);
-            return category;
+            return await Task.FromResult(_categoryRepository.DeleteCategory(id));
         }
     }
 }

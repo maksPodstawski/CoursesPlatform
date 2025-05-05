@@ -20,37 +20,42 @@ namespace DAL
 
         public IQueryable<Category> GetCategories()
         {
-            return _context.Categories.AsQueryable();
+            return _context.Categories;
+        }
+        public Category? GetCategoryById(Guid categoryId)
+        {
+            return _context.Categories.FirstOrDefault(c => c.Id == categoryId);
+            /*return _context.Categories
+                    .Include(c => c.Subcategories)
+                    .FirstOrDefault(c => c.Id == categoryId);*/
+        }
+        public Category AddCategory(Category category)
+        {
+            _context.Categories.Add(category);
+            _context.SaveChanges();
+            return category;
         }
 
-        public async Task<Category?> GetCategoryByIdAsync(Guid categoryID)
+        public Category? UpdateCategory(Category category)
         {
-            return await _context.Categories.FindAsync(categoryID);
-        }
-        public async Task<Category?> GetCategoryByNameAsync(string name)
-        {
-            return await _context.Categories
-                .FirstOrDefaultAsync(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            var existing = _context.Categories.FirstOrDefault(c => c.Id == category.Id);
+            if (existing == null)
+                return null;
+
+            existing.Name = category.Name;
+            _context.SaveChanges();
+            return existing;
         }
 
-        public async Task AddCategoryAsync(Category category)
+        public Category? DeleteCategory(Guid categoryId)
         {
-            await _context.Categories.AddAsync(category);
-            await _context.SaveChangesAsync();
-        }
-        public async Task UpdateCategoryAsync(Category category)
-        {
-            _context.Entry(category).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-        }
-        public async Task DeleteCategoryAsync(Guid categoryId)
-        {
-            var category = await GetCategoryByIdAsync(categoryId);
-            if (category != null)
-            {
-                _context.Categories.Remove(category);
-                await _context.SaveChangesAsync();
-            }
+            var category = _context.Categories.FirstOrDefault(c => c.Id == categoryId);
+            if (category == null)
+                return null;
+
+            _context.Categories.Remove(category);
+            _context.SaveChanges();
+            return category;
         }
     }
 }

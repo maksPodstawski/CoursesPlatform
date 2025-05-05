@@ -13,34 +13,49 @@ namespace DAL
         {
             _context = context;
         }
-        
-        public async Task<Course?> GetCourseByIdAsync(Guid courseId)
-        {
-            return await _context.Courses.FindAsync(courseId);
-        }
+
+
         public IQueryable<Course> GetCourses()
         {
-            return _context.Courses.AsQueryable();
+            return _context.Courses;
         }
 
-        public async Task AddCourseAsync(Course course)
+        public Course? GetCourseById(Guid courseId)
         {
-            await _context.Courses.AddAsync(course);
-            await _context.SaveChangesAsync();
+            return _context.Courses.FirstOrDefault(c => c.Id == courseId);
         }
-        public async Task UpdateCourseAsync(Course course)
+
+        public Course AddCourse(Course course)
         {
-            _context.Entry(course).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            _context.Courses.Add(course);
+            _context.SaveChanges();
+            return course;
         }
-        public async Task DeleteCourseAsync(Guid courseId)
+        public Course? UpdateCourse(Course course)
         {
-            var course = await _context.Courses.FindAsync(courseId);
-            if (course != null)
-            {
-                _context.Courses.Remove(course);
-                await _context.SaveChangesAsync();
-            }
+            var existing = _context.Courses.FirstOrDefault(c => c.Id == course.Id);
+            if (existing == null)
+                return null;
+
+            existing.Name = course.Name;
+            existing.Description = course.Description;
+            existing.ImageUrl = course.ImageUrl;
+            existing.Duration = course.Duration;
+            existing.Price = course.Price;
+            existing.UpdatedAt = DateTime.UtcNow;
+
+            _context.SaveChanges();
+            return existing;
+        }
+        public Course? DeleteCourse(Guid courseId)
+        {
+            var course = _context.Courses.FirstOrDefault(c => c.Id == courseId);
+            if (course == null)
+                return null;
+
+            _context.Courses.Remove(course);
+            _context.SaveChanges();
+            return course;
         }
     }
 }

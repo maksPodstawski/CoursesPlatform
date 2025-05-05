@@ -15,34 +15,43 @@ namespace DAL
 
         public IQueryable<PurchasedCourses> GetPurchasedCourses()
         {
-            return _context.PurchasedCourses.AsQueryable();
+            return _context.PurchasedCourses;
         }
-
-        public async Task<PurchasedCourses?> GetPurchasedCourseByIDAsync(Guid purchasedCourseID)
+        public PurchasedCourses? GetPurchasedCourseByID(Guid purchasedCourseID)
         {
-            return await _context.PurchasedCourses.FindAsync(purchasedCourseID);
+            return _context.PurchasedCourses.FirstOrDefault(pc => pc.Id == purchasedCourseID);
         }
-
-        public async Task AddPurchasedCourseAsync(PurchasedCourses purchasedCourse)
+        public PurchasedCourses AddPurchasedCourse(PurchasedCourses purchasedCourse)
         {
-            await _context.PurchasedCourses.AddAsync(purchasedCourse);
-            await _context.SaveChangesAsync();
+            _context.PurchasedCourses.Add(purchasedCourse);
+            _context.SaveChanges();
+            return purchasedCourse;
         }
-
-        public async Task UpdatePurchasedCourseAsync(PurchasedCourses purchasedCourse)
+        public PurchasedCourses? UpdatePurchasedCourse(PurchasedCourses purchasedCourse)
         {
-            _context.Entry(purchasedCourse).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            var existing = _context.PurchasedCourses.FirstOrDefault(pc => pc.Id == purchasedCourse.Id);
+            if (existing == null)
+                return null;
+
+            existing.UserId = purchasedCourse.UserId;
+            existing.CourseId = purchasedCourse.CourseId;
+            existing.PurchasedAt = purchasedCourse.PurchasedAt;
+            existing.PurchasedPrice = purchasedCourse.PurchasedPrice;
+            existing.ExpirationDate = purchasedCourse.ExpirationDate;
+            existing.IsActive = purchasedCourse.IsActive;
+
+            _context.SaveChanges();
+            return existing;
         }
-
-        public async Task DeletePurchasedCourseAsync(Guid purchasedCourseID)
+        public PurchasedCourses? DeletePurchasedCourse(Guid purchasedCourseID)
         {
-            var purchasedCourse = await GetPurchasedCourseByIDAsync(purchasedCourseID);
-            if (purchasedCourse != null)
-            {
-                _context.PurchasedCourses.Remove(purchasedCourse);
-                await _context.SaveChangesAsync();
-            }
+            var existing = _context.PurchasedCourses.FirstOrDefault(pc => pc.Id == purchasedCourseID);
+            if (existing == null)
+                return null;
+
+            _context.PurchasedCourses.Remove(existing);
+            _context.SaveChanges();
+            return existing;
         }
     }
 }

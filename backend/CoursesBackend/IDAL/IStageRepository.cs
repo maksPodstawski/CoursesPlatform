@@ -1,12 +1,15 @@
 ﻿using Model;
 
-namespace IDAL;
-
-public interface IStageRepository
+namespace IDAL
 {
-    IQueryable<Stage> GetStages();
-    Task<Stage?> GetStageByIdAsync(Guid stageId);
-    Task AddStageAsync(Stage stage);
-    Task UpdateStageAsync(Stage stage);
-    Task DeleteStageAsync(Guid stageId);
+    public interface IStageRepository
+    {
+        IQueryable<Stage> GetStages();
+        Stage? GetStageById(Guid stageId);
+        Stage AddStage(Stage stage);
+        Stage? UpdateStage(Stage stage);
+        Stage? DeleteStage(Guid stageId);
+    }
 }
+
+

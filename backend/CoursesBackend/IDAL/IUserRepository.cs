@@ -5,10 +5,9 @@ namespace IDAL
     public interface IUserRepository
     {
         IQueryable<User> GetUsers();
-        Task<User?> GetUserByIDAsync(Guid userID);
-        Task<User?> GetUserByEmailAsync(string email);
-        Task AddUserAsync(User user);
-        Task UpdateUserAsync(User user);
-        Task DeleteUserAsync(Guid userID);
+        User? GetUserByID(Guid userID);
+        User AddUser(User user);
+        User? UpdateUser(User user);
+        User? DeleteUser(Guid userID);
     }
 }
