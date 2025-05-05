@@ -10,9 +10,9 @@ namespace IDAL
     public interface ICourseSubcategoryRepository
     {
         IQueryable<CourseSubcategory> GetCourseSubcategories();
-        Task<CourseSubcategory?> GetCourseSubcategoryByIdAsync(Guid courseSubcategoryId);
-        Task AddCourseSubcategoryAsync(CourseSubcategory courseSubcategory);
-        Task UpdateCourseSubcategoryAsync(CourseSubcategory courseSubcategory);
-        Task DeleteCourseSubcategoryAsync(Guid courseSubcategoryId);
+        CourseSubcategory? GetCourseSubcategoryByID(Guid courseSubcategoryId);
+        CourseSubcategory AddCourseSubcategory(CourseSubcategory courseSubcategory);
+        CourseSubcategory? UpdateCourseSubcategory(CourseSubcategory courseSubcategory);
+        CourseSubcategory? DeleteCourseSubcategory(Guid courseSubcategoryId);
     }
 }
