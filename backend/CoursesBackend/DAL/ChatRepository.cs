@@ -15,33 +15,40 @@ public class ChatRepository : IChatRepository
 
     public IQueryable<Chat> GetChats()
     {
-        return _context.Chats.AsQueryable();
+        return _context.Chats;
     }
 
-    public async Task<Chat?> GetChatByIdAsync(Guid chatId)
+    public Chat? GetChatById(Guid chatId)
     {
-        return await _context.Chats.FindAsync(chatId);
+        return _context.Chats.FirstOrDefault(c => c.Id == chatId);
     }
 
-    public async Task AddChatAsync(Chat chat)
+    public Chat AddChat(Chat chat)
     {
-        await _context.Chats.AddAsync(chat);
-        await _context.SaveChangesAsync();
+         _context.Chats.Add(chat);
+         _context.SaveChanges();
+        return chat;
     }
 
-    public async Task UpdateChatAsync(Chat chat)
+    public Chat? UpdateChat(Chat chat)
     {
+        var existing = _context.Chats.FirstOrDefault(c => c.Id == chat.Id);
+        if (existing == null)
+            return null;
+
         _context.Chats.Update(chat);
-        await _context.SaveChangesAsync();
+        _context.SaveChanges();
+        return chat;
     }
 
-    public async Task DeleteChatAsync(Guid chatId)
+    public Chat? DeleteChat(Guid chatId)
     {
-        var chat = await GetChatByIdAsync(chatId);
-        if (chat != null)
-        {
-            _context.Chats.Remove(chat);
-            await _context.SaveChangesAsync();
-        }
+        var chat = _context.Chats.FirstOrDefault(c => c.Id == chatId);
+        if (chat == null)
+            return null;
+
+        _context.Chats.Remove(chat);
+        _context.SaveChanges();
+        return chat;
     }
 }

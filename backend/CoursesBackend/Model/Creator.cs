@@ -18,9 +18,6 @@ namespace Model
         [ForeignKey(nameof(UserId))]
         public User User { get; set; }
         [Required]
-        public Guid CourseId { get; set; }
-
-        [ForeignKey(nameof(CourseId))]
-        public Course Course { get; set; }
+        public ICollection<Course> Courses { get; set; } = new List<Course>();
     }
 }

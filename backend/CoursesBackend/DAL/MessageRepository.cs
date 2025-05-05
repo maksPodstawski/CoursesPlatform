@@ -15,33 +15,40 @@ public class MessageRepository : IMessageRepository
 
     public IQueryable<Message> GetMessages()
     {
-        return _context.Messages.AsQueryable();
+        return _context.Messages;
     }
 
-    public async Task<Message?> GetMessageByIdAsync(Guid messageId)
+    public Message? GetMessageById(Guid messageId)
     {
-        return await _context.Messages.FindAsync(messageId);
+        return _context.Messages.FirstOrDefault(m => m.Id == messageId);
     }
 
-    public async Task AddMessageAsync(Message message)
+    public Message AddMessage(Message message)
     {
-        await _context.Messages.AddAsync(message);
-        await _context.SaveChangesAsync();
+        _context.Messages.Add(message);
+        _context.SaveChanges();
+        return message;
     }
 
-    public async Task UpdateMessageAsync(Message message)
+    public Message? UpdateMessage(Message message)
     {
+        var existing = _context.Messages.FirstOrDefault(m => m.Id == message.Id);
+        if (existing == null)
+            return null;
+
         _context.Messages.Update(message);
-        await _context.SaveChangesAsync();
+        _context.SaveChanges();
+        return message;
     }
 
-    public async Task DeleteMessageAsync(Guid messageId)
+    public Message? DeleteMessage(Guid messageId)
     {
-        var message = await GetMessageByIdAsync(messageId);
-        if (message != null)
-        {
-            _context.Messages.Remove(message);
-            await _context.SaveChangesAsync();
-        }
+        var message = _context.Messages.FirstOrDefault(m => m.Id == messageId);
+        if (message == null)
+            return null;
+
+        _context.Messages.Remove(message);
+        _context.SaveChanges();
+        return message;
     }
 }
