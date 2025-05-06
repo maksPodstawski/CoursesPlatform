@@ -9,13 +9,13 @@ namespace IBL
 {
     public interface IProgressService
     {
-        IQueryable<Progress> GetAllProgressesAsync();
+        Task<List<Progress>> GetAllProgressesAsync();
         Task<Progress?> GetProgressByIdAsync(Guid progressId);
-        IQueryable<Progress> GetProgressByUserIdAsync(Guid userId);
-        IQueryable<Progress> GetProgressByStageIdAsync(Guid stageId);
-        Task AddProgressAsync(Progress progress);
-        Task UpdateProgressAsync(Progress progress);
-        Task DeleteProgressAsync(Guid progressId);
+        Task<List<Progress>> GetProgressByUserIdAsync(Guid userId);
+        Task<List<Progress>> GetProgressByStageIdAsync(Guid stageId);
+        Task<Progress> AddProgressAsync(Progress progress);
+        Task<Progress?> UpdateProgressAsync(Progress progress);
+        Task<Progress?> DeleteProgressAsync(Guid progressId);
         Task MarkStageAsCompletedAsync(Guid userId, Guid stageId);
     }
 }

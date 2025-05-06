@@ -1,5 +1,6 @@
 ﻿using IBL;
 using IDAL;
+using Microsoft.EntityFrameworkCore;
 using Model;
 using System;
 using System.Collections.Generic;
@@ -20,58 +21,60 @@ namespace BL
             _courseRepository = courseRepository;
         }
 
-        public IQueryable<Creator> GetAllCreatorsAsync()
+        public async Task<List<Creator>> GetAllCreatorsAsync()
         {
-            return _creatorRepository.GetCreators();
+            return await _creatorRepository.GetCreators().ToListAsync();
         }
 
         public async Task<Creator?> GetCreatorByIdAsync(Guid creatorId)
         {
-            return await _creatorRepository.GetCreatorByIDAsync(creatorId);
+            return await Task.FromResult(_creatorRepository.GetCreatorByID(creatorId));
         }
 
-        public async Task AddCreatorAsync(Creator creator)
+        public async Task<Creator> AddCreatorAsync(Creator creator)
         {
-            await _creatorRepository.AddCreatorAsync(creator);
+            return await Task.FromResult(_creatorRepository.AddCreator(creator));
         }
 
-        public async Task<bool> DeleteCreatorAsync(Guid creatorId)
+        public async Task<Creator?> DeleteCreatorAsync(Guid creatorId)
         {
-            var existing = await _creatorRepository.GetCreatorByIDAsync(creatorId);
-            if (existing == null) return false;
+            var existing = await Task.FromResult(_creatorRepository.GetCreatorByID(creatorId));
+            if (existing == null) return null;
 
-            await _creatorRepository.DeleteCreatorAsync(creatorId);
-            return true;
+            return await Task.FromResult(_creatorRepository.DeleteCreator(creatorId));
         }
 
-        public IQueryable<Course> GetCoursesByCreatorAsync(Guid userId)
+        public async Task<List<Course>> GetCoursesByCreatorAsync(Guid userId)
         {
-            var creators =  _creatorRepository.GetCreators();
-            var courseIds = creators
-                .Where(c => c.UserId == userId)
-                .Select(c => c.CourseId)
-                .ToList();
-
-            var allCourses =  _courseRepository.GetCourses();
-            return allCourses.Where(c => courseIds.Contains(c.Id));
+            return await _creatorRepository.GetCreators()
+            .Where(c => c.UserId == userId)
+            .SelectMany(c => c.Courses)
+            .Distinct() 
+            .ToListAsync();
         }
 
-        public bool IsUserCreatorOfCourseAsync(Guid userId, Guid courseId)
+        public async Task<bool> IsUserCreatorOfCourseAsync(Guid userId, Guid courseId)
         {
-            var creators =  _creatorRepository.GetCreators();
-            return creators.Any(c => c.UserId == userId && c.CourseId == courseId);
+            return await _creatorRepository.GetCreators()
+            .Where(c => c.UserId == userId)
+            .AnyAsync(c => c.Courses.Any(course => course.Id == courseId));
         }
         public async Task<Creator> AddCreatorFromUserAsync(Guid userId, Guid courseId)
         {
-            var newCreator = new Creator
+            var course = await Task.FromResult(_courseRepository.GetCourseById(courseId));
+            if (course == null)
+            {
+                throw new ArgumentException("Course not found");
+            }
+
+            var creator = new Creator
             {
                 Id = Guid.NewGuid(),
                 UserId = userId,
-                CourseId = courseId
+                Courses = new List<Course> { course }
             };
 
-            await _creatorRepository.AddCreatorAsync(newCreator);
-            return newCreator;
-        }
+            return await Task.FromResult(_creatorRepository.AddCreator(creator));
+                    }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using IBL;
 using IDAL;
+using Microsoft.EntityFrameworkCore;
 using Model;
 using System;
 using System.Collections.Generic;
@@ -18,36 +19,37 @@ namespace BL
             _subcategoryRepository = subcategoryRepository;
         }
 
-        public  IQueryable<Subcategory> GetAllSubcategoriesAsync()
+        public async Task<List<Subcategory>> GetAllSubcategoriesAsync()
         {
-            return  _subcategoryRepository.GetSubcategories();
+            return await _subcategoryRepository.GetSubcategories().ToListAsync();
         }
 
         public async Task<Subcategory?> GetSubcategoryByIdAsync(Guid subcategoryId)
         {
-            return await _subcategoryRepository.GetSubcategoryByIDAsync(subcategoryId);
+            return await Task.FromResult(_subcategoryRepository.GetSubcategoryByID(subcategoryId));
         }
 
-        public IQueryable<Subcategory> GetSubcategoriesByCategoryIdAsync(Guid categoryId)
+        public async Task<List<Subcategory>> GetSubcategoriesByCategoryIdAsync(Guid categoryId)
         {
-            var all =  _subcategoryRepository.GetSubcategories();
-            return all.Where(s => s.CategoryId == categoryId);
+            return await _subcategoryRepository.GetSubcategories()
+                 .Where(s => s.CategoryId == categoryId)
+                 .ToListAsync();
         }
 
-        public async Task AddSubcategoryAsync(Subcategory subcategory)
+        public async Task<Subcategory> AddSubcategoryAsync(Subcategory subcategory)
         {
             subcategory.Id = Guid.NewGuid();
-            await _subcategoryRepository.AddSubcategoryAsync(subcategory);
+            return await Task.FromResult(_subcategoryRepository.AddSubcategory(subcategory));
         }
 
-        public async Task UpdateSubcategoryAsync(Subcategory subcategory)
+        public async Task<Subcategory?> UpdateSubcategoryAsync(Subcategory subcategory)
         {
-            await _subcategoryRepository.UpdateSubcategoryAsync(subcategory);
+            return await Task.FromResult(_subcategoryRepository.UpdateSubcategory(subcategory));
         }
 
-        public async Task DeleteSubcategoryAsync(Guid subcategoryId)
+        public async Task<Subcategory?> DeleteSubcategoryAsync(Guid subcategoryId)
         {
-            await _subcategoryRepository.DeleteSubcategoryAsync(subcategoryId);
+            return await Task.FromResult(_subcategoryRepository.DeleteSubcategory(subcategoryId));
         }
     }
 }

@@ -9,12 +9,12 @@ namespace IBL
 {
     public interface IReviewService
     {
-        IQueryable<Review> GetAllReviewsAsync();
+        Task<List<Review>> GetAllReviewsAsync();
         Task<Review?> GetReviewByIdAsync(Guid reviewId);
-        IQueryable<Review> GetReviewsByCourseIdAsync(Guid courseId);
-        IQueryable<Review> GetReviewsByUserIdAsync(Guid userId);
-        Task AddReviewAsync(Review review);
-        Task UpdateReviewAsync(Review review);
-        Task DeleteReviewAsync(Guid reviewId);
+        Task<List<Review>> GetReviewsByCourseIdAsync(Guid courseId);
+        Task<List<Review>> GetReviewsByUserIdAsync(Guid userId);
+        Task<Review> AddReviewAsync(Review review);
+        Task<Review?> UpdateReviewAsync(Review review);
+        Task<Review?> DeleteReviewAsync(Guid reviewId);
     }
 }

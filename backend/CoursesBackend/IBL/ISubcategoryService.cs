@@ -9,11 +9,11 @@ namespace IBL
 {
     public interface ISubcategoryService
     {
-        IQueryable<Subcategory> GetAllSubcategoriesAsync();
+        Task<List<Subcategory>> GetAllSubcategoriesAsync();
         Task<Subcategory?> GetSubcategoryByIdAsync(Guid subcategoryId);
-        IQueryable<Subcategory> GetSubcategoriesByCategoryIdAsync(Guid categoryId);
-        Task AddSubcategoryAsync(Subcategory subcategory);
-        Task UpdateSubcategoryAsync(Subcategory subcategory);
-        Task DeleteSubcategoryAsync(Guid subcategoryId);
+        Task<List<Subcategory>> GetSubcategoriesByCategoryIdAsync(Guid categoryId);
+        Task<Subcategory> AddSubcategoryAsync(Subcategory subcategory);
+        Task<Subcategory?> UpdateSubcategoryAsync(Subcategory subcategory);
+        Task<Subcategory?> DeleteSubcategoryAsync(Guid subcategoryId);
     }
 }

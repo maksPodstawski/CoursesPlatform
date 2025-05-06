@@ -1,6 +1,7 @@
 ﻿using DAL;
 using IBL;
 using IDAL;
+using Microsoft.EntityFrameworkCore;
 using Model;
 using System;
 using System.Collections.Generic;
@@ -18,49 +19,52 @@ namespace BL
         {
             _messageRepository = messageRepository;
         }
-        public IQueryable<Message> GetMessagesByChatIdAsync(Guid chatId)
+        public async Task<List<Message>> GetMessagesByChatIdAsync(Guid chatId)
         {
-            var messages =  _messageRepository.GetMessages();
-            return messages.Where(message => message.ChatId == chatId && !message.IsDeleted);
+            return await _messageRepository
+                 .GetMessages()
+                 .Where(m => m.ChatId == chatId && !m.IsDeleted)
+                 .ToListAsync();
         }
 
         public async Task<Message?> GetMessageByIdAsync(Guid messageId)
         {
-            var message = await _messageRepository.GetMessageByIdAsync(messageId);
-            return message?.IsDeleted == true ? null : message;
+            return await Task.FromResult(_messageRepository.GetMessageById(messageId));
         }
 
-        public async Task AddMessageAsync(Message message)
+        public async Task<Message> AddMessageAsync(Message message)
         {
             message.Id = Guid.NewGuid();
             message.CreatedAt = DateTime.UtcNow;
             message.IsDeleted = false;
-            await _messageRepository.AddMessageAsync(message);
+            return await Task.FromResult(_messageRepository.AddMessage(message));
         }
 
-        public async Task EditMessageAsync(Guid messageId, string newContent)
+        public async Task<Message?> EditMessageAsync(Guid messageId, string newContent)
         {
-            var message = await _messageRepository.GetMessageByIdAsync(messageId);
+            var message = await Task.FromResult(_messageRepository.GetMessageById(messageId));
             if (message != null && !message.IsDeleted)
             {
                 message.Content = newContent;
                 message.EditedAt = DateTime.UtcNow;
-                await _messageRepository.UpdateMessageAsync(message);
+                return await Task.FromResult(_messageRepository.AddMessage(message));
             }
+            return null;
         }
 
-        public async Task DeleteMessageAsync(Guid messageId)
+        public async Task<Message?> DeleteMessageAsync(Guid messageId)
         {
-            var message = await _messageRepository.GetMessageByIdAsync(messageId);
+            var message = await Task.FromResult(_messageRepository.GetMessageById(messageId));
             if (message != null && !message.IsDeleted)
             {
                 message.IsDeleted = true;
-                await _messageRepository.UpdateMessageAsync(message);
+                return await Task.FromResult(_messageRepository.AddMessage(message));
             }
+            return null;
         }
         public async Task<bool> MessageExistsAsync(Guid messageId)
         {
-            var message = await _messageRepository.GetMessageByIdAsync(messageId);
+            var message = await Task.FromResult(_messageRepository.GetMessageById(messageId));
             return message != null && !message.IsDeleted;
         }
     }
