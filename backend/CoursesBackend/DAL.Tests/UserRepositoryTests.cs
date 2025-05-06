@@ -12,13 +12,20 @@ namespace DAL.Tests
 {
     public class UserRepositoryTests
     {
+        private DbContextOptions<CoursesPlatformContext> CreateNewContextOptions()
+        {
+            return new DbContextOptionsBuilder<CoursesPlatformContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+        }
+
         [Fact]
         public void GetUserByID_WhenUserDoesNotExist_ReturnsNull()
         {
-            var options = new DbContextOptionsBuilder<CoursesPlatformContext>()
-                .UseInMemoryDatabase(databaseName: "GetUserByID_WhenUserDoesNotExist_ReturnsNull")
-                .Options;
+            // Arrange
+            var options = CreateNewContextOptions();
 
+            // Act
             using (var context = new CoursesPlatformContext(options))
             {
                 var repository = new UserRepository(context);
@@ -26,6 +33,7 @@ namespace DAL.Tests
 
                 var result = repository.GetUserByID(dummyGuid);
 
+                // Assert
                 Assert.Null(result);
             }
         }
@@ -33,9 +41,8 @@ namespace DAL.Tests
         [Fact]
         public void GetUsers_ReturnsAllUsers()
         {
-            var options = new DbContextOptionsBuilder<CoursesPlatformContext>()
-                .UseInMemoryDatabase(databaseName: "GetUsers_ReturnsAllUsers")
-                .Options;
+            // Arrange
+            var options = CreateNewContextOptions();
 
             var testUsers = new List<User>
             {
@@ -49,11 +56,13 @@ namespace DAL.Tests
                 context.SaveChanges();
             }
 
+            // Act
             using (var context = new CoursesPlatformContext(options))
             {
                 var repository = new UserRepository(context);
                 var result = repository.GetUsers().ToList();
 
+                // Assert
                 Assert.Equal(2, result.Count);
                 Assert.Contains(result, u => u.Email == "maciej@example.com");
                 Assert.Contains(result, u => u.Email == "jan@example.com");
@@ -63,9 +72,8 @@ namespace DAL.Tests
         [Fact]
         public void AddUser_SavesUserToDatabase()
         {
-            var options = new DbContextOptionsBuilder<CoursesPlatformContext>()
-                .UseInMemoryDatabase(databaseName: "AddUser_SavesUserToDatabase")
-                .Options;
+            // Arrange
+            var options = CreateNewContextOptions();
 
             var newUser = new User 
             { 
@@ -75,12 +83,14 @@ namespace DAL.Tests
                 Email = "marek@example.com" 
             };
 
+            // Act
             using (var context = new CoursesPlatformContext(options))
             {
                 var repository = new UserRepository(context);
                 repository.AddUser(newUser);
             }
 
+            // Assert
             using (var context = new CoursesPlatformContext(options))
             {
                 Assert.Equal(1, context.Users.Count());
@@ -95,6 +105,8 @@ namespace DAL.Tests
         [Fact]
         public void UpdateUser_CallsSaveChanges()
         {
+            // Arrange
+            var options = CreateNewContextOptions();
             var userId = Guid.NewGuid();
             var existingUser = new User 
             { 
@@ -112,21 +124,19 @@ namespace DAL.Tests
                 Email = "robert@example.com" 
             };
 
-            var options = new DbContextOptionsBuilder<CoursesPlatformContext>()
-                .UseInMemoryDatabase(databaseName: "UpdateUser_CallsSaveChanges")
-                .Options;
-
             using (var context = new CoursesPlatformContext(options))
             {
                 context.Users.Add(existingUser);
                 context.SaveChanges();
             }
 
+            // Act
             var contextSpy = new DbContextSpy(options);
             var repository = new UserRepository(contextSpy);
 
             var result = repository.UpdateUser(updatedUser);
 
+            // Assert
             Assert.Equal(1, contextSpy.SaveChangesCallCount);
             Assert.NotNull(result);
             if (result != null)
@@ -139,9 +149,8 @@ namespace DAL.Tests
         [Fact]
         public void DeleteUser_WhenUserExists_RemovesUserAndReturnsUser()
         {
-            var options = new DbContextOptionsBuilder<CoursesPlatformContext>()
-                .UseInMemoryDatabase(databaseName: "DeleteUser_WhenUserExists_RemovesUserAndReturnsUser")
-                .Options;
+            // Arrange
+            var options = CreateNewContextOptions();
 
             var userId = Guid.NewGuid();
             var userToDelete = new User 
@@ -158,11 +167,13 @@ namespace DAL.Tests
                 context.SaveChanges();
             }
 
+            // Act
             var contextSpy = new DbContextSpy(options);
             var repository = new UserRepository(contextSpy);
 
             var result = repository.DeleteUser(userId);
 
+            // Assert
             Assert.Equal(userId, result?.Id);
             Assert.Equal("Maciej", result?.FirstName);
             Assert.Equal(1, contextSpy.SaveChangesCallCount);
