@@ -158,7 +158,7 @@ namespace BL.Tests
         public async Task DeleteReviewAsync_NonExistingId_ReturnsNull()
         {
             var reviewId = Guid.NewGuid();
-            _mockReviewRepository.Setup(r => r.DeleteReview(reviewId)).Returns((Review)null);
+            _mockReviewRepository.Setup(r => r.DeleteReview(reviewId)).Returns((Review)null); 
 
             var result = await _reviewService.DeleteReviewAsync(reviewId);
 
