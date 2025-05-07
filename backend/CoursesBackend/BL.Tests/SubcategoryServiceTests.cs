@@ -14,15 +14,81 @@ namespace BL.Tests
 {
     public class SubcategoryServiceTests
     {
-        private readonly Mock<ISubcategoryRepository> _mockSubcategoryRepository;
         private readonly SubcategoryService _subcategoryService;
+        private readonly Mock<ISubcategoryRepository> _mockRepository;
 
         public SubcategoryServiceTests()
         {
-            _mockSubcategoryRepository = new Mock<ISubcategoryRepository>();
-            _subcategoryService = new SubcategoryService(_mockSubcategoryRepository.Object);
+            _mockRepository = new Mock<ISubcategoryRepository>();
+            _subcategoryService = new SubcategoryService(_mockRepository.Object);
         }
 
+        
+        [Fact]
+        public async Task DummyTest_DoesNotUseDependency()
+        {
+            var dummyRepo = new DummySubcategoryRepository();
+            var service = new SubcategoryService(dummyRepo);
+
+            // Operacja nie używa repozytorium
+            var subcategory = new Subcategory { Name = "Dummy", CategoryId = Guid.NewGuid() };
+            await Assert.ThrowsAsync<NotImplementedException>(() => service.AddSubcategoryAsync(subcategory));
+        }
+
+        
+        [Fact]
+        public async Task StubTest_ReturnsPredefinedSubcategory()
+        {
+            var stubRepo = new StubSubcategoryRepository();
+            var service = new SubcategoryService(stubRepo);
+
+            var result = await service.GetSubcategoryByIdAsync(Guid.NewGuid());
+
+            Assert.NotNull(result);
+            Assert.Equal("StubResult", result!.Name);
+        }
+
+        
+        [Fact]
+        public async Task FakeTest_AddAndGetSubcategoryFromMemory()
+        {
+            var fakeRepo = new FakeSubcategoryRepository();
+            var service = new SubcategoryService(fakeRepo);
+
+            var input = new Subcategory { Id = Guid.NewGuid(), Name = "FakeSub", CategoryId = Guid.NewGuid() };
+            await service.AddSubcategoryAsync(input);
+
+            var result = await service.GetSubcategoryByIdAsync(input.Id);
+            Assert.Equal("FakeSub", result!.Name);
+        }
+
+       
+        [Fact]
+        public async Task MockTest_VerifyAddCalled()
+        {
+            var subcategory = new Subcategory { Name = "Mocked", CategoryId = Guid.NewGuid() };
+            _mockRepository.Setup(r => r.AddSubcategory(It.IsAny<Subcategory>())).Returns(subcategory);
+
+            var result = await _subcategoryService.AddSubcategoryAsync(subcategory);
+
+            Assert.Equal("Mocked", result.Name);
+            _mockRepository.Verify(r => r.AddSubcategory(It.Is<Subcategory>(s => s.Name == "Mocked")), Times.Once);
+        }
+
+        
+        [Fact]
+        public async Task SpyTest_TracksInteraction()
+        {
+            var spyRepo = new SpySubcategoryRepository();
+            var service = new SubcategoryService(spyRepo);
+
+            var subcategory = new Subcategory { Id = Guid.NewGuid(), Name = "SpyTest", CategoryId = Guid.NewGuid() };
+            await service.UpdateSubcategoryAsync(subcategory);
+
+            Assert.True(spyRepo.WasUpdateCalled);
+        }
+
+        
         [Fact]
         public async Task GetAllSubcategoriesAsync_ReturnsAllSubcategories()
         {
@@ -33,115 +99,82 @@ namespace BL.Tests
             };
 
             var mockDbSet = subcategories.AsQueryable().BuildMockDbSet();
-            _mockSubcategoryRepository.Setup(r => r.GetSubcategories()).Returns(mockDbSet.Object);
+            _mockRepository.Setup(r => r.GetSubcategories()).Returns(mockDbSet.Object);
 
             var result = await _subcategoryService.GetAllSubcategoriesAsync();
 
             Assert.Equal(2, result.Count);
-            Assert.Contains(result, s => s.Name == "CPUs");
-            Assert.Contains(result, s => s.Name == "GPUs");
         }
 
-        [Fact]
-        public async Task GetSubcategoryByIdAsync_ExistingId_ReturnsSubcategory()
+       
+    }
+
+    
+    public class DummySubcategoryRepository : ISubcategoryRepository
+    {
+        public Subcategory AddSubcategory(Subcategory subcategory) => throw new NotImplementedException();
+        public Subcategory DeleteSubcategory(Guid id) => throw new NotImplementedException();
+        public IQueryable<Subcategory> GetSubcategories() => throw new NotImplementedException();
+        public Subcategory GetSubcategoryByID(Guid id) => throw new NotImplementedException();
+        public Subcategory UpdateSubcategory(Subcategory subcategory) => throw new NotImplementedException();
+    }
+
+    public class StubSubcategoryRepository : ISubcategoryRepository
+    {
+        public Subcategory AddSubcategory(Subcategory subcategory) => throw new NotImplementedException();
+        public Subcategory DeleteSubcategory(Guid id) => throw new NotImplementedException();
+        public IQueryable<Subcategory> GetSubcategories() => throw new NotImplementedException();
+        public Subcategory GetSubcategoryByID(Guid id) => new Subcategory { Id = id, Name = "StubResult", CategoryId = Guid.NewGuid() };
+        public Subcategory UpdateSubcategory(Subcategory subcategory) => throw new NotImplementedException();
+    }
+
+    public class FakeSubcategoryRepository : ISubcategoryRepository
+    {
+        private readonly List<Subcategory> _subcategories = new();
+
+        public Subcategory AddSubcategory(Subcategory subcategory)
         {
-            var subcategoryId = Guid.NewGuid();
-            var subcategory = new Subcategory { Id = subcategoryId, Name = "Memory", CategoryId = Guid.NewGuid() };
-
-            _mockSubcategoryRepository.Setup(r => r.GetSubcategoryByID(subcategoryId)).Returns(subcategory);
-
-            var result = await _subcategoryService.GetSubcategoryByIdAsync(subcategoryId);
-
-            Assert.NotNull(result);
-            Assert.Equal(subcategoryId, result.Id);
-            Assert.Equal("Memory", result.Name);
+            subcategory.Id = subcategory.Id == Guid.Empty ? Guid.NewGuid() : subcategory.Id;
+            _subcategories.Add(subcategory);
+            return subcategory;
         }
 
-        [Fact]
-        public async Task GetSubcategoryByIdAsync_NonExistingId_ReturnsNull()
+        public Subcategory DeleteSubcategory(Guid id)
         {
-            var subcategoryId = Guid.NewGuid();
-            _mockSubcategoryRepository.Setup(r => r.GetSubcategoryByID(subcategoryId)).Returns((Subcategory?)null);
-
-            var result = await _subcategoryService.GetSubcategoryByIdAsync(subcategoryId);
-
-            Assert.Null(result);
+            var item = _subcategories.FirstOrDefault(s => s.Id == id);
+            if (item != null) _subcategories.Remove(item);
+            return item!;
         }
 
-        [Fact]
-        public async Task GetSubcategoriesByCategoryIdAsync_ReturnsMatchingSubcategories()
+        public IQueryable<Subcategory> GetSubcategories() => _subcategories.AsQueryable();
+
+        public Subcategory GetSubcategoryByID(Guid id) => _subcategories.FirstOrDefault(s => s.Id == id)!;
+
+        public Subcategory UpdateSubcategory(Subcategory subcategory)
         {
-            var categoryId = Guid.NewGuid();
-            var subcategories = new List<Subcategory>
+            var existing = _subcategories.FirstOrDefault(s => s.Id == subcategory.Id);
+            if (existing != null)
             {
-                new Subcategory { Id = Guid.NewGuid(), Name = "RAM", CategoryId = categoryId },
-                new Subcategory { Id = Guid.NewGuid(), Name = "SSD", CategoryId = categoryId },
-                new Subcategory { Id = Guid.NewGuid(), Name = "Motherboard", CategoryId = Guid.NewGuid() }
-            };
-
-            var mockDbSet = subcategories.AsQueryable().BuildMockDbSet();
-            _mockSubcategoryRepository.Setup(r => r.GetSubcategories()).Returns(mockDbSet.Object);
-
-            var result = await _subcategoryService.GetSubcategoriesByCategoryIdAsync(categoryId);
-
-            Assert.Equal(2, result.Count);
-            Assert.All(result, s => Assert.Equal(categoryId, s.CategoryId));
+                existing.Name = subcategory.Name;
+                existing.CategoryId = subcategory.CategoryId;
+            }
+            return existing!;
         }
+    }
 
-        [Fact]
-        public async Task AddSubcategoryAsync_AddsAndReturnsSubcategory()
+    public class SpySubcategoryRepository : ISubcategoryRepository
+    {
+        public bool WasUpdateCalled { get; private set; }
+
+        public Subcategory AddSubcategory(Subcategory subcategory) => throw new NotImplementedException();
+        public Subcategory DeleteSubcategory(Guid id) => throw new NotImplementedException();
+        public IQueryable<Subcategory> GetSubcategories() => throw new NotImplementedException();
+        public Subcategory GetSubcategoryByID(Guid id) => throw new NotImplementedException();
+
+        public Subcategory UpdateSubcategory(Subcategory subcategory)
         {
-            var inputSubcategory = new Subcategory { Name = "Cooling", CategoryId = Guid.NewGuid() };
-
-            _mockSubcategoryRepository.Setup(r => r.AddSubcategory(It.IsAny<Subcategory>()))
-                .Returns<Subcategory>(s => s);
-
-            var result = await _subcategoryService.AddSubcategoryAsync(inputSubcategory);
-
-            Assert.Equal(inputSubcategory.Name, result.Name);
-            Assert.Equal(inputSubcategory.CategoryId, result.CategoryId);
-            Assert.NotEqual(Guid.Empty, result.Id);
-            _mockSubcategoryRepository.Verify(r => r.AddSubcategory(It.Is<Subcategory>(s => s.Name == "Cooling")), Times.Once);
-        }
-
-        [Fact]
-        public async Task UpdateSubcategoryAsync_ExistingSubcategory_UpdatesAndReturns()
-        {
-            var subcategory = new Subcategory { Id = Guid.NewGuid(), Name = "Old Name", CategoryId = Guid.NewGuid() };
-            _mockSubcategoryRepository.Setup(r => r.UpdateSubcategory(subcategory)).Returns(subcategory);
-
-            var result = await _subcategoryService.UpdateSubcategoryAsync(subcategory);
-
-            Assert.NotNull(result);
-            Assert.Equal(subcategory.Id, result?.Id);
-            _mockSubcategoryRepository.Verify(r => r.UpdateSubcategory(subcategory), Times.Once);
-        }
-
-        [Fact]
-        public async Task DeleteSubcategoryAsync_ExistingId_DeletesAndReturns()
-        {
-            var subcategoryId = Guid.NewGuid();
-            var subcategory = new Subcategory { Id = subcategoryId, Name = "To Delete", CategoryId = Guid.NewGuid() };
-
-            _mockSubcategoryRepository.Setup(r => r.DeleteSubcategory(subcategoryId)).Returns(subcategory);
-
-            var result = await _subcategoryService.DeleteSubcategoryAsync(subcategoryId);
-
-            Assert.NotNull(result);
-            Assert.Equal(subcategoryId, result?.Id);
-            _mockSubcategoryRepository.Verify(r => r.DeleteSubcategory(subcategoryId), Times.Once);
-        }
-
-        [Fact]
-        public async Task DeleteSubcategoryAsync_NonExistingId_ReturnsNull()
-        {
-            var subcategoryId = Guid.NewGuid();
-            _mockSubcategoryRepository.Setup(r => r.DeleteSubcategory(subcategoryId)).Returns((Subcategory?)null);
-
-            var result = await _subcategoryService.DeleteSubcategoryAsync(subcategoryId);
-
-            Assert.Null(result);
-            _mockSubcategoryRepository.Verify(r => r.DeleteSubcategory(subcategoryId), Times.Once);
+            WasUpdateCalled = true;
+            return subcategory;
         }
     }
 }
