@@ -15,35 +15,40 @@ namespace DAL
 
         public IQueryable<Subcategory> GetSubcategories()
         {
-            return _context.Subcategories.AsQueryable();
+            return _context.Subcategories;
+        }
+        public Subcategory? GetSubcategoryByID(Guid subcategoryID)
+        {
+            return _context.Subcategories.FirstOrDefault(s => s.Id == subcategoryID);
         }
 
-
-        public async Task<Subcategory?> GetSubcategoryByIDAsync(Guid subcategoryID)
+        public Subcategory AddSubcategory(Subcategory subcategory)
         {
-            return await _context.Subcategories.FindAsync(subcategoryID);
+            _context.Subcategories.Add(subcategory);
+            _context.SaveChanges();
+            return subcategory;
         }
 
-        public async Task AddSubcategoryAsync(Subcategory subcategory)
+        public Subcategory? UpdateSubcategory(Subcategory subcategory)
         {
-            await _context.Subcategories.AddAsync(subcategory);
-            await _context.SaveChangesAsync();
-        }
+            var existing = _context.Subcategories.FirstOrDefault(s => s.Id == subcategory.Id);
+            if (existing == null)
+                return null;
 
-        public async Task UpdateSubcategoryAsync(Subcategory subcategory)
-        {
             _context.Subcategories.Update(subcategory);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
+            return subcategory;
         }
 
-        public async Task DeleteSubcategoryAsync(Guid subcategoryID)
+        public Subcategory? DeleteSubcategory(Guid subcategoryID)
         {
-            var subcategory = await GetSubcategoryByIDAsync(subcategoryID);
-            if (subcategory != null)
-            {
-                _context.Subcategories.Remove(subcategory);
-                await _context.SaveChangesAsync();
-            }
+            var subcategory = _context.Subcategories.FirstOrDefault(s => s.Id == subcategoryID);
+            if (subcategory == null)
+                return null;
+
+            _context.Subcategories.Remove(subcategory);
+            _context.SaveChanges();
+            return subcategory;
         }
     }
 }

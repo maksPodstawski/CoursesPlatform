@@ -1,5 +1,6 @@
 ﻿using IBL;
 using IDAL;
+using Microsoft.EntityFrameworkCore;
 using Model;
 using System;
 using System.Collections.Generic;
@@ -18,57 +19,55 @@ namespace BL
             _chatRepository = chatRepository;
         }
 
-        public IQueryable<Chat> GetAllChatsAsync()
+        public async Task<List<Chat>> GetAllChatsAsync()
         {
-            return _chatRepository.GetChats();
+            return await _chatRepository.GetChats().ToListAsync();
         }
 
         public async Task<Chat?> GetChatByIdAsync(Guid chatId)
         {
-            return await _chatRepository.GetChatByIdAsync(chatId);
+            return await Task.FromResult(_chatRepository.GetChatById(chatId));
         }
 
-        public async Task AddChatAsync(Chat chat)
+        public async Task<Chat> AddChatAsync(Chat chat)
         {
-            await _chatRepository.AddChatAsync(chat);
+            return await Task.FromResult(_chatRepository.AddChat(chat));
         }
         public async Task<Chat?> DeleteChatAsync(Guid chatId)
         {
-            var chat = await _chatRepository.GetChatByIdAsync(chatId);
+            var chat = await Task.FromResult(_chatRepository.GetChatById(chatId));
             if(chat == null)
             {
                 return null;
             }
-            await _chatRepository.DeleteChatAsync(chatId);
-            return chat;
+            return await Task.FromResult(_chatRepository.DeleteChat(chatId));
         }
 
         public async Task<IEnumerable<User>> GetUsersInChatAsync(Guid chatId)
         {
-            var chat = await _chatRepository.GetChatByIdAsync(chatId);
-
+            var chat = await Task.FromResult(_chatRepository.GetChatById(chatId));
 
             if (chat == null || chat.Users == null)
             {
                 return Enumerable.Empty<User>();
             }
-            return chat.Users.Select(chatUser => chatUser.User);
+            return await Task.FromResult(chat.Users.Select(chatUser => chatUser.User));
         }
 
 
         public async Task RenameChatAsync(Guid chatId, string chatName)
         {
-            var chat = await _chatRepository.GetChatByIdAsync(chatId);
+            var chat = await Task.FromResult(_chatRepository.GetChatById(chatId));
             if (chat != null)
             {
                 chat.Name = chatName;
-                await _chatRepository.UpdateChatAsync(chat);
+                await Task.FromResult(_chatRepository.UpdateChat(chat));
             }
         }
 
         public async Task<bool> ChatExistsAsync(Guid chatId)
         {
-            var chat = await _chatRepository.GetChatByIdAsync(chatId);
+            var chat = await Task.FromResult(_chatRepository.GetChatById(chatId));
             return chat != null;
         }
     }

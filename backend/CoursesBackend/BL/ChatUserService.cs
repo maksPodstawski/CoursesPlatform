@@ -1,4 +1,5 @@
 ﻿using IDAL;
+using Microsoft.EntityFrameworkCore;
 using Model;
 using System;
 using System.Collections.Generic;
@@ -17,19 +18,19 @@ namespace BL
             _chatUserRepository = chatUserRepository;
         }
 
-        public IQueryable<ChatUser> GetAllAsync()
+        public async Task<List<ChatUser>> GetAllAsync()
         {
-            return _chatUserRepository.GetChatUsers();
+            return await _chatUserRepository.GetChatUsers().ToListAsync();
         }
 
         public async Task<ChatUser?> GetByIdAsync(Guid chatUserId)
         {
-            return await _chatUserRepository.GetChatUserByIdAsync(chatUserId);
+            return await Task.FromResult(_chatUserRepository.GetChatUserById(chatUserId));
         }
 
-        public async Task AddUserToChatAsync(Guid chatId, Guid userId)
+        public async Task<ChatUser> AddUserToChatAsync(Guid chatId, Guid userId)
         {
-            var isInChat = IsUserInChatAsync(chatId, userId);
+            var isInChat = await IsUserInChatAsync(chatId, userId);
             if (!isInChat)
             {
                 var chatUser = new ChatUser
@@ -39,26 +40,28 @@ namespace BL
                     UserId = userId,
                     JoinedAt = DateTime.UtcNow
                 };
-
-                await _chatUserRepository.AddChatUserAsync(chatUser);
+                _chatUserRepository.AddChatUser(chatUser);
+                return chatUser;
             }
+            return null;
         }
 
-        public async Task RemoveUserFromChatAsync(Guid chatId, Guid userId)
+        public async Task<ChatUser?> RemoveUserFromChatAsync(Guid chatId, Guid userId)
         {
             var chatUsers =  _chatUserRepository.GetChatUsers();
-            var target = chatUsers.FirstOrDefault(cu => cu.ChatId == chatId && cu.UserId == userId);
+            var target = await Task.FromResult(chatUsers.FirstOrDefault(cu => cu.ChatId == chatId && cu.UserId == userId));
 
             if (target != null)
             {
-                await _chatUserRepository.DeleteChatUserAsync(target.Id);
+                return await Task.FromResult(_chatUserRepository.DeleteChatUser(target.Id));
             }
+            return null;
         }
 
-        public bool IsUserInChatAsync(Guid chatId, Guid userId)
+        public async Task<bool> IsUserInChatAsync(Guid chatId, Guid userId)
         {
             var chatUsers =  _chatUserRepository.GetChatUsers();
-            return chatUsers.Any(cu => cu.ChatId == chatId && cu.UserId == userId);
+            return await Task.FromResult(chatUsers.Any(cu => cu.ChatId == chatId && cu.UserId == userId));
         }
     }
 }

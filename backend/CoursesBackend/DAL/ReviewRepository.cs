@@ -1,6 +1,7 @@
 ﻿using IDAL;
 using Microsoft.EntityFrameworkCore;
 using Model;
+using System;
 
 namespace DAL;
 
@@ -15,34 +16,41 @@ public class ReviewRepository : IReviewRepository
 
     public IQueryable<Review> GetReviews()
     {
-        return _context.Reviews.AsQueryable();
+        return _context.Reviews;
     }
 
 
-    public async Task<Review?> GetReviewByIdAsync(Guid reviewId)
+    public Review? GetReviewById(Guid reviewId)
     {
-        return await _context.Reviews.FindAsync(reviewId);
+        return _context.Reviews.FirstOrDefault(r => r.Id == reviewId);
     }
 
-    public async Task AddReviewAsync(Review review)
+    public Review AddReview(Review review)
     {
-        await _context.Reviews.AddAsync(review);
-        await _context.SaveChangesAsync();
+        _context.Reviews.Add(review);
+        _context.SaveChanges();
+        return review;
     }
 
-    public async Task UpdateReviewAsync(Review review)
+    public Review? UpdateReview(Review review)
     {
+        var existing = _context.Reviews.AsNoTracking().FirstOrDefault(r => r.Id == review.Id);
+        if (existing == null)
+            return null;
+
         _context.Reviews.Update(review);
-        await _context.SaveChangesAsync();
+        _context.SaveChanges();
+        return review;
     }
 
-    public async Task DeleteReviewAsync(Guid reviewId)
+    public Review? DeleteReview(Guid reviewId)
     {
-        var review = await GetReviewByIdAsync(reviewId);
-        if (review != null)
-        {
-            _context.Reviews.Remove(review);
-            await _context.SaveChangesAsync();
-        }
+        var review = _context.Reviews.FirstOrDefault(r => r.Id == reviewId);
+        if (review == null)
+            return null;
+
+        _context.Reviews.Remove(review);
+        _context.SaveChanges();
+        return review;
     }
 }

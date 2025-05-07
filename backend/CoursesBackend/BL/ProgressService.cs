@@ -1,5 +1,6 @@
 ﻿using IBL;
 using IDAL;
+using Microsoft.EntityFrameworkCore;
 using Model;
 using System;
 using System.Collections.Generic;
@@ -18,56 +19,64 @@ namespace BL
             _progressRepository = progressRepository;
         }
 
-        public IQueryable<Progress> GetAllProgressesAsync()
+        public async Task<List<Progress>> GetAllProgressesAsync()
         {
-            return  _progressRepository.GetProgresses();
+            return await _progressRepository.GetProgresses().ToListAsync();
         }
 
         public async Task<Progress?> GetProgressByIdAsync(Guid progressId)
         {
-            return await _progressRepository.GetProgressByIdAsync(progressId);
+            return await Task.FromResult(_progressRepository.GetProgressById(progressId));
         }
 
-        public IQueryable<Progress> GetProgressByUserIdAsync(Guid userId)
+        public async Task<List<Progress>> GetProgressByUserIdAsync(Guid userId)
         {
-            var progresses = _progressRepository.GetProgresses();
-            return progresses.Where(p => p.UserId == userId);
+            return await _progressRepository.GetProgresses()
+                 .Where(p => p.UserId == userId)
+                 .ToListAsync();
         }
 
-        public IQueryable<Progress> GetProgressByStageIdAsync(Guid stageId)
+        public async Task<List<Progress>> GetProgressByStageIdAsync(Guid stageId)
         {
-            var progresses =  _progressRepository.GetProgresses();
-            return progresses.Where(p => p.StageId == stageId);
+            return await _progressRepository.GetProgresses()
+               .Where(p => p.StageId == stageId)
+               .ToListAsync();
         }
 
-        public async Task AddProgressAsync(Progress progress)
+        public async Task<Progress> AddProgressAsync(Progress progress)
         {
             progress.Id = Guid.NewGuid();
             progress.StartedAt = DateTime.UtcNow;
             progress.LastAccessedAt = DateTime.UtcNow;
-            await _progressRepository.AddProgressAsync(progress);
+            return await Task.FromResult(_progressRepository.AddProgress(progress));
         }
 
-        public async Task UpdateProgressAsync(Progress progress)
+        public async Task<Progress?> UpdateProgressAsync(Progress progress)
         {
-            await _progressRepository.UpdateProgressAsync(progress);
+            var existing = await Task.FromResult(_progressRepository.GetProgressById(progress.Id));
+            if (existing == null) return null;
+
+            return await Task.FromResult(_progressRepository.UpdateProgress(progress));
         }
 
-        public async Task DeleteProgressAsync(Guid progressId)
+        public async Task<Progress?> DeleteProgressAsync(Guid progressId)
         {
-            await _progressRepository.DeleteProgressAsync(progressId);
+            var progress = await Task.FromResult(_progressRepository.GetProgressById(progressId));
+            if (progress == null) return null;
+
+            return await Task.FromResult(_progressRepository.DeleteProgress(progressId));
         }
 
         public async Task MarkStageAsCompletedAsync(Guid userId, Guid stageId)
         {
-            var progresses = _progressRepository.GetProgresses();
-            var progress = progresses.FirstOrDefault(p => p.UserId == userId && p.StageId == stageId);
+            var progress = await _progressRepository.GetProgresses()
+                 .FirstOrDefaultAsync(p => p.UserId == userId && p.StageId == stageId);
 
-            if (progress != null)
+            if (progress != null && !progress.IsCompleted)
             {
                 progress.IsCompleted = true;
                 progress.CompletedAt = DateTime.UtcNow;
-                await _progressRepository.UpdateProgressAsync(progress);
+                await Task.FromResult(_progressRepository.AddProgress(progress));
             }
         }
     }

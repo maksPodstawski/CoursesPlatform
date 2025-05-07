@@ -9,10 +9,10 @@ namespace IBL
 {
     public interface IChatUserService
     {
-        Task<IEnumerable<ChatUser>> GetAllAsync();
+        Task<List<ChatUser>> GetAllAsync();
         Task<ChatUser?> GetByIdAsync(Guid chatUserId);
-        Task AddUserToChatAsync(Guid chatId, Guid userId);
-        Task RemoveUserFromChatAsync(Guid chatId, Guid userId);
+        Task<ChatUser> AddUserToChatAsync(Guid chatId, Guid userId);
+        Task<ChatUser?> RemoveUserFromChatAsync(Guid chatId, Guid userId);
         Task<bool> IsUserInChatAsync(Guid chatId, Guid userId);
     }
 }

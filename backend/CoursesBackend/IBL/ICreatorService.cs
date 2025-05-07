@@ -9,12 +9,12 @@ namespace IBL
 {
     public interface ICreatorService
     {
-        IQueryable<Creator> GetAllCreatorsAsync();
+        Task<List<Creator>> GetAllCreatorsAsync();
         Task<Creator?> GetCreatorByIdAsync(Guid creatorId);
-        Task AddCreatorAsync(Creator creator);
-        Task<bool> DeleteCreatorAsync(Guid creatorId);
-        IQueryable<Course> GetCoursesByCreatorAsync(Guid userId);
-        bool IsUserCreatorOfCourseAsync(Guid userId, Guid courseId);
+        Task<Creator> AddCreatorAsync(Creator creator);
+        Task<Creator?> DeleteCreatorAsync(Guid creatorId);
+        Task<List<Course>> GetCoursesByCreatorAsync(Guid userId);
+        Task<bool> IsUserCreatorOfCourseAsync(Guid userId, Guid courseId);
 
         Task<Creator> AddCreatorFromUserAsync(Guid userId, Guid courseId);
     }

@@ -1,5 +1,6 @@
 ﻿using IBL;
 using IDAL;
+using Microsoft.EntityFrameworkCore;
 using Model;
 using System;
 using System.Collections.Generic;
@@ -18,41 +19,46 @@ namespace BL
             _reviewRepository = reviewRepository;
         }
 
-        public  IQueryable<Review> GetAllReviewsAsync()
+        public async Task<List<Review>> GetAllReviewsAsync()
         {
-            return  _reviewRepository.GetReviews();
+            return await _reviewRepository.GetReviews().ToListAsync();
         }
 
         public async Task<Review?> GetReviewByIdAsync(Guid reviewId)
         {
-            return await _reviewRepository.GetReviewByIdAsync(reviewId);
+            return await Task.FromResult(_reviewRepository.GetReviewById(reviewId));
         }
 
-        public IQueryable<Review> GetReviewsByCourseIdAsync(Guid courseId)
+        public async Task<List<Review>> GetReviewsByCourseIdAsync(Guid courseId)
         {
-            var reviews =  _reviewRepository.GetReviews();
-            return reviews.Where(r => r.CourseId == courseId);
+            return await _reviewRepository.GetReviews()
+               .Where(r => r.CourseId == courseId)
+               .ToListAsync();
         }
 
-        public IQueryable<Review> GetReviewsByUserIdAsync(Guid userId)
+        public async Task<List<Review>> GetReviewsByUserIdAsync(Guid userId)
         {
-            var reviews =  _reviewRepository.GetReviews();
-            return reviews.Where(r => r.UserId == userId);
+            return await _reviewRepository.GetReviews()
+                .Where(r => r.UserId == userId)
+                .ToListAsync();
         }
 
-        public async Task AddReviewAsync(Review review)
+        public async Task<Review> AddReviewAsync(Review review)
         {
-            await _reviewRepository.AddReviewAsync(review);
+            review.Id = Guid.NewGuid();
+            //W opini trzeba dodac jeszcze date nowa!!!
+            return await Task.FromResult(_reviewRepository.AddReview(review));
+            
         }
 
-        public async Task UpdateReviewAsync(Review review)
+        public async Task<Review?> UpdateReviewAsync(Review review)
         {
-            await _reviewRepository.UpdateReviewAsync(review);
+            return await Task.FromResult(_reviewRepository.AddReview(review));
         }
 
-        public async Task DeleteReviewAsync(Guid reviewId)
+        public async Task<Review?> DeleteReviewAsync(Guid reviewId)
         {
-            await _reviewRepository.DeleteReviewAsync(reviewId);
+            return await Task.FromResult(_reviewRepository.DeleteReview(reviewId));
         }
     }
 }

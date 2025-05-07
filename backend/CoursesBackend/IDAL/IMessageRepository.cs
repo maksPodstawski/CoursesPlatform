@@ -10,9 +10,9 @@ namespace IDAL
     public interface IMessageRepository
     {
         IQueryable<Message> GetMessages();
-        Task<Message?> GetMessageByIdAsync(Guid messageId);
-        Task AddMessageAsync(Message message);
-        Task UpdateMessageAsync(Message message);
-        Task DeleteMessageAsync(Guid messageId);
+        Message? GetMessageById(Guid messageId);
+        Message AddMessage(Message message);
+        Message? UpdateMessage(Message message);
+        Message? DeleteMessage(Guid messageId);
     }
 }

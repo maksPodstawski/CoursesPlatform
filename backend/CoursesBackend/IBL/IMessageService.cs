@@ -9,11 +9,11 @@ namespace IBL
 {
     public interface IMessageService
     {
-        IQueryable<Message> GetMessagesByChatIdAsync(Guid chatId);
+        Task<List<Message>> GetMessagesByChatIdAsync(Guid chatId);
         Task<Message?> GetMessageByIdAsync(Guid messageId);
-        Task AddMessageAsync(Message message);
-        Task EditMessageAsync(Guid messageId, string newContent);
-        Task DeleteMessageAsync(Guid messageId);
+        Task<Message> AddMessageAsync(Message message);
+        Task<Message?> EditMessageAsync(Guid messageId, string newContent);
+        Task<Message?> DeleteMessageAsync(Guid messageId);
         Task<bool> MessageExistsAsync(Guid messageId);
     }
 }
