@@ -19,10 +19,8 @@ namespace DAL.Tests
         [Fact]
         public void GetChatUserById_WhenChatUserDoesNotExist_ReturnsNull()
         {
-            // Arrange
             var options = CreateNewContextOptions();
 
-            // Act
             using (var context = new CoursesPlatformContext(options))
             {
                 var repository = new ChatUserRepository(context);
@@ -30,7 +28,6 @@ namespace DAL.Tests
 
                 var result = repository.GetChatUserById(dummyGuid);
 
-                // Assert
                 Assert.Null(result);
             }
         }
@@ -38,7 +35,6 @@ namespace DAL.Tests
         [Fact]
         public void GetChatUsers_ReturnsAllChatUsers()
         {
-            // Arrange
             var options = CreateNewContextOptions();
 
             var userId1 = Guid.NewGuid();
@@ -65,13 +61,11 @@ namespace DAL.Tests
                 context.SaveChanges();
             }
 
-            // Act
             using (var context = new CoursesPlatformContext(options))
             {
                 var repository = new ChatUserRepository(context);
                 var result = repository.GetChatUsers().ToList();
 
-                // Assert
                 Assert.Equal(2, result.Count);
                 Assert.Contains(result, cu => cu.UserId == userId1);
                 Assert.Contains(result, cu => cu.UserId == userId2);
@@ -81,7 +75,6 @@ namespace DAL.Tests
         [Fact]
         public void AddChatUser_SavesChatUserToDatabase()
         {
-            // Arrange
             var options = CreateNewContextOptions();
             
             var userId = Guid.NewGuid();
@@ -105,14 +98,12 @@ namespace DAL.Tests
                 context.SaveChanges();
             }
 
-            // Act
             using (var context = new CoursesPlatformContext(options))
             {
                 var repository = new ChatUserRepository(context);
                 repository.AddChatUser(newChatUser);
             }
 
-            // Assert
             using (var context = new CoursesPlatformContext(options))
             {
                 Assert.Equal(1, context.ChatUsers.Count());
@@ -126,7 +117,6 @@ namespace DAL.Tests
         [Fact]
         public void UpdateChatUser_ExistingChatUser_UpdatesAndReturnsChatUser()
         {
-            // Arrange
             var options = CreateNewContextOptions();
             
             var userId = Guid.NewGuid();
@@ -155,31 +145,25 @@ namespace DAL.Tests
                 context.SaveChanges();
             }
             
-            // Create updated version with new values
             var newJoinDate = DateTime.UtcNow;
 
-            // Act
             using (var context = new CoursesPlatformContext(options))
             {
                 var repository = new ChatUserRepository(context);
                 
-                // Get the existing entity first, then update its properties
                 var existingChatUser = context.ChatUsers.Find(chatUserId);
                 existingChatUser.ChatId = chatId2;
                 existingChatUser.JoinedAt = newJoinDate;
                 
                 var result = repository.UpdateChatUser(existingChatUser);
 
-                // Assert
                 Assert.NotNull(result);
                 Assert.Equal(chatUserId, result.Id);
                 Assert.Equal(chatId2, result.ChatId);
                 
-                // Save explicitly to ensure changes are committed
                 context.SaveChanges();
             }
             
-            // Verify updates in database
             using (var context = new CoursesPlatformContext(options))
             {
                 var savedChatUser = context.ChatUsers.Single();
@@ -192,11 +176,9 @@ namespace DAL.Tests
         [Fact]
         public void UpdateChatUser_NonExistingChatUser_ReturnsNull()
         {
-            // Arrange
             var options = CreateNewContextOptions();
             var nonExistingId = Guid.NewGuid();
             
-            // Act
             using (var context = new CoursesPlatformContext(options))
             {
                 var repository = new ChatUserRepository(context);
@@ -211,7 +193,6 @@ namespace DAL.Tests
                 
                 var result = repository.UpdateChatUser(nonExistingChatUser);
 
-                // Assert
                 Assert.Null(result);
             }
         }
@@ -219,7 +200,6 @@ namespace DAL.Tests
         [Fact]
         public void DeleteChatUser_ExistingChatUser_RemovesChatUserAndReturnsChatUser()
         {
-            // Arrange
             var options = CreateNewContextOptions();
             
             var userId = Guid.NewGuid();
@@ -247,20 +227,17 @@ namespace DAL.Tests
                 context.SaveChanges();
             }
 
-            // Act
             using (var context = new CoursesPlatformContext(options))
             {
                 var repository = new ChatUserRepository(context);
                 var result = repository.DeleteChatUser(chatUserId);
 
-                // Assert
                 Assert.NotNull(result);
                 Assert.Equal(chatUserId, result.Id);
                 Assert.Equal(userId, result.UserId);
                 Assert.Equal(chatId, result.ChatId);
             }
 
-            // Verify removal from database
             using (var context = new CoursesPlatformContext(options))
             {
                 Assert.Empty(context.ChatUsers);
@@ -270,16 +247,13 @@ namespace DAL.Tests
         [Fact]
         public void DeleteChatUser_NonExistingChatUser_ReturnsNull()
         {
-            // Arrange
             var options = CreateNewContextOptions();
 
-            // Act
             using (var context = new CoursesPlatformContext(options))
             {
                 var repository = new ChatUserRepository(context);
                 var result = repository.DeleteChatUser(Guid.NewGuid());
 
-                // Assert
                 Assert.Null(result);
             }
         }
