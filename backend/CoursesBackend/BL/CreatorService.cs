@@ -33,13 +33,20 @@ namespace BL
 
         public async Task<Creator> AddCreatorAsync(Creator creator)
         {
-            return await Task.FromResult(_creatorRepository.AddCreator(creator));
+            if (creator == null)
+                throw new ArgumentNullException(nameof(creator));
+
+            var result = _creatorRepository.AddCreator(creator);
+            if (result == null)
+                throw new InvalidOperationException("Failed to add creator. Repository returned null.");
+
+            return await Task.FromResult(result);
         }
 
         public async Task<Creator?> DeleteCreatorAsync(Guid creatorId)
         {
-            var existing = await Task.FromResult(_creatorRepository.GetCreatorByID(creatorId));
-            if (existing == null) return null;
+            if (creatorId == Guid.Empty)
+                throw new ArgumentException("Creator ID cannot be empty.", nameof(creatorId));
 
             return await Task.FromResult(_creatorRepository.DeleteCreator(creatorId));
         }
@@ -59,13 +66,13 @@ namespace BL
             .Where(c => c.UserId == userId)
             .AnyAsync(c => c.Courses.Any(course => course.Id == courseId));
         }
+
         public async Task<Creator> AddCreatorFromUserAsync(Guid userId, Guid courseId)
         {
+
             var course = await Task.FromResult(_courseRepository.GetCourseById(courseId));
             if (course == null)
-            {
-                throw new ArgumentException("Course not found");
-            }
+                throw new ArgumentNullException("Course not found");
 
             var creator = new Creator
             {
@@ -75,6 +82,6 @@ namespace BL
             };
 
             return await Task.FromResult(_creatorRepository.AddCreator(creator));
-                    }
+        }
     }
 }

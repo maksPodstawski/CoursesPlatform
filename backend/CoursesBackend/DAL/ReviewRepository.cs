@@ -34,7 +34,7 @@ public class ReviewRepository : IReviewRepository
 
     public Review? UpdateReview(Review review)
     {
-        var existing = _context.Reviews.FirstOrDefault(r => r.Id == review.Id);
+        var existing = _context.Reviews.AsNoTracking().FirstOrDefault(r => r.Id == review.Id);
         if (existing == null)
             return null;
 

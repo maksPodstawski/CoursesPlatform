@@ -25,9 +25,6 @@ namespace DAL
         public Category? GetCategoryById(Guid categoryId)
         {
             return _context.Categories.FirstOrDefault(c => c.Id == categoryId);
-            /*return _context.Categories
-                    .Include(c => c.Subcategories)
-                    .FirstOrDefault(c => c.Id == categoryId);*/
         }
         public Category AddCategory(Category category)
         {
