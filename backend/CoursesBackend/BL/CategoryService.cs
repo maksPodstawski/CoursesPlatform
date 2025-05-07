@@ -38,18 +38,37 @@ namespace BL
             return await Task.FromResult(category.Subcategories);
         }
 
-
-
         public async Task<Category> AddCategoryAsync(Category category)
         {
-            return await Task.FromResult(_categoryRepository.AddCategory(category));
+            if (category == null)
+                throw new ArgumentNullException(nameof(category));
+
+            if(string.IsNullOrWhiteSpace(category.Name))
+                throw new ArgumentException("Category name cannot be null or empty.", nameof(category.Name));
+
+            var result = _categoryRepository.AddCategory(category);
+            if (result == null)
+                throw new InvalidOperationException("Failed to add category. Repository returned null.");
+
+            return await Task.FromResult(result);
         }
+
         public async Task<Category?> UpdateCategoryAsync(Category category)
         {
+            if (category == null)
+                throw new ArgumentNullException(nameof(category));
+
+            if (string.IsNullOrWhiteSpace(category.Name))
+                throw new ArgumentException("Category name cannot be null or empty.", nameof(category.Name));
+
             return await Task.FromResult(_categoryRepository.UpdateCategory(category));
         }
+
         public async Task<Category?> DeleteCategoryAsync(Guid id)
         {
+            if (id == Guid.Empty)
+                throw new ArgumentException("Category ID cannot be empty.", nameof(id));
+
             return await Task.FromResult(_categoryRepository.DeleteCategory(id));
         }
     }

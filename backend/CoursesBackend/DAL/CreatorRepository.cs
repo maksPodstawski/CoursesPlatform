@@ -36,7 +36,7 @@ namespace DAL
             if (existing == null)
                 return null;
 
-            _context.Creators.Update(creator);
+            existing.UserId = creator.UserId;
             _context.SaveChanges();
             return creator;
         }
