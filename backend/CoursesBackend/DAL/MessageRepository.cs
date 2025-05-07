@@ -36,6 +36,8 @@ public class MessageRepository : IMessageRepository
         if (existing == null)
             return null;
 
+        _context.Entry(existing).State = EntityState.Detached;
+
         _context.Messages.Update(message);
         _context.SaveChanges();
         return message;

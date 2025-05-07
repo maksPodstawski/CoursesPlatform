@@ -32,7 +32,7 @@ public class ProgressRepository : IProgressRepository
 
     public Progress? UpdateProgress(Progress progress)
     {
-        var existing = _context.Progresses.FirstOrDefault(p => p.Id == progress.Id);
+        var existing = _context.Progresses.AsNoTracking().FirstOrDefault(p => p.Id == progress.Id);
         if (existing == null)
             return null;
 

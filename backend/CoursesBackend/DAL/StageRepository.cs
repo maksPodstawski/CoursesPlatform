@@ -29,7 +29,7 @@ namespace DAL
         }
         public Stage? UpdateStage(Stage stage)
         {
-            var existing = _context.Stages.FirstOrDefault(s => s.Id == stage.Id);
+            var existing = _context.Stages.AsNoTracking().FirstOrDefault(s => s.Id == stage.Id);
             if (existing == null)
                 return null;
 
