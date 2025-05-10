@@ -13,11 +13,12 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["COURSES.API/COURSES.API.csproj", "COURSES.API/"]
-COPY ["BL/BL.csproj", "BL/"]
-COPY ["DAL/DAL.csproj", "DAL/"]
-COPY ["IDAL/IDAL.csproj", "IDAL/"]
-COPY ["Model/Model.csproj", "Model/"]
-COPY ["IBL/IBL.csproj", "IBL/"]
+COPY ["../IBL/IBL.csproj", "IBL/"]
+COPY ["../BL/BL.csproj", "BL/"]
+COPY ["../DAL/DAL.csproj", "DAL/"]
+COPY ["../IDAL/IDAL.csproj", "IDAL/"]
+COPY ["../Model/Model.csproj", "Model/"]
+
 RUN dotnet restore "./COURSES.API/COURSES.API.csproj"
 COPY . .
 WORKDIR "/src/COURSES.API"
