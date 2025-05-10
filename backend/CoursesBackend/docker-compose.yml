@@ -1,0 +1,6 @@
+services:
+  courses.api:
+    image: ${DOCKER_REGISTRY-}coursesapi
+    build:
+      context: .
+      dockerfile: COURSES.API/Dockerfile

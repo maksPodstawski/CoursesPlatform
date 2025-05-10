@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BL
+namespace BL.Services
 {
     public class CreatorService : ICreatorService
     {
@@ -23,7 +23,10 @@ namespace BL
 
         public async Task<List<Creator>> GetAllCreatorsAsync()
         {
-            return await _creatorRepository.GetCreators().ToListAsync();
+            return await _creatorRepository.GetCreators()
+                .Include(c => c.User)
+                .Include(c => c.Courses)
+                .ToListAsync();
         }
 
         public async Task<Creator?> GetCreatorByIdAsync(Guid creatorId)
@@ -54,22 +57,23 @@ namespace BL
         public async Task<List<Course>> GetCoursesByCreatorAsync(Guid userId)
         {
             return await _creatorRepository.GetCreators()
-            .Where(c => c.UserId == userId)
-            .SelectMany(c => c.Courses)
-            .Distinct() 
-            .ToListAsync();
+                .Where(c => c.UserId == userId)
+                .Include(c => c.Courses)
+                .SelectMany(c => c.Courses)
+                .Distinct()
+                .ToListAsync();
         }
 
         public async Task<bool> IsUserCreatorOfCourseAsync(Guid userId, Guid courseId)
         {
             return await _creatorRepository.GetCreators()
-            .Where(c => c.UserId == userId)
-            .AnyAsync(c => c.Courses.Any(course => course.Id == courseId));
+                .Where(c => c.UserId == userId)
+                .Include(c => c.Courses)
+                .AnyAsync(c => c.Courses.Any(course => course.Id == courseId));
         }
 
         public async Task<Creator> AddCreatorFromUserAsync(Guid userId, Guid courseId)
         {
-
             var course = await Task.FromResult(_courseRepository.GetCourseById(courseId));
             if (course == null)
                 throw new ArgumentNullException("Course not found");

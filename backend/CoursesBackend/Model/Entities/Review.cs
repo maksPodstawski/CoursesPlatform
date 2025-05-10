@@ -25,6 +25,9 @@ namespace Model
         [Required]
         public Guid CourseId { get; set; }
 
+        [Required]
+        public DateTime CreatedAt { get; set; }
+
         [ForeignKey(nameof(CourseId))]
         public Course Course { get; set; }
 

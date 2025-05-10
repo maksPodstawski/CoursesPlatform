@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Model;
 
 namespace DAL
 {
-    public class CoursesPlatformContext : DbContext
+    public class CoursesPlatformContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Chat> Chats { get; set; }

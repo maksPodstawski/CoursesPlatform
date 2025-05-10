@@ -3,7 +3,7 @@ using IDAL;
 using Microsoft.EntityFrameworkCore;
 using Model;
 
-namespace BL
+namespace BL.Services
 {
     public class StageService : IStageService
     {

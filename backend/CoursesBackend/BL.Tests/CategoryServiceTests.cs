@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using IBL;
+using BL.Services;
 
 namespace BL.Tests
 {

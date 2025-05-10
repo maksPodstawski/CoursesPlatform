@@ -9,6 +9,7 @@ using Model;
 using Moq;
 using MockQueryable.Moq;
 using Xunit;
+using BL.Services;
 
 namespace BL.Tests
 {

@@ -1,4 +1,5 @@
-﻿using IDAL;
+﻿using IBL;
+using IDAL;
 using Microsoft.EntityFrameworkCore;
 using Model;
 using System;
@@ -7,9 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BL
+namespace BL.Services
 {
-    public class ChatUserService
+    public class ChatUserService: IChatUserService
     {
         private readonly IChatUserRepository _chatUserRepository;
 
