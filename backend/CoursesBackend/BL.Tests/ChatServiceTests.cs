@@ -223,5 +223,127 @@ namespace BL.Tests
 
             Assert.False(result);
         }
+
+        private class DummyChatRepository : IChatRepository
+        {
+            public Chat AddChat(Chat chat) => throw new NotImplementedException();
+            public Chat DeleteChat(Guid chatId) => throw new NotImplementedException();
+            public IQueryable<Chat> GetChats() => throw new NotImplementedException();
+            public Chat GetChatById(Guid chatId) => throw new NotImplementedException();
+            public Chat UpdateChat(Chat chat) => throw new NotImplementedException();
+        }
+
+        [Fact]
+        public void DummyChatRepository_CanBeConstructed()
+        {
+            var dummy = new DummyChatRepository();
+            var service = new ChatService(dummy);
+            Assert.NotNull(service);
+        }
+
+        private class StubChatRepository : IChatRepository
+        {
+            public Chat AddChat(Chat chat) => null;
+            public Chat DeleteChat(Guid chatId) => null;
+            public IQueryable<Chat> GetChats() => new List<Chat> { new Chat { Name = "Stub" } }.AsQueryable();
+            public Chat GetChatById(Guid chatId) => new Chat { Id = chatId, Name = "Stub Chat" };
+            public Chat UpdateChat(Chat chat) => null;
+            public Task<List<Chat>> GetAllChatsAsync()
+            {
+                return Task.FromResult(new List<Chat>
+                {
+                    new Chat { Id = Guid.NewGuid(), Name = "Stub" }
+                });
+            }
+
+        }
+
+        private class FakeChatRepository : IChatRepository
+        {
+            private readonly Dictionary<Guid, Chat> _chats = new();
+
+            public Chat AddChat(Chat chat)
+            {
+                _chats[chat.Id] = chat;
+                return chat;
+            }
+
+            public Chat DeleteChat(Guid chatId)
+            {
+                if (_chats.TryGetValue(chatId, out var chat))
+                {
+                    _chats.Remove(chatId);
+                    return chat;
+                }
+                return null;
+            }
+
+            public IQueryable<Chat> GetChats() => _chats.Values.AsQueryable();
+
+            public Chat GetChatById(Guid chatId) => _chats.ContainsKey(chatId) ? _chats[chatId] : null;
+
+            public Chat UpdateChat(Chat chat)
+            {
+                _chats[chat.Id] = chat;
+                return chat;
+            }
+        }
+
+        [Fact]
+        public async Task FakeChatRepository_AddAndRetrieveChat()
+        {
+            var repo = new FakeChatRepository();
+            var service = new ChatService(repo);
+
+            var chat = new Chat { Id = Guid.NewGuid(), Name = "Fake Chat" };
+            await service.AddChatAsync(chat);
+
+            var retrieved = await service.GetChatByIdAsync(chat.Id);
+
+            Assert.NotNull(retrieved);
+            Assert.Equal("Fake Chat", retrieved.Name);
+        }
+
+        private class SpyChatRepository : IChatRepository
+        {
+            public bool UpdateCalled = false;
+
+            public Chat AddChat(Chat chat) => chat;
+            public Chat DeleteChat(Guid chatId) => null;
+            public IQueryable<Chat> GetChats() => new List<Chat>().AsQueryable();
+            public Chat GetChatById(Guid chatId) => new Chat { Id = chatId, Name = "Chat" };
+
+            public Chat UpdateChat(Chat chat)
+            {
+                UpdateCalled = true;
+                return chat;
+            }
+        }
+
+        [Fact]
+        public async Task SpyChatRepository_RenameChatAsync_CallsUpdate()
+        {
+            var spy = new SpyChatRepository();
+            var service = new ChatService(spy);
+
+            var chatId = Guid.NewGuid();
+            await service.RenameChatAsync(chatId, "New Name");
+
+            Assert.True(spy.UpdateCalled);
+        }
+
+        [Fact]
+        public async Task Mock_VerifyAddChatCalledOnce()
+        {
+            var mock = new Mock<IChatRepository>();
+            var service = new ChatService(mock.Object);
+
+            var chat = new Chat { Id = Guid.NewGuid(), Name = "Test" };
+            mock.Setup(r => r.AddChat(chat)).Returns(chat);
+
+            await service.AddChatAsync(chat);
+
+            mock.Verify(r => r.AddChat(chat), Times.Once);
+        }
     }
 }

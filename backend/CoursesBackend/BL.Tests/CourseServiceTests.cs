@@ -228,5 +228,148 @@ namespace BL.Tests
         {
             await Assert.ThrowsAsync<ArgumentException>(() => _service.DeleteCourseAsync(Guid.Empty));
         }
+
+        [Fact]
+        public async Task GetCourseByIdAsync_UsingStub_ReturnsFixedCourse()
+        {
+            var expectedCourse = new Course { Id = Guid.NewGuid(), Name = "Stubbed Course" };
+            var stubRepo = new StubCourseRepository(expectedCourse);
+            var service = new CourseService(stubRepo);
+
+            var result = await service.GetCourseByIdAsync(expectedCourse.Id);
+
+            Assert.NotNull(result);
+            Assert.Equal(expectedCourse.Id, result!.Id);
+        }
+
+        [Fact]
+        public async Task AddCourseAsync_UsingSpy_VerifiesAddWasCalled()
+        {
+            var spyRepo = new SpyCourseRepository();
+            var service = new CourseService(spyRepo);
+            var newCourse = new Course { Id = Guid.NewGuid(), Name = "Spy Course" };
+
+            await service.AddCourseAsync(newCourse);
+
+            Assert.True(spyRepo.WasAddCalled);
+            Assert.Equal(newCourse.Id, spyRepo.LastAddedCourse!.Id);
+        }
+
+        [Fact]
+        public async Task DeleteCourseAsync_UsingManualMock_VerifiesCallAndReturnsCourse()
+        {
+            var courseId = Guid.NewGuid();
+            var mockRepo = new ManualMockCourseRepository(courseId);
+            var service = new CourseService(mockRepo);
+
+            var result = await service.DeleteCourseAsync(courseId);
+
+            Assert.True(mockRepo.DeleteCalled);
+            Assert.Equal(courseId, result!.Id);
+        }
+        private class DummyCourseRepository : ICourseRepository
+        {
+            public Course AddCourse(Course course) => throw new NotImplementedException();
+            public Course? DeleteCourse(Guid courseId) => throw new NotImplementedException();
+            public Course? GetCourseById(Guid courseId) => throw new NotImplementedException();
+            public IQueryable<Course> GetCourses() => Enumerable.Empty<Course>().AsQueryable();
+            public Course? UpdateCourse(Course course) => throw new NotImplementedException();
+        }
+
+        private class StubCourseRepository : ICourseRepository
+        {
+            private readonly Course _fixedCourse;
+
+            public StubCourseRepository(Course fixedCourse)
+            {
+                _fixedCourse = fixedCourse;
+            }
+
+            public Course AddCourse(Course course) => course;
+            public Course? DeleteCourse(Guid courseId) => null;
+            public Course? GetCourseById(Guid courseId) => _fixedCourse;
+            public IQueryable<Course> GetCourses() => Enumerable.Empty<Course>().AsQueryable();
+            public Course? UpdateCourse(Course course) => course;
+        }
+
+        private class FakeCourseRepository : ICourseRepository
+        {
+            private readonly List<Course> _courses = new List<Course>
+            {
+                new Course { Id = Guid.NewGuid(), Name = "Fake 1" },
+                new Course { Id = Guid.NewGuid(), Name = "Fake 2" }
+            };
+
+            public Course AddCourse(Course course)
+            {
+                _courses.Add(course);
+                return course;
+            }
+
+            public Course? DeleteCourse(Guid courseId)
+            {
+                var course = _courses.FirstOrDefault(c => c.Id == courseId);
+                if (course != null) _courses.Remove(course);
+                return course;
+            }
+
+            public Course? GetCourseById(Guid courseId) => _courses.FirstOrDefault(c => c.Id == courseId);
+            public IQueryable<Course> GetCourses() => _courses.AsQueryable();
+            public Course? UpdateCourse(Course course)
+            {
+                var index = _courses.FindIndex(c => c.Id == course.Id);
+                if (index != -1)
+                {
+                    _courses[index] = course;
+                    return course;
+                }
+                return null;
+            }
+        }
+
+        private class SpyCourseRepository : ICourseRepository
+        {
+            public bool WasAddCalled { get; private set; } = false;
+            public Course? LastAddedCourse { get; private set; }
+
+            public Course AddCourse(Course course)
+            {
+                WasAddCalled = true;
+                LastAddedCourse = course;
+                return course;
+            }
+
+            public Course? DeleteCourse(Guid courseId) => null;
+            public Course? GetCourseById(Guid courseId) => null;
+            public IQueryable<Course> GetCourses() => Enumerable.Empty<Course>().AsQueryable();
+            public Course? UpdateCourse(Course course) => null;
+        }
+
+        private class ManualMockCourseRepository : ICourseRepository
+        {
+            private readonly Guid _expectedId;
+            public bool DeleteCalled { get; private set; } = false;
+
+            public ManualMockCourseRepository(Guid expectedId)
+            {
+                _expectedId = expectedId;
+            }
+
+            public Course AddCourse(Course course) => course;
+
+            public Course? DeleteCourse(Guid courseId)
+            {
+                if (courseId == _expectedId)
+                {
+                    DeleteCalled = true;
+                    return new Course { Id = courseId };
+                }
+                return null;
+            }
+
+            public Course? GetCourseById(Guid courseId) => null;
+            public IQueryable<Course> GetCourses() => Enumerable.Empty<Course>().AsQueryable();
+            public Course? UpdateCourse(Course course) => course;
+        }
     }
 }

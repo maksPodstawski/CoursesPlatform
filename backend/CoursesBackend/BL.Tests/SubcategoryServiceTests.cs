@@ -30,7 +30,6 @@ namespace BL.Tests
             var dummyRepo = new DummySubcategoryRepository();
             var service = new SubcategoryService(dummyRepo);
 
-            // Operacja nie używa repozytorium
             var subcategory = new Subcategory { Name = "Dummy", CategoryId = Guid.NewGuid() };
             await Assert.ThrowsAsync<NotImplementedException>(() => service.AddSubcategoryAsync(subcategory));
         }

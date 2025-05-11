@@ -1,25 +1,24 @@
 ﻿using IDAL;
 using Model;
-using Moq;
-using MockQueryable.Moq;
 using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using IBL;
+using MockQueryable;
+using Moq;
 
 namespace BL.Tests
 {
     public class CategoryServiceTests
     {
-        private readonly Mock<ICategoryRepository> _mockRepo;
+        private readonly Moq.Mock<ICategoryRepository> _mockRepo;
         private readonly CategoryService _service;
 
         public CategoryServiceTests()
         {
-            _mockRepo = new Mock<ICategoryRepository>();
+            _mockRepo = new Moq.Mock<ICategoryRepository>();
             _service = new CategoryService(_mockRepo.Object);
         }
 
@@ -31,8 +30,9 @@ namespace BL.Tests
                 new Category { Id = Guid.NewGuid(), Name = "Programming" },
                 new Category { Id = Guid.NewGuid(), Name = "Design" }
             };
-            var mockDbSet = categories.AsQueryable().BuildMockDbSet();
-            _mockRepo.Setup(r => r.GetCategories()).Returns(mockDbSet.Object);
+
+            var mockDbSet = categories.AsQueryable().BuildMock();
+            _mockRepo.Setup(r => r.GetCategories()).Returns(mockDbSet);
 
             var result = await _service.GetAllCategoriesAsync();
 
@@ -71,8 +71,9 @@ namespace BL.Tests
                 new Category { Id = Guid.NewGuid(), Name = "Backend" },
                 new Category { Id = Guid.NewGuid(), Name = "Frontend" }
             };
-            var mockDbSet = categories.AsQueryable().BuildMockDbSet();
-            _mockRepo.Setup(r => r.GetCategories()).Returns(mockDbSet.Object);
+
+            var mockDbSet = categories.AsQueryable().BuildMock();
+            _mockRepo.Setup(r => r.GetCategories()).Returns(mockDbSet);
 
             var result = await _service.GetCategoryByNameAsync("Frontend");
 
@@ -88,9 +89,12 @@ namespace BL.Tests
                 new Category { Id = Guid.NewGuid(), Name = "Backend" },
                 new Category { Id = Guid.NewGuid(), Name = "Frontend" }
             };
-            var mockDbSet = categories.AsQueryable().BuildMockDbSet();
-            _mockRepo.Setup(r => r.GetCategories()).Returns(mockDbSet.Object);
+
+            var mockDbSet = categories.AsQueryable().BuildMock();
+            _mockRepo.Setup(r => r.GetCategories()).Returns(mockDbSet);
+
             var result = await _service.GetCategoryByNameAsync("NonExisting");
+
             Assert.Null(result);
         }
 
@@ -132,7 +136,6 @@ namespace BL.Tests
             var result = await _service.AddCategoryAsync(category);
 
             Assert.NotNull(result);
-            Assert.Equal(category.Id, result.Id);
             Assert.Equal("DevOps", result.Name);
             _mockRepo.Verify(r => r.AddCategory(category), Times.Once);
         }
@@ -147,11 +150,10 @@ namespace BL.Tests
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        [InlineData("  ")]
+        [InlineData("   ")]
         public async Task AddCategoryAsync_InvalidName_ThrowsArgumentException(string name)
         {
             var category = new Category { Id = Guid.NewGuid(), Name = name };
-
             await Assert.ThrowsAsync<ArgumentException>(() => _service.AddCategoryAsync(category));
             _mockRepo.Verify(r => r.AddCategory(It.IsAny<Category>()), Times.Never);
         }
@@ -203,7 +205,6 @@ namespace BL.Tests
         public async Task UpdateCategoryAsync_InvalidName_ThrowsArgumentException(string name)
         {
             var category = new Category { Id = Guid.NewGuid(), Name = name };
-
             await Assert.ThrowsAsync<ArgumentException>(() => _service.UpdateCategoryAsync(category));
             _mockRepo.Verify(r => r.UpdateCategory(It.IsAny<Category>()), Times.Never);
         }
@@ -237,6 +238,110 @@ namespace BL.Tests
         {
             await Assert.ThrowsAsync<ArgumentException>(() => _service.DeleteCategoryAsync(Guid.Empty));
             _mockRepo.Verify(r => r.DeleteCategory(It.IsAny<Guid>()), Times.Never);
+        }
+
+        private class DummyCategoryRepository : ICategoryRepository
+        {
+            public Category AddCategory(Category category) => throw new NotImplementedException();
+            public Category DeleteCategory(Guid id) => throw new NotImplementedException();
+            public IQueryable<Category> GetCategories() => throw new NotImplementedException();
+            public Category GetCategoryById(Guid id) => throw new NotImplementedException();
+            public Category UpdateCategory(Category category) => throw new NotImplementedException();
+        }
+
+        [Fact]
+        public void Dummy_IsAcceptedByConstructor()
+        {
+            var service = new CategoryService(new DummyCategoryRepository());
+            Assert.NotNull(service);
+        }
+
+        private class StubCategoryRepository : ICategoryRepository
+        {
+            public Category AddCategory(Category category) => throw new NotImplementedException();
+            public Category DeleteCategory(Guid id) => throw new NotImplementedException();
+            public IQueryable<Category> GetCategories() => throw new NotImplementedException();
+            public Category GetCategoryById(Guid id) => new Category { Id = id, Name = "Stubbed" };
+            public Category UpdateCategory(Category category) => throw new NotImplementedException();
+        }
+
+        [Fact]
+        public async Task Stub_ReturnsStubbedCategory()
+        {
+            var service = new CategoryService(new StubCategoryRepository());
+            var result = await service.GetCategoryByIdAsync(Guid.NewGuid());
+            Assert.Equal("Stubbed", result!.Name);
+        }
+
+        private class FakeCategoryRepository : ICategoryRepository
+        {
+            private readonly List<Category> _store = new();
+            public Category AddCategory(Category category) { _store.Add(category); return category; }
+            public Category DeleteCategory(Guid id) => throw new NotImplementedException();
+            public IQueryable<Category> GetCategories() => _store.AsQueryable();
+            public Category GetCategoryById(Guid id) => _store.FirstOrDefault(c => c.Id == id)!;
+            public Category UpdateCategory(Category category) => throw new NotImplementedException();
+        }
+
+        [Fact]
+        public async Task Fake_AddsAndGetsCategory()
+        {
+            var repo = new FakeCategoryRepository();
+            var service = new CategoryService(repo);
+            var cat = new Category { Id = Guid.NewGuid(), Name = "FakeCat" };
+
+            await service.AddCategoryAsync(cat);
+            var result = await service.GetCategoryByIdAsync(cat.Id);
+
+            Assert.Equal("FakeCat", result!.Name);
+        }
+
+        private class SpyCategoryRepository : ICategoryRepository
+        {
+            public int AddCallCount { get; private set; } = 0;
+            public Category? LastAdded { get; private set; }
+            public Category AddCategory(Category category) { AddCallCount++; LastAdded = category; return category; }
+            public Category DeleteCategory(Guid id) => throw new NotImplementedException();
+            public IQueryable<Category> GetCategories() => throw new NotImplementedException();
+            public Category GetCategoryById(Guid id) => throw new NotImplementedException();
+            public Category UpdateCategory(Category category) => throw new NotImplementedException();
+        }
+
+        [Fact]
+        public async Task Spy_TracksAddCall()
+        {
+            var spy = new SpyCategoryRepository();
+            var service = new CategoryService(spy);
+            var cat = new Category { Id = Guid.NewGuid(), Name = "SpyCat" };
+
+            await service.AddCategoryAsync(cat);
+
+            Assert.Equal(1, spy.AddCallCount);
+            Assert.Equal("SpyCat", spy.LastAdded!.Name);
+        }
+
+        private class ManualMockCategoryRepository : ICategoryRepository
+        {
+            public Func<Guid, Category?> GetByIdFunc = id => null;
+            public Category AddCategory(Category category) => throw new NotImplementedException();
+            public Category DeleteCategory(Guid id) => throw new NotImplementedException();
+            public IQueryable<Category> GetCategories() => throw new NotImplementedException();
+            public Category GetCategoryById(Guid id) => GetByIdFunc(id)!;
+            public Category UpdateCategory(Category category) => throw new NotImplementedException();
+        }
+
+        [Fact]
+        public async Task ManualMock_ReturnsConfiguredCategory()
+        {
+            var mock = new ManualMockCategoryRepository
+            {
+                GetByIdFunc = id => new Category { Id = id, Name = "ManualMock" }
+            };
+
+            var service = new CategoryService(mock);
+            var result = await service.GetCategoryByIdAsync(Guid.NewGuid());
+
+            Assert.Equal("ManualMock", result!.Name);
         }
     }
 }

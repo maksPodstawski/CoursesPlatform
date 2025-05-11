@@ -206,5 +206,191 @@ namespace BL.Tests
             Assert.True(progress.IsCompleted);
             Assert.Equal(previousDate, progress.CompletedAt);
         }
+        public class ProgressRepositoryDummy : IProgressRepository
+        {
+            public IQueryable<Progress> GetProgresses()
+            {
+                return new List<Progress>().AsQueryable(); 
+            }
+
+            public Progress? GetProgressById(Guid progressId)
+            {
+                return null; 
+            }
+
+            public Progress AddProgress(Progress progress)
+            {
+                return progress; 
+            }
+
+            public Progress? UpdateProgress(Progress progress)
+            {
+                return progress; 
+            }
+
+            public Progress? DeleteProgress(Guid progressId)
+            {
+                return null; 
+            }
+        }
+        public class ProgressRepositoryStub : IProgressRepository
+        {
+            private readonly List<Progress> _progresses;
+
+            public ProgressRepositoryStub(List<Progress> progresses)
+            {
+                _progresses = progresses;
+            }
+
+            public IQueryable<Progress> GetProgresses()
+            {
+                return _progresses.AsQueryable(); 
+            }
+
+            public Progress? GetProgressById(Guid progressId)
+            {
+                return _progresses.FirstOrDefault(p => p.Id == progressId); 
+            }
+
+            public Progress AddProgress(Progress progress)
+            {
+                _progresses.Add(progress);
+                return progress; 
+            }
+
+            public Progress? UpdateProgress(Progress progress)
+            {
+                var existing = _progresses.FirstOrDefault(p => p.Id == progress.Id);
+                if (existing != null)
+                {
+                    existing = progress; 
+                    return existing;
+                }
+                return null;
+            }
+
+            public Progress? DeleteProgress(Guid progressId)
+            {
+                var progress = _progresses.FirstOrDefault(p => p.Id == progressId);
+                if (progress != null)
+                {
+                    _progresses.Remove(progress);
+                    return progress;
+                }
+                return null;
+            }
+        }
+        public class ProgressRepositoryFake : IProgressRepository
+        {
+            private readonly List<Progress> _progresses = new List<Progress>();
+
+            public IQueryable<Progress> GetProgresses()
+            {
+                return _progresses.AsQueryable(); 
+            }
+
+            public Progress? GetProgressById(Guid progressId)
+            {
+                return _progresses.FirstOrDefault(p => p.Id == progressId); 
+            }
+
+            public Progress AddProgress(Progress progress)
+            {
+                progress.Id = Guid.NewGuid(); 
+                _progresses.Add(progress);
+                return progress; 
+            }
+
+            public Progress? UpdateProgress(Progress progress)
+            {
+                var existing = _progresses.FirstOrDefault(p => p.Id == progress.Id);
+                if (existing != null)
+                {
+                    _progresses.Remove(existing);
+                    _progresses.Add(progress); 
+                    return progress;
+                }
+                return null;
+            }
+
+            public Progress? DeleteProgress(Guid progressId)
+            {
+                var progress = _progresses.FirstOrDefault(p => p.Id == progressId);
+                if (progress != null)
+                {
+                    _progresses.Remove(progress);
+                    return progress; 
+                }
+                return null;
+            }
+        }
+        public class ProgressRepositoryMock : IProgressRepository
+        {
+            private readonly Mock<IProgressRepository> _mock;
+
+            public ProgressRepositoryMock()
+            {
+                _mock = new Mock<IProgressRepository>();
+            }
+
+            public IQueryable<Progress> GetProgresses()
+            {
+                return _mock.Object.GetProgresses();
+            }
+
+            public Progress? GetProgressById(Guid progressId)
+            {
+                return _mock.Object.GetProgressById(progressId);
+            }
+
+            public Progress AddProgress(Progress progress)
+            {
+                return _mock.Object.AddProgress(progress);
+            }
+
+            public Progress? UpdateProgress(Progress progress)
+            {
+                return _mock.Object.UpdateProgress(progress);
+            }
+
+            public Progress? DeleteProgress(Guid progressId)
+            {
+                return _mock.Object.DeleteProgress(progressId);
+            }
+        }
+        public class ProgressRepositorySpy : IProgressRepository
+        {
+            public List<string> MethodCalls { get; } = new List<string>();
+
+            public IQueryable<Progress> GetProgresses()
+            {
+                MethodCalls.Add(nameof(GetProgresses));
+                return new List<Progress>().AsQueryable(); 
+            }
+
+            public Progress? GetProgressById(Guid progressId)
+            {
+                MethodCalls.Add(nameof(GetProgressById));
+                return new Progress { Id = progressId }; 
+            }
+
+            public Progress AddProgress(Progress progress)
+            {
+                MethodCalls.Add(nameof(AddProgress));
+                return progress; 
+            }
+
+            public Progress? UpdateProgress(Progress progress)
+            {
+                MethodCalls.Add(nameof(UpdateProgress));
+                return progress; 
+            }
+
+            public Progress? DeleteProgress(Guid progressId)
+            {
+                MethodCalls.Add(nameof(DeleteProgress));
+                return null; 
+            }
+        }
     }
 }
