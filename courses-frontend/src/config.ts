@@ -1,5 +1,5 @@
 export const config = {
-	apiBaseUrl: import.meta.env.API_BASE_URL || "http://localhost:5000",
+	apiBaseUrl: import.meta.env.API_BASE_URL || "https://api.czester.ovh",
 	apiEndpoints: {
 		login: "/api/account/login",
 		register: "/api/account/register",
