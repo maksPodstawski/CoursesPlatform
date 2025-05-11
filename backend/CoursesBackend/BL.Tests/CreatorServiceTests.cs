@@ -215,4 +215,83 @@ namespace BL.Tests
             await Assert.ThrowsAsync<ArgumentNullException>(() => _service.AddCreatorFromUserAsync(userId, courseId));
         }
     }
+
+    public class DummyCreatorRepository : ICreatorRepository
+    {
+        public IQueryable<Creator> GetCreators() => new List<Creator>().AsQueryable();
+        public Creator? GetCreatorByID(Guid creatorID) => null;
+        public Creator AddCreator(Creator creator) => creator;
+        public Creator? UpdateCreator(Creator creator) => null;
+        public Creator? DeleteCreator(Guid creatorID) => null;
+    }
+
+    public class StubCreatorRepository : ICreatorRepository
+    {
+        private readonly List<Creator> _creators = new List<Creator>
+        {
+            new Creator { Id = Guid.NewGuid(), UserId = Guid.NewGuid() },
+            new Creator { Id = Guid.NewGuid(), UserId = Guid.NewGuid() }
+        };
+
+        public IQueryable<Creator> GetCreators() => _creators.AsQueryable();
+        public Creator? GetCreatorByID(Guid creatorID) => _creators.FirstOrDefault(c => c.Id == creatorID);
+        public Creator AddCreator(Creator creator) => creator;
+        public Creator? UpdateCreator(Creator creator) => null;
+        public Creator? DeleteCreator(Guid creatorID) => _creators.FirstOrDefault(c => c.Id == creatorID);
+    }
+
+    public class FakeCreatorRepository : ICreatorRepository
+    {
+        private readonly List<Creator> _creators = new List<Creator>();
+
+        public IQueryable<Creator> GetCreators() => _creators.AsQueryable();
+        public Creator? GetCreatorByID(Guid creatorID) => _creators.FirstOrDefault(c => c.Id == creatorID);
+        public Creator AddCreator(Creator creator)
+        {
+            _creators.Add(creator);
+            return creator;
+        }
+        public Creator? UpdateCreator(Creator creator)
+        {
+            var existingCreator = _creators.FirstOrDefault(c => c.Id == creator.Id);
+            if (existingCreator != null)
+            {
+                existingCreator.UserId = creator.UserId;
+            }
+            return existingCreator;
+        }
+        public Creator? DeleteCreator(Guid creatorID)
+        {
+            var creator = _creators.FirstOrDefault(c => c.Id == creatorID);
+            if (creator != null)
+            {
+                _creators.Remove(creator);
+            }
+            return creator;
+        }
+    }
+
+    public class SpyCreatorRepository : ICreatorRepository
+    {
+        private int _addCreatorCallCount = 0;
+        private int _deleteCreatorCallCount = 0;
+
+        public IQueryable<Creator> GetCreators() => new List<Creator>().AsQueryable();
+        public Creator? GetCreatorByID(Guid creatorID) => null;
+        public Creator AddCreator(Creator creator)
+        {
+            _addCreatorCallCount++;
+            return creator;
+        }
+        public Creator? UpdateCreator(Creator creator) => null;
+        public Creator? DeleteCreator(Guid creatorID)
+        {
+            _deleteCreatorCallCount++;
+            return null;
+        }
+
+        public int AddCreatorCallCount => _addCreatorCallCount;
+        public int DeleteCreatorCallCount => _deleteCreatorCallCount;
+    }
 }
+
