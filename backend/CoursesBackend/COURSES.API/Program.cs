@@ -15,11 +15,32 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-
 builder.Services.AddControllers();
 
 builder.Services.AddOpenApi();
+
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowedOrigins",
+        builder =>
+        {
+            builder.WithOrigins(
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "https://courses.czester.ovh"
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+        });
+});
 
 builder.Services.Configure<JwtOptions>(
         builder.Configuration.GetSection(JwtOptions.JwtOptionsKey));
@@ -82,9 +103,11 @@ builder.Services.AddAuthentication(opt =>
     var jwtOptions = builder.Configuration.GetSection(JwtOptions.JwtOptionsKey).Get<JwtOptions>() ?? throw new ArgumentException(nameof(JwtOptions));
 
     builder.Configuration
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddEnvironmentVariables();
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+        .AddEnvironmentVariables();
+
 
     opt.TokenValidationParameters = new TokenValidationParameters
     {
@@ -113,6 +136,8 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
 
+
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -138,7 +163,7 @@ using (var scope = app.Services.CreateScope())
 
     });
 //}
-
+app.UseCors("AllowedOrigins");
 app.UseExceptionHandler(_ => { });
 app.UseHttpsRedirection();
 app.UseAuthentication();
