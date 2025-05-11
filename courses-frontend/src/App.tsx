@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
@@ -36,10 +36,8 @@ function App() {
 	};
 
 	const handleLogout = () => {
-		// Clear any stored data
 		setWeatherData(null);
 		setIsLoggedIn(false);
-		// Redirect to login
 		window.location.href = "/login";
 	};
 
@@ -53,7 +51,7 @@ function App() {
 						</Link>
 						<div>
 							{isLoggedIn ? (
-								<button onClick={handleLogout} className="btn btn-danger">
+								<button type="button" onClick={handleLogout} className="btn btn-danger">
 									Logout
 								</button>
 							) : (
@@ -83,7 +81,7 @@ function App() {
 										<div className="card">
 											<h2>Test Authorization</h2>
 											<p>Click the button below to test if your authorization is working.</p>
-											<button onClick={handleWeatherRequest} className="btn btn-primary">
+											<button type="button" onClick={handleWeatherRequest} className="btn btn-primary">
 												Get Weather Forecast
 											</button>
 											{error && <div className="error">{error}</div>}
