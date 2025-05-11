@@ -48,8 +48,12 @@ public class ReviewRepository : IReviewRepository
         if (existing == null)
             return null;
 
-        _context.Reviews.Update(review);
+        existing.Rating = review.Rating;
+        existing.Comment = review.Comment;
+        existing.UserId = review.UserId;
+        existing.CourseId = review.CourseId;
         _context.SaveChanges();
+        
         return _context.Reviews
             .Include(r => r.User)
             .Include(r => r.Course)

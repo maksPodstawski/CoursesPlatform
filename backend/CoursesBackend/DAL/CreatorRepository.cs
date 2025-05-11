@@ -49,7 +49,11 @@ namespace DAL
 
             existing.UserId = creator.UserId;
             _context.SaveChanges();
-            return existing;
+            
+            return _context.Creators
+                .Include(c => c.User)
+                .Include(c => c.Courses)
+                .FirstOrDefault(c => c.Id == creator.Id);
         }
 
         public Creator? DeleteCreator(Guid creatorID)
