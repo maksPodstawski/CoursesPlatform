@@ -26,7 +26,7 @@ namespace COURSES.API.Handlers
         {
             return exception switch { 
                 LoginFailedException => (HttpStatusCode.Unauthorized, exception.Message),
-                UserAlredyExistsException => (HttpStatusCode.Conflict, exception.Message),
+                UserAlreadyExistsException => (HttpStatusCode.Conflict, exception.Message),
                 RegistrationFailedException => (HttpStatusCode.BadRequest, exception.Message),
                 InvalidRefreshTokenException => (HttpStatusCode.Unauthorized, exception.Message),
                 _ => (HttpStatusCode.InternalServerError, $"An unexpected error occurred {exception.Message}")
