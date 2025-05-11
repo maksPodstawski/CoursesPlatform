@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BL.Exceptions
 {
-    public class UserAlredyExistsException(string email) : Exception($"User with email: {email} alredy exists")
+    public class UserAlreadyExistsException(string email) : Exception($"User with email: {email} already exists")
     {
     }
 }
