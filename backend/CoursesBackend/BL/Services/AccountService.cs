@@ -31,7 +31,7 @@ namespace BL.Services
 
             if (userExists)
             {
-                throw new UserAlredyExistsException(email: registerRequestDTO.Email);
+                throw new UserAlreadyExistsException(email: registerRequestDTO.Email);
             }
 
             var user = User.Create(registerRequestDTO.Email, registerRequestDTO.FirstName, registerRequestDTO.LastName);
