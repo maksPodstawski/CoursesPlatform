@@ -5,8 +5,8 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace BL.Tests
 {
@@ -236,5 +236,66 @@ namespace BL.Tests
             Assert.Equal(id, result?.Id);
             _mockPurchasedCoursesRepository.Verify(r => r.DeletePurchasedCourse(id), Times.Once);
         }
+    }
+
+    public class PurchasedCoursesRepositoryDummy : IPurchasedCoursesRepository
+    {
+        public IQueryable<PurchasedCourses> GetPurchasedCourses() => new List<PurchasedCourses>().AsQueryable();
+        public PurchasedCourses? GetPurchasedCourseByID(Guid purchasedCourseID) => null;
+        public PurchasedCourses AddPurchasedCourse(PurchasedCourses purchasedCourse) => purchasedCourse;
+        public PurchasedCourses? UpdatePurchasedCourse(PurchasedCourses purchasedCourse) => purchasedCourse;
+        public PurchasedCourses? DeletePurchasedCourse(Guid purchasedCourseID) => null;
+    }
+
+    public class PurchasedCoursesRepositoryStub : IPurchasedCoursesRepository
+    {
+        private readonly List<PurchasedCourses> _data;
+        public PurchasedCoursesRepositoryStub(List<PurchasedCourses> data) => _data = data;
+        public IQueryable<PurchasedCourses> GetPurchasedCourses() => _data.AsQueryable();
+        public PurchasedCourses? GetPurchasedCourseByID(Guid purchasedCourseID) => _data.FirstOrDefault(x => x.Id == purchasedCourseID);
+        public PurchasedCourses AddPurchasedCourse(PurchasedCourses purchasedCourse) { _data.Add(purchasedCourse); return purchasedCourse; }
+        public PurchasedCourses? UpdatePurchasedCourse(PurchasedCourses purchasedCourse) => purchasedCourse;
+        public PurchasedCourses? DeletePurchasedCourse(Guid purchasedCourseID) => null;
+    }
+
+    public class PurchasedCoursesRepositoryFake : IPurchasedCoursesRepository
+    {
+        private readonly List<PurchasedCourses> _data = new();
+        public IQueryable<PurchasedCourses> GetPurchasedCourses() => _data.AsQueryable();
+        public PurchasedCourses? GetPurchasedCourseByID(Guid purchasedCourseID) => _data.FirstOrDefault(x => x.Id == purchasedCourseID);
+        public PurchasedCourses AddPurchasedCourse(PurchasedCourses purchasedCourse) { purchasedCourse.Id = Guid.NewGuid(); _data.Add(purchasedCourse); return purchasedCourse; }
+        public PurchasedCourses? UpdatePurchasedCourse(PurchasedCourses purchasedCourse)
+        {
+            var existing = _data.FirstOrDefault(x => x.Id == purchasedCourse.Id);
+            if (existing != null) { _data.Remove(existing); _data.Add(purchasedCourse); return purchasedCourse; }
+            return null;
+        }
+        public PurchasedCourses? DeletePurchasedCourse(Guid purchasedCourseID)
+        {
+            var item = _data.FirstOrDefault(x => x.Id == purchasedCourseID);
+            if (item != null) { _data.Remove(item); return item; }
+            return null;
+        }
+    }
+
+    public class PurchasedCoursesRepositorySpy : IPurchasedCoursesRepository
+    {
+        public List<string> Calls = new();
+        public IQueryable<PurchasedCourses> GetPurchasedCourses() { Calls.Add(nameof(GetPurchasedCourses)); return new List<PurchasedCourses>().AsQueryable(); }
+        public PurchasedCourses? GetPurchasedCourseByID(Guid purchasedCourseID) { Calls.Add(nameof(GetPurchasedCourseByID)); return null; }
+        public PurchasedCourses AddPurchasedCourse(PurchasedCourses purchasedCourse) { Calls.Add(nameof(AddPurchasedCourse)); return purchasedCourse; }
+        public PurchasedCourses? UpdatePurchasedCourse(PurchasedCourses purchasedCourse) { Calls.Add(nameof(UpdatePurchasedCourse)); return purchasedCourse; }
+        public PurchasedCourses? DeletePurchasedCourse(Guid purchasedCourseID) { Calls.Add(nameof(DeletePurchasedCourse)); return null; }
+    }
+
+    public class PurchasedCoursesRepositoryMock : IPurchasedCoursesRepository
+    {
+        private readonly Mock<IPurchasedCoursesRepository> _mock = new();
+        public Mock<IPurchasedCoursesRepository> InnerMock => _mock;
+        public IQueryable<PurchasedCourses> GetPurchasedCourses() => _mock.Object.GetPurchasedCourses();
+        public PurchasedCourses? GetPurchasedCourseByID(Guid purchasedCourseID) => _mock.Object.GetPurchasedCourseByID(purchasedCourseID);
+        public PurchasedCourses AddPurchasedCourse(PurchasedCourses purchasedCourse) => _mock.Object.AddPurchasedCourse(purchasedCourse);
+        public PurchasedCourses? UpdatePurchasedCourse(PurchasedCourses purchasedCourse) => _mock.Object.UpdatePurchasedCourse(purchasedCourse);
+        public PurchasedCourses? DeletePurchasedCourse(Guid purchasedCourseID) => _mock.Object.DeletePurchasedCourse(purchasedCourseID);
     }
 }

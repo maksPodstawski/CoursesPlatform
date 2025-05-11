@@ -239,5 +239,145 @@ namespace BL.Tests
 
             Assert.False(result);
         }
+        public class DummyChatUserRepository : IChatUserRepository
+        {
+            public IQueryable<ChatUser> GetChatUsers() => Enumerable.Empty<ChatUser>().AsQueryable();
+            public ChatUser? GetChatUserById(Guid chatUserId) => null;
+            public ChatUser? AddChatUser(ChatUser chatUser) => null;
+            public ChatUser? UpdateChatUser(ChatUser chatUser) => null;
+            public ChatUser? DeleteChatUser(Guid chatUserId) => null;
+        }
+
+        public class StubChatUserRepository : IChatUserRepository
+        {
+            private readonly ChatUser _chatUser;
+
+            public StubChatUserRepository(ChatUser chatUser)
+            {
+                _chatUser = chatUser;
+            }
+
+            public IQueryable<ChatUser> GetChatUsers() => new List<ChatUser> { _chatUser }.AsQueryable();
+            public ChatUser? GetChatUserById(Guid chatUserId) => _chatUser.Id == chatUserId ? _chatUser : null;
+            public ChatUser? AddChatUser(ChatUser chatUser) => chatUser;
+            public ChatUser? UpdateChatUser(ChatUser chatUser) => chatUser;
+            public ChatUser? DeleteChatUser(Guid chatUserId) => _chatUser.Id == chatUserId ? _chatUser : null;
+        }
+
+        public class FakeChatUserRepository : IChatUserRepository
+        {
+            private readonly List<ChatUser> _data = new();
+
+            public IQueryable<ChatUser> GetChatUsers() => _data.AsQueryable();
+
+            public ChatUser? GetChatUserById(Guid chatUserId) => _data.FirstOrDefault(cu => cu.Id == chatUserId);
+
+            public ChatUser? AddChatUser(ChatUser chatUser)
+            {
+                _data.Add(chatUser);
+                return chatUser;
+            }
+
+            public ChatUser? UpdateChatUser(ChatUser chatUser)
+            {
+                var index = _data.FindIndex(c => c.Id == chatUser.Id);
+                if (index >= 0) _data[index] = chatUser;
+                return chatUser;
+            }
+
+            public ChatUser? DeleteChatUser(Guid chatUserId)
+            {
+                var user = GetChatUserById(chatUserId);
+                if (user != null)
+                {
+                    _data.Remove(user);
+                    return user;
+                }
+                return null;
+            }
+        }
+
+        public class SpyChatUserRepository : IChatUserRepository
+        {
+            public bool WasAddCalled { get; private set; } = false;
+            public ChatUser? LastAdded { get; private set; }
+
+            public IQueryable<ChatUser> GetChatUsers() => Enumerable.Empty<ChatUser>().AsQueryable();
+
+            public ChatUser? GetChatUserById(Guid chatUserId) => null;
+
+            public ChatUser? AddChatUser(ChatUser chatUser)
+            {
+                WasAddCalled = true;
+                LastAdded = chatUser;
+                return chatUser;
+            }
+
+            public ChatUser? UpdateChatUser(ChatUser chatUser) => null;
+
+            public ChatUser? DeleteChatUser(Guid chatUserId) => null;
+        }
+
+        [Fact]
+        public async Task AddUserToChatAsync_UsesSpyToVerifyAddCall()
+        {
+            var chatId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var spyRepo = new SpyChatUserRepository();
+            var service = new ChatUserService(spyRepo);
+
+            var result = await service.AddUserToChatAsync(chatId, userId);
+
+            Assert.True(spyRepo.WasAddCalled);
+            Assert.NotNull(spyRepo.LastAdded);
+            Assert.Equal(chatId, spyRepo.LastAdded.ChatId);
+            Assert.Equal(userId, spyRepo.LastAdded.UserId);
+        }
+
+        [Fact]
+        public async Task Constructor_WithDummyRepository_DoesNotThrow()
+        {
+            var dummyRepo = new DummyChatUserRepository();
+            var service = new ChatUserService(dummyRepo);
+
+            Assert.NotNull(service);
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_StubReturnsKnownUser()
+        {
+            var knownUser = new ChatUser
+            {
+                Id = Guid.NewGuid(),
+                ChatId = Guid.NewGuid(),
+                UserId = Guid.NewGuid(),
+                JoinedAt = DateTime.UtcNow
+            };
+
+            var stubRepo = new StubChatUserRepository(knownUser);
+            var service = new ChatUserService(stubRepo);
+
+            var result = await service.GetByIdAsync(knownUser.Id);
+
+            Assert.NotNull(result);
+            Assert.Equal(knownUser.Id, result.Id);
+            Assert.Equal(knownUser.ChatId, result.ChatId);
+        }
+        [Fact]
+        public async Task AddUserToChatAsync_UsingFake_StoresUser()
+        {
+            var fakeRepo = new FakeChatUserRepository();
+            var service = new ChatUserService(fakeRepo);
+
+            var chatId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+
+            var result = await service.AddUserToChatAsync(chatId, userId);
+
+            Assert.NotNull(result);
+            Assert.Single(fakeRepo.GetChatUsers());
+            Assert.Equal(chatId, fakeRepo.GetChatUsers().First().ChatId);
+            Assert.Equal(userId, fakeRepo.GetChatUsers().First().UserId);
+        }
     }
 }
