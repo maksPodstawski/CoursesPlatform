@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using IBL;
 using IDAL;
 using Microsoft.AspNetCore.Identity;
 using Model;
+using Model.Constans;
 using Model.DTO;
 
 namespace BL.Services
@@ -43,6 +45,8 @@ namespace BL.Services
             {
                 throw new RegistrationFailedException(result.Errors.Select(x => x.Description));
             }
+
+            await _userManager.AddToRoleAsync(user, IdentityRoleConstants.User);
         }
 
         public async Task LoginAsync(LoginRequestDTO loginRequestDTO)
@@ -52,7 +56,11 @@ namespace BL.Services
             {
                 throw new LoginFailedException(email: loginRequestDTO.Email);
             }
-            var (jwtToken, expirationDateInUtc) = _authTokenService.GenerateJwtToken(user);
+
+
+            IList<string> roles = await _userManager.GetRolesAsync(user);
+
+            var (jwtToken, expirationDateInUtc) = _authTokenService.GenerateJwtToken(user, roles);
             var refreshTokenValue = _authTokenService.GenerateRefreshToken();
 
             var refreshTokenExpirationDateInUtc = DateTime.UtcNow.AddDays(7); //move to appsettings
@@ -85,7 +93,9 @@ namespace BL.Services
                 throw new InvalidRefreshTokenException("Refresh token is expired.");
             }
 
-            var (jwtToken, expirationDateInUtc) = _authTokenService.GenerateJwtToken(user);
+            IList<string> roles = await _userManager.GetRolesAsync(user);
+
+            var (jwtToken, expirationDateInUtc) = _authTokenService.GenerateJwtToken(user, roles);
             var refreshTokenValue = _authTokenService.GenerateRefreshToken();
             var refreshTokenExpirationDateInUtc = DateTime.UtcNow.AddDays(7); //move to appsettings
             user.RefreshToken = refreshTokenValue;

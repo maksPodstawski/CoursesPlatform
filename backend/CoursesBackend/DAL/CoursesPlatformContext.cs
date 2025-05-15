@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Model;
+using Model.Constans;
 
 namespace DAL
 {
@@ -31,6 +32,29 @@ namespace DAL
             {
                 optionsBuilder.UseNpgsql("Server=localhost;Port=15432;Database=postgres;User Id=postgres;Password=postgres");
             }
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<IdentityRole<Guid>>()
+                .HasData(new List<IdentityRole<Guid>>
+                {
+                    new IdentityRole<Guid>
+                    {
+                        Id = IdentityRoleConstants.AdminRoleGuid,
+                        Name = IdentityRoleConstants.Admin,
+                        NormalizedName = IdentityRoleConstants.Admin.ToUpper()
+                    },
+                    new IdentityRole<Guid>
+                    {
+                        Id = IdentityRoleConstants.UserRoleGuid,
+                        Name = IdentityRoleConstants.User,
+                        NormalizedName = IdentityRoleConstants.User.ToUpper()
+                    }
+                }
+                        );
         }
     }
 }

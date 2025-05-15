@@ -9,7 +9,7 @@ namespace IBL
 {
     public interface IAuthTokenService
     {
-        (string jwtToken, DateTime expiresAtUtc) GenerateJwtToken(User user);
+        (string jwtToken, DateTime expiresAtUtc) GenerateJwtToken(User user, IList<string> roles);
         public string GenerateRefreshToken();
         public void WriteAuthTokenAsHttpOnlyCookie(string cookieName, string token, DateTime expiration);
     }

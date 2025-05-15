@@ -26,7 +26,7 @@ namespace BL.Services
         }
 
 
-        public (string jwtToken, DateTime expiresAtUtc) GenerateJwtToken(User user)
+        public (string jwtToken, DateTime expiresAtUtc) GenerateJwtToken(User user, IList<string> roles)
         {
             var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Secret));
 
@@ -38,8 +38,7 @@ namespace BL.Services
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(ClaimTypes.NameIdentifier, user.ToString()),
-
-            };
+            }.Concat(roles.Select(r=> new Claim(ClaimTypes.Role, r)));
 
             var expires = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpirationTimeInMinutes);
 
