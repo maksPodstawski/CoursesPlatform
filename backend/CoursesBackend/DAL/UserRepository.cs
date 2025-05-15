@@ -14,6 +14,10 @@ namespace DAL
             _context = context;
         }
 
+        public User? GetUserByRefreshToken(string refreshToken)
+        {
+            return _context.Users.FirstOrDefault(u => u.RefreshToken == refreshToken);
+        }
 
         public IQueryable<User> GetUsers()
         {

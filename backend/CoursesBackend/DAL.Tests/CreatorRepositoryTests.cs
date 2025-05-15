@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DAL;
+using Microsoft.EntityFrameworkCore;
 using Model;
 using System;
 using System.Collections.Generic;
@@ -10,62 +11,80 @@ namespace DAL.Tests
 {
     public class CreatorRepositoryTests
     {
-        private DbContextOptions<CoursesPlatformContext> GetInMemoryDbOptions()
+        private DbContextOptions<CoursesPlatformContext> CreateNewContextOptions()
         {
             return new DbContextOptionsBuilder<CoursesPlatformContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
         }
 
         [Fact]
         public void GetCreators_ShouldReturnAllCreators()
         {
-            // Arrange
-            var options = GetInMemoryDbOptions();
-            using var context = new CoursesPlatformContext(options);
+            var options = CreateNewContextOptions();
 
-            context.Creators.AddRange(new List<Creator>
+            var userId1 = Guid.NewGuid();
+            var userId2 = Guid.NewGuid();
+            var user1 = new User { Id = userId1, FirstName = "John", LastName = "Doe", Email = "john@example.com" };
+            var user2 = new User { Id = userId2, FirstName = "Jane", LastName = "Smith", Email = "jane@example.com" };
+
+            var testCreators = new List<Creator>
             {
-                new Creator { Id = Guid.NewGuid(), UserId = Guid.NewGuid() },
-                new Creator { Id = Guid.NewGuid(), UserId = Guid.NewGuid() }
-            });
-            context.SaveChanges();
+                new Creator { Id = Guid.NewGuid(), UserId = userId1, User = user1 },
+                new Creator { Id = Guid.NewGuid(), UserId = userId2, User = user2 }
+            };
 
-            var repository = new CreatorRepository(context);
+            using (var context = new CoursesPlatformContext(options))
+            {
+                context.Users.AddRange(user1, user2);
+                context.Creators.AddRange(testCreators);
+                context.SaveChanges();
+            }
 
-            // Act
-            var creators = repository.GetCreators().ToList();
+            using (var context = new CoursesPlatformContext(options))
+            {
+                var repo = new CreatorRepository(context);
+                var result = repo.GetCreators().ToList();
 
-            // Assert
-            Assert.Equal(2, creators.Count);
+                Assert.Equal(2, result.Count);
+                Assert.Contains(result, c => c.User.FirstName == "John");
+                Assert.Contains(result, c => c.User.FirstName == "Jane");
+            }
         }
 
         [Fact]
         public void GetCreatorByID_ShouldReturnCorrectCreator()
         {
-            // Arrange
-            var options = GetInMemoryDbOptions();
+            var options = CreateNewContextOptions();
+
+            var userId = Guid.NewGuid();
+            var user = new User { Id = userId, FirstName = "John", LastName = "Doe", Email = "john@example.com" };
             var creatorId = Guid.NewGuid();
+            var creator = new Creator { Id = creatorId, UserId = userId, User = user };
 
-            using var context = new CoursesPlatformContext(options);
-            context.Creators.Add(new Creator { Id = creatorId, UserId = Guid.NewGuid() });
-            context.SaveChanges();
+            using (var context = new CoursesPlatformContext(options))
+            {
+                context.Users.Add(user);
+                context.Creators.Add(creator);
+                context.SaveChanges();
+            }
 
-            var repository = new CreatorRepository(context);
+            using (var context = new CoursesPlatformContext(options))
+            {
+                var repo = new CreatorRepository(context);
+                var result = repo.GetCreatorByID(creatorId);
 
-            // Act
-            var creator = repository.GetCreatorByID(creatorId);
-
-            // Assert
-            Assert.NotNull(creator);
-            Assert.Equal(creatorId, creator.Id);
+                Assert.NotNull(result);
+                Assert.Equal(creatorId, result.Id);
+                Assert.Equal("John", result.User.FirstName);
+            }
         }
 
         [Fact]
         public void GetCreatorByID_ShouldReturnNull_WhenCreatorDoesNotExist()
         {
             // Arrange
-            var options = GetInMemoryDbOptions();
+            var options = CreateNewContextOptions();
             using var context = new CoursesPlatformContext(options);
             var repository = new CreatorRepository(context);
 
@@ -79,47 +98,65 @@ namespace DAL.Tests
         [Fact]
         public void AddCreator_ShouldAddCreatorToDatabase()
         {
-            // Arrange
-            var options = GetInMemoryDbOptions();
-            using var context = new CoursesPlatformContext(options);
-            var repository = new CreatorRepository(context);
-            var newCreator = new Creator { Id = Guid.NewGuid(), UserId = Guid.NewGuid() };
+            var options = CreateNewContextOptions();
 
-            // Act
-            var addedCreator = repository.AddCreator(newCreator);
+            var userId = Guid.NewGuid();
+            var user = new User { Id = userId, FirstName = "John", LastName = "Doe", Email = "john@example.com" };
+            var creatorId = Guid.NewGuid();
 
-            // Assert
-            Assert.NotNull(addedCreator);
-            Assert.Equal(newCreator.Id, addedCreator.Id);
-            Assert.Single(context.Creators);
+            using (var context = new CoursesPlatformContext(options))
+            {
+                context.Users.Add(user);
+                context.SaveChanges();
+            }
+
+            using (var context = new CoursesPlatformContext(options))
+            {
+                var repo = new CreatorRepository(context);
+                var creator = new Creator { Id = creatorId, UserId = userId };
+                var result = repo.AddCreator(creator);
+
+                Assert.NotNull(result);
+                Assert.Equal(userId, result.UserId);
+                Assert.Equal("John", result.User.FirstName);
+            }
         }
 
         [Fact]
         public void UpdateCreator_ShouldUpdateExistingCreator()
         {
-            // Arrange
-            var options = GetInMemoryDbOptions();
-            using var context = new CoursesPlatformContext(options);
+            var options = CreateNewContextOptions();
+
+            var userId1 = Guid.NewGuid();
+            var userId2 = Guid.NewGuid();
+            var user1 = new User { Id = userId1, FirstName = "John", LastName = "Doe", Email = "john@example.com" };
+            var user2 = new User { Id = userId2, FirstName = "Jane", LastName = "Smith", Email = "jane@example.com" };
             var creatorId = Guid.NewGuid();
-            context.Creators.Add(new Creator { Id = creatorId, UserId = Guid.NewGuid() });
-            context.SaveChanges();
 
-            var repository = new CreatorRepository(context);
-            var updatedCreator = new Creator { Id = creatorId, UserId = Guid.NewGuid() };
+            using (var context = new CoursesPlatformContext(options))
+            {
+                context.Users.AddRange(user1, user2);
+                context.Creators.Add(new Creator { Id = creatorId, UserId = userId1 });
+                context.SaveChanges();
+            }
 
-            // Act
-            var result = repository.UpdateCreator(updatedCreator);
+            using (var context = new CoursesPlatformContext(options))
+            {
+                var repo = new CreatorRepository(context);
+                var result = repo.UpdateCreator(new Creator { Id = creatorId, UserId = userId2 });
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(updatedCreator.UserId, result.UserId);
+                Assert.NotNull(result);
+                Assert.Equal(userId2, result.UserId);
+                Assert.NotNull(result.User);
+                Assert.Equal("Jane", result.User.FirstName);
+            }
         }
 
         [Fact]
         public void UpdateCreator_ShouldReturnNull_WhenCreatorDoesNotExist()
         {
             // Arrange
-            var options = GetInMemoryDbOptions();
+            var options = CreateNewContextOptions();
             using var context = new CoursesPlatformContext(options);
             var repository = new CreatorRepository(context);
             var updatedCreator = new Creator { Id = Guid.NewGuid(), UserId = Guid.NewGuid() };
@@ -134,29 +171,38 @@ namespace DAL.Tests
         [Fact]
         public void DeleteCreator_ShouldRemoveCreatorFromDatabase()
         {
-            // Arrange
-            var options = GetInMemoryDbOptions();
-            using var context = new CoursesPlatformContext(options);
+            var options = CreateNewContextOptions();
+
+            var userId = Guid.NewGuid();
+            var user = new User { Id = userId, FirstName = "John", LastName = "Doe", Email = "john@example.com" };
             var creatorId = Guid.NewGuid();
-            context.Creators.Add(new Creator { Id = creatorId, UserId = Guid.NewGuid() });
-            context.SaveChanges();
+            var creator = new Creator { Id = creatorId, UserId = userId, User = user };
 
-            var repository = new CreatorRepository(context);
+            using (var context = new CoursesPlatformContext(options))
+            {
+                context.Users.Add(user);
+                context.Creators.Add(creator);
+                context.SaveChanges();
+            }
 
-            // Act
-            var deletedCreator = repository.DeleteCreator(creatorId);
+            using (var context = new CoursesPlatformContext(options))
+            {
+                var repo = new CreatorRepository(context);
+                var result = repo.DeleteCreator(creatorId);
 
-            // Assert
-            Assert.NotNull(deletedCreator);
-            Assert.Equal(creatorId, deletedCreator.Id);
-            Assert.Empty(context.Creators);
+                Assert.NotNull(result);
+                Assert.Equal(creatorId, result.Id);
+                Assert.Equal("John", result.User.FirstName);
+
+                Assert.Empty(context.Creators);
+            }
         }
 
         [Fact]
         public void DeleteCreator_ShouldReturnNull_WhenCreatorDoesNotExist()
         {
             // Arrange
-            var options = GetInMemoryDbOptions();
+            var options = CreateNewContextOptions();
             using var context = new CoursesPlatformContext(options);
             var repository = new CreatorRepository(context);
 

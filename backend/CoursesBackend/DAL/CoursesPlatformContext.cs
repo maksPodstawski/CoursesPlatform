@@ -1,9 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Model;
+using Model.Constans;
 
 namespace DAL
 {
-    public class CoursesPlatformContext : DbContext
+    public class CoursesPlatformContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Chat> Chats { get; set; }
@@ -29,6 +32,29 @@ namespace DAL
             {
                 optionsBuilder.UseNpgsql("Server=localhost;Port=15432;Database=postgres;User Id=postgres;Password=postgres");
             }
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<IdentityRole<Guid>>()
+                .HasData(new List<IdentityRole<Guid>>
+                {
+                    new IdentityRole<Guid>
+                    {
+                        Id = IdentityRoleConstants.AdminRoleGuid,
+                        Name = IdentityRoleConstants.Admin,
+                        NormalizedName = IdentityRoleConstants.Admin.ToUpper()
+                    },
+                    new IdentityRole<Guid>
+                    {
+                        Id = IdentityRoleConstants.UserRoleGuid,
+                        Name = IdentityRoleConstants.User,
+                        NormalizedName = IdentityRoleConstants.User.ToUpper()
+                    }
+                }
+                        );
         }
     }
 }

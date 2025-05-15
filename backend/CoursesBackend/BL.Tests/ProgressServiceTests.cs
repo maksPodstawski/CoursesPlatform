@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using MockQueryable.Moq;
 using MockQueryable;
 using Microsoft.EntityFrameworkCore;
+using BL.Services;
 
 namespace BL.Tests
 {

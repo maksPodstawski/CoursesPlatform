@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BL;
 using DAL;
 using IDAL;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +9,7 @@ using Model;
 using Moq;
 using MockQueryable.Moq;
 using Xunit;
+using BL.Services;
 
 namespace BL.Tests
 {

@@ -9,5 +9,6 @@ namespace IDAL
         User AddUser(User user);
         User? UpdateUser(User user);
         User? DeleteUser(Guid userID);
+        User? GetUserByRefreshToken(string refreshToken);
     }
 }

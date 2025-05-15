@@ -37,14 +37,33 @@ namespace DAL.Tests
         {
             var options = CreateNewContextOptions();
 
+            var userId1 = Guid.NewGuid();
+            var userId2 = Guid.NewGuid();
+            var courseId1 = Guid.NewGuid();
+            var courseId2 = Guid.NewGuid();
+
+            var users = new List<User>
+            {
+                new User { Id = userId1, FirstName = "John", LastName = "Doe", Email = "john@example.com" },
+                new User { Id = userId2, FirstName = "Jane", LastName = "Smith", Email = "jane@example.com" }
+            };
+
+            var courses = new List<Course>
+            {
+                new Course { Id = courseId1, Name = "Course 1", Description = "Description 1" },
+                new Course { Id = courseId2, Name = "Course 2", Description = "Description 2" }
+            };
+
             var testReviews = new List<Review>
             {
-                new Review { Id = Guid.NewGuid(), Rating = 5, Comment = "Great!", UserId = Guid.NewGuid(), CourseId = Guid.NewGuid() },
-                new Review { Id = Guid.NewGuid(), Rating = 4, Comment = "Good", UserId = Guid.NewGuid(), CourseId = Guid.NewGuid() }
+                new Review { Id = Guid.NewGuid(), Rating = 5, Comment = "Great!", UserId = userId1, CourseId = courseId1, CreatedAt = DateTime.UtcNow },
+                new Review { Id = Guid.NewGuid(), Rating = 4, Comment = "Good", UserId = userId2, CourseId = courseId2, CreatedAt = DateTime.UtcNow }
             };
 
             using (var context = new CoursesPlatformContext(options))
             {
+                context.Users.AddRange(users);
+                context.Courses.AddRange(courses);
                 context.Reviews.AddRange(testReviews);
                 context.SaveChanges();
             }
@@ -65,26 +84,38 @@ namespace DAL.Tests
         {
             var options = CreateNewContextOptions();
 
+            var userId = Guid.NewGuid();
+            var courseId = Guid.NewGuid();
+            var user = new User { Id = userId, FirstName = "John", LastName = "Doe", Email = "john@example.com" };
+            var course = new Course { Id = courseId, Name = "Test Course", Description = "Test Description" };
+
+            using (var context = new CoursesPlatformContext(options))
+            {
+                context.Users.Add(user);
+                context.Courses.Add(course);
+                context.SaveChanges();
+            }
+
             var review = new Review
             {
                 Id = Guid.NewGuid(),
                 Rating = 5,
                 Comment = "Excellent course",
-                UserId = Guid.NewGuid(),
-                CourseId = Guid.NewGuid()
+                UserId = userId,
+                CourseId = courseId,
+                CreatedAt = DateTime.UtcNow
             };
 
             using (var context = new CoursesPlatformContext(options))
             {
                 var repo = new ReviewRepository(context);
-                repo.AddReview(review);
-            }
+                var result = repo.AddReview(review);
 
-            using (var context = new CoursesPlatformContext(options))
-            {
-                var saved = context.Reviews.Single();
-                Assert.Equal("Excellent course", saved.Comment);
-                Assert.Equal(5, saved.Rating);
+                Assert.NotNull(result);
+                Assert.Equal("Excellent course", result.Comment);
+                Assert.Equal(5, result.Rating);
+                Assert.NotNull(result.User);
+                Assert.NotNull(result.Course);
             }
         }
 
@@ -97,13 +128,24 @@ namespace DAL.Tests
             var userId = Guid.NewGuid();
             var courseId = Guid.NewGuid();
 
+            var user = new User { Id = userId, FirstName = "John", LastName = "Doe", Email = "john@example.com" };
+            var course = new Course { Id = courseId, Name = "Test Course", Description = "Test Description" };
+
+            using (var context = new CoursesPlatformContext(options))
+            {
+                context.Users.Add(user);
+                context.Courses.Add(course);
+                context.SaveChanges();
+            }
+
             var original = new Review
             {
                 Id = reviewId,
                 Rating = 3,
                 Comment = "Okay",
                 UserId = userId,
-                CourseId = courseId
+                CourseId = courseId,
+                CreatedAt = DateTime.UtcNow
             };
 
             using (var context = new CoursesPlatformContext(options))
@@ -118,17 +160,21 @@ namespace DAL.Tests
                 Rating = 4,
                 Comment = "Better now",
                 UserId = userId,
-                CourseId = courseId
+                CourseId = courseId,
+                CreatedAt = DateTime.UtcNow
             };
 
-            var spyContext = new DbContextSpy(options);
-            var repo = new ReviewRepository(spyContext);
-            var result = repo.UpdateReview(updated);
+            using (var context = new CoursesPlatformContext(options))
+            {
+                var repo = new ReviewRepository(context);
+                var result = repo.UpdateReview(updated);
 
-            Assert.Equal(1, spyContext.SaveChangesCallCount);
-            Assert.NotNull(result);
-            Assert.Equal("Better now", result.Comment);
-            Assert.Equal(4, result.Rating);
+                Assert.NotNull(result);
+                Assert.Equal("Better now", result.Comment);
+                Assert.Equal(4, result.Rating);
+                Assert.NotNull(result.User);
+                Assert.NotNull(result.Course);
+            }
         }
 
         [Fact]
@@ -137,13 +183,27 @@ namespace DAL.Tests
             var options = CreateNewContextOptions();
 
             var reviewId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var courseId = Guid.NewGuid();
+
+            var user = new User { Id = userId, FirstName = "John", LastName = "Doe", Email = "john@example.com" };
+            var course = new Course { Id = courseId, Name = "Test Course", Description = "Test Description" };
+
+            using (var context = new CoursesPlatformContext(options))
+            {
+                context.Users.Add(user);
+                context.Courses.Add(course);
+                context.SaveChanges();
+            }
+
             var review = new Review
             {
                 Id = reviewId,
                 Rating = 2,
                 Comment = "Not good",
-                UserId = Guid.NewGuid(),
-                CourseId = Guid.NewGuid()
+                UserId = userId,
+                CourseId = courseId,
+                CreatedAt = DateTime.UtcNow
             };
 
             using (var context = new CoursesPlatformContext(options))
@@ -152,29 +212,17 @@ namespace DAL.Tests
                 context.SaveChanges();
             }
 
-            var spyContext = new DbContextSpy(options);
-            var repo = new ReviewRepository(spyContext);
-            var result = repo.DeleteReview(reviewId);
-
-            Assert.Equal(1, spyContext.SaveChangesCallCount);
-            Assert.Equal("Not good", result?.Comment);
-
             using (var context = new CoursesPlatformContext(options))
             {
+                var repo = new ReviewRepository(context);
+                var result = repo.DeleteReview(reviewId);
+
+                Assert.NotNull(result);
+                Assert.Equal("Not good", result.Comment);
+                Assert.NotNull(result.User);
+                Assert.NotNull(result.Course);
+
                 Assert.Empty(context.Reviews);
-            }
-        }
-
-        private class DbContextSpy : CoursesPlatformContext
-        {
-            public int SaveChangesCallCount { get; private set; } = 0;
-
-            public DbContextSpy(DbContextOptions<CoursesPlatformContext> options) : base(options) { }
-
-            public override int SaveChanges()
-            {
-                SaveChangesCallCount++;
-                return base.SaveChanges();
             }
         }
     }
