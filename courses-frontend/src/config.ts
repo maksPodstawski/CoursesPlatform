@@ -4,5 +4,9 @@ export const config = {
 		login: "/api/account/login",
 		register: "/api/account/register",
 		refreshToken: "/api/account/refresh",
+
+		getCourses: "/api/courses",
+		getCoursesByTitle: "/api/courses", 
+		getCoursesByPriceRange: "/api/courses/price-range", 
 	},
 } as const;
