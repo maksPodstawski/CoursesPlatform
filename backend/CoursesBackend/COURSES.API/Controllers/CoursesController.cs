@@ -57,7 +57,6 @@ namespace COURSES.API.Controllers
 
             try
             {
-                // Create the course
                 var course = new Course
                 {
                     Name = createCourseDto.Name,
@@ -70,7 +69,6 @@ namespace COURSES.API.Controllers
 
                 var createdCourse = await _courseService.AddCourseAsync(course);
 
-                // Make the user a creator for this course
                 var creator = await _creatorService.AddCreatorFromUserAsync(Guid.Parse(userId), createdCourse.Id);
 
                 return CreatedAtAction(
@@ -101,7 +99,6 @@ namespace COURSES.API.Controllers
                 return Unauthorized();
             }
 
-            // Check if user is a creator of this course
             var isCreator = await _creatorService.IsUserCreatorOfCourseAsync(Guid.Parse(userId), id);
             if (!isCreator)
             {

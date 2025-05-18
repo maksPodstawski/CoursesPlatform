@@ -67,7 +67,6 @@ namespace COURSES.API.Controllers
                 return NotFound("Course not found");
             }
 
-            // Check if user already reviewed this course
             var existingReviews = await _reviewService.GetReviewsByUserIdAsync(Guid.Parse(userId));
             if (existingReviews.Any(r => r.CourseId == createReviewDto.CourseId))
             {
