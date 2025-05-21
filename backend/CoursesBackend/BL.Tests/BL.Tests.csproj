@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BL\BL.csproj" />
+    <ProjectReference Include="..\COURSES.API\COURSES.API.csproj" />
     <ProjectReference Include="..\Model\Model.csproj" />
   </ItemGroup>
 

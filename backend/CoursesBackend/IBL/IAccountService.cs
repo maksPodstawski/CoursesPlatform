@@ -11,7 +11,8 @@ namespace IBL
     {
         Task RegisterAsync(RegisterRequestDTO registerRequestDTO);
         Task LoginAsync(LoginRequestDTO loginRequestDTO);
+        Task LogoutAsync();
         Task RefreshTokenAsync(string? refreshToken);
-
+        Task<UserDTO> GetMeAsync();
     }
 }

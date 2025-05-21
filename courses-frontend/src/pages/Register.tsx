@@ -2,8 +2,15 @@ import { useState } from 'react';
 import { authService } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 
+interface RegisterFormData {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+}
+
 export const Register = () => {
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<RegisterFormData>({
         email: '',
         password: '',
         firstName: '',
@@ -27,8 +34,10 @@ export const Register = () => {
         try {
             await authService.register(formData);
             navigate('/login');
-        } catch (err) {
-            setError('Registration failed. Please try again.');
+        } catch (err: any) {
+            // Tutaj komunikat z beckendu będziegit
+            const message = err?.message || 'Registration failed. Please try again.';
+            setError(message);
         }
     };
 
@@ -37,11 +46,9 @@ export const Register = () => {
             <h2>Create your account</h2>
             <form onSubmit={handleSubmit}>
                 {error && <div className="error">{error}</div>}
-                
+
                 <div className="form-group">
-                    <label htmlFor="firstName" className="form-label">
-                        First Name
-                    </label>
+                    <label htmlFor="firstName" className="form-label">First Name</label>
                     <input
                         id="firstName"
                         name="firstName"
@@ -54,9 +61,7 @@ export const Register = () => {
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="lastName" className="form-label">
-                        Last Name
-                    </label>
+                    <label htmlFor="lastName" className="form-label">Last Name</label>
                     <input
                         id="lastName"
                         name="lastName"
@@ -69,9 +74,7 @@ export const Register = () => {
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="email" className="form-label">
-                        Email address
-                    </label>
+                    <label htmlFor="email" className="form-label">Email address</label>
                     <input
                         id="email"
                         name="email"
@@ -84,9 +87,7 @@ export const Register = () => {
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="password" className="form-label">
-                        Password
-                    </label>
+                    <label htmlFor="password" className="form-label">Password</label>
                     <input
                         id="password"
                         name="password"
@@ -104,4 +105,4 @@ export const Register = () => {
             </form>
         </div>
     );
-}; 
+};

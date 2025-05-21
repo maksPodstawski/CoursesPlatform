@@ -77,5 +77,18 @@ namespace BL.Services
                     IsEssential = true,
                 });
         }
+
+        public void ClearAuthTokenCookie(string cookieName)
+        {
+            _httpContextAccessor.HttpContext.Response.Cookies.Delete(
+                cookieName, 
+                new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.None,
+                    IsEssential = true
+                });
+        }
     }
 }
