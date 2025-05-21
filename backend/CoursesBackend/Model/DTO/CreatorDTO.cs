@@ -21,8 +21,9 @@ namespace Model.DTO
         }
     }
 
-    public record BecomeCreatorDTO
+    public record AppendCreatorDTO
     {
         public required Guid CourseId { get; init; }
+        public required Guid UserId { get; init; }
     }
 } 

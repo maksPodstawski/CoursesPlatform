@@ -25,5 +25,6 @@ namespace Model
         [Required]
         public double Duration { get; set; }
         public string? VideoPath { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
