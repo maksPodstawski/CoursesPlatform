@@ -50,18 +50,24 @@ namespace COURSES.API.Controllers
             return Ok(CreatorResponseDTO.FromCreator(creator));
         }
 
-        [HttpPost("become")]
-        public async Task<ActionResult<CreatorResponseDTO>> BecomeCreator([FromBody] BecomeCreatorDTO becomeCreatorDto)
+        [HttpPost("add")]
+        public async Task<ActionResult<CreatorResponseDTO>> BecomeCreator([FromBody] AppendCreatorDTO appendCreatorDto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized();
             }
 
+            if (!(await _creatorService.IsUserCreatorOfCourseAsync(Guid.Parse(userId), appendCreatorDto.CourseId)))
+            {
+                return BadRequest("You are already a creator of this course");
+            }
+
             try
             {
-                var creator = await _creatorService.AddCreatorFromUserAsync(Guid.Parse(userId), becomeCreatorDto.CourseId);
+                var creator = await _creatorService.AddCreatorFromUserAsync(appendCreatorDto.UserId, appendCreatorDto.CourseId);
                 return Ok(CreatorResponseDTO.FromCreator(creator));
             }
             catch (ArgumentNullException)
