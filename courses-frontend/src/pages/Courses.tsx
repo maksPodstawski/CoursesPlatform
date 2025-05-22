@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import { getCourses } from '../services/courseService';
+import { useEffect, useState } from "react";
+import { getCourses } from "../services/courseService";
+import type { Course } from "../types/courses.ts";
 
 const Courses = () => {
 	const [courses, setCourses] = useState([]);
@@ -11,7 +12,7 @@ const Courses = () => {
 				const data = await getCourses();
 				setCourses(data);
 			} catch (error) {
-				console.error('Błąd:', error);
+				console.error("Błąd:", error);
 			} finally {
 				setLoading(false);
 			}
@@ -23,13 +24,15 @@ const Courses = () => {
 	return (
 		<div>
 			<h1>Kursy</h1>
-			{loading ? <p>Ładowanie...</p> : (
+			{loading ? (
+				<p>Ładowanie...</p>
+			) : (
 				<ul>
-					{courses.map((course: any) => (
+					{courses.map((course: Course) => (
 						<li key={course.id}>
 							<h2>{course.name}</h2>
 							<p>{course.description}</p>
-							<img src={course.imageUrl} style={{ width: "200px", height: "200px", objectFit: "cover" }} />
+							<img alt="course" src={course.imageUrl} style={{ width: "200px", height: "200px", objectFit: "cover" }} />
 						</li>
 					))}
 				</ul>

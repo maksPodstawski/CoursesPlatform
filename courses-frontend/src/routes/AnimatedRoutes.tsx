@@ -6,20 +6,57 @@ import { Login } from "../pages/Login";
 import { Register } from "../pages/Register";
 import HomeContent from "../pages/HomeContent";
 import Courses from "../pages/Courses";
+import ChatTestPage from "../pages/ChatTestPage.tsx";
 
 const AnimatedRoutes = () => {
-    const location = useLocation();
+	const location = useLocation();
 
-  return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-          <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
-        <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
-        <Route path="/courses" element={<PageWrapper><Courses /></PageWrapper>} />
-        <Route path="/" element={<PageWrapper><HomeContent /></PageWrapper>} />
-      </Routes>
-    </AnimatePresence>
-  );
+	return (
+		<AnimatePresence mode="wait">
+			<Routes location={location} key={location.pathname}>
+				<Route
+					path="/login"
+					element={
+						<PageWrapper>
+							<Login />
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="/register"
+					element={
+						<PageWrapper>
+							<Register />
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="/courses"
+					element={
+						<PageWrapper>
+							<Courses />
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="/"
+					element={
+						<PageWrapper>
+							<HomeContent />
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="/chat-test"
+					element={
+						<PageWrapper>
+							<ChatTestPage />
+						</PageWrapper>
+					}
+				/>
+			</Routes>
+		</AnimatePresence>
+	);
 };
 
 export default AnimatedRoutes;

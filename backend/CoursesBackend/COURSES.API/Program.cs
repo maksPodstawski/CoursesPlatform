@@ -3,6 +3,7 @@ using BL;
 using BL.Options;
 using BL.Services;
 using COURSES.API.Handlers;
+using COURSES.API.Hubs;
 using DAL;
 using IBL;
 using IDAL;
@@ -16,7 +17,7 @@ using Scalar.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-
+builder.Services.AddSignalR();
 builder.Services.AddOpenApi();
 
 builder.Configuration
@@ -172,5 +173,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ChatHub>("/hubs/chat").RequireAuthorization();
 
 app.Run();
