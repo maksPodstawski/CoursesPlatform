@@ -15,42 +15,32 @@ interface RegisterRequest {
 export const authService = {
     async login(credentials: LoginRequest) {
         const response = await fetch(`${config.apiBaseUrl}${config.apiEndpoints.login}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(credentials),
-            credentials: 'include'
+            credentials: "include",
         });
 
-        if (!response.ok) {
-            throw new Error('Login failed');
-        }
+        if (!response.ok) throw new Error("Login failed");
     },
 
-    async register(userData: RegisterRequest) {
+    async logout() {
+        const response = await fetch(`${config.apiBaseUrl}${config.apiEndpoints.logout}`, {
+            method: "POST",
+            credentials: "include",
+        });
+
+        if (!response.ok) throw new Error("Logout failed");
+    },
+
+    async register(data: RegisterRequest) {
         const response = await fetch(`${config.apiBaseUrl}${config.apiEndpoints.register}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(userData),
-            credentials: 'include'
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+            credentials: "include",
         });
 
-        if (!response.ok) {
-            throw new Error('Registration failed');
-        }
+        if (!response.ok) throw new Error("Registration failed");
     },
-
-    async refreshToken() {
-        const response = await fetch(`${config.apiBaseUrl}${config.apiEndpoints.refreshToken}`, {
-            method: 'POST',
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            throw new Error('Token refresh failed');
-        }
-    }
-}; 
+};

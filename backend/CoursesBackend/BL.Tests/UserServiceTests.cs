@@ -10,6 +10,10 @@ using Moq;
 using MockQueryable.Moq;
 using Xunit;
 using BL.Services;
+using IBL;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace BL.Tests
 {

@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using BL.Exceptions;
 using IBL;
 using IDAL;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Model;
 using Model.Constans;
@@ -19,12 +21,14 @@ namespace BL.Services
         private readonly IAuthTokenService _authTokenService;
         private readonly UserManager<User> _userManager;
         private readonly IUserRepository _userRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AccountService(IAuthTokenService authTokenService, UserManager<User> userManager, IUserRepository userRepository)
+        public AccountService(IAuthTokenService authTokenService, UserManager<User> userManager, IUserRepository userRepository, IHttpContextAccessor httpContextAccessor)
         {
             _authTokenService = authTokenService;
             _userManager = userManager;
             _userRepository = userRepository;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task RegisterAsync(RegisterRequestDTO registerRequestDTO)
@@ -36,7 +40,13 @@ namespace BL.Services
                 throw new UserAlreadyExistsException(email: registerRequestDTO.Email);
             }
 
-            var user = User.Create(registerRequestDTO.Email, registerRequestDTO.FirstName, registerRequestDTO.LastName);
+            var user = new User
+            {
+                Email = registerRequestDTO.Email,
+                UserName = registerRequestDTO.Email,
+                FirstName = registerRequestDTO.FirstName,
+                LastName = registerRequestDTO.LastName
+            };
             user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, registerRequestDTO.Password);
 
             var result = await _userManager.CreateAsync(user);
@@ -103,6 +113,47 @@ namespace BL.Services
             await _userManager.UpdateAsync(user);
             _authTokenService.WriteAuthTokenAsHttpOnlyCookie("ACCESS_TOKEN", jwtToken, expirationDateInUtc);
             _authTokenService.WriteAuthTokenAsHttpOnlyCookie("REFRESH_TOKEN", user.RefreshToken, refreshTokenExpirationDateInUtc);
+        }
+
+        public async Task<UserDTO> GetMeAsync()
+        {
+            var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
+            {
+                throw new UnauthorizedAccessException("User is not authenticated or invalid user ID.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new UnauthorizedAccessException("User not found.");
+            }
+
+            return new UserDTO
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName
+            };
+        }
+
+        public async Task LogoutAsync()
+        {
+            var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userId) && Guid.TryParse(userId, out var userGuid))
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user != null)
+                {
+                    user.RefreshToken = null;
+                    user.RefreshTokenExpiresAtUtc = null;
+                    await _userManager.UpdateAsync(user);
+                }
+            }
+
+            _authTokenService.ClearAuthTokenCookie("ACCESS_TOKEN");
+            _authTokenService.ClearAuthTokenCookie("REFRESH_TOKEN");
         }
     }
 }

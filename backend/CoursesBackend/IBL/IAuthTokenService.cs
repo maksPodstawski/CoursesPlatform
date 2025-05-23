@@ -12,5 +12,6 @@ namespace IBL
         (string jwtToken, DateTime expiresAtUtc) GenerateJwtToken(User user, IList<string> roles);
         public string GenerateRefreshToken();
         public void WriteAuthTokenAsHttpOnlyCookie(string cookieName, string token, DateTime expiration);
+        public void ClearAuthTokenCookie(string cookieName);
     }
 }
