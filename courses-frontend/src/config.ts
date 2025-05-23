@@ -7,7 +7,12 @@ export const config = {
 		refreshToken: "/api/account/refresh",
 
 		getCourses: "/api/courses",
-		getCoursesByTitle: "/api/courses", 
-		getCoursesByPriceRange: "/api/courses/price-range", 
+		getCoursesByTitle: "/api/courses",
+		getCoursesByPriceRange: "/api/courses/price-range",
+		getPurchasedCourses: "/api/courses/purchases/user",
+		getStagesByCourse: "/api/stages/course/",
+		streamStageVideo: "/api/stages/",
 	},
 } as const;
+
+export const API_URL = "https://localhost:7207";

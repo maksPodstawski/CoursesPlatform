@@ -97,34 +97,6 @@ namespace COURSES.API.Controllers
             if (!System.IO.File.Exists(filePath))
                 return NotFound("Video file not found");
 
-            var fileInfo = new FileInfo(filePath);
-            var fileLength = fileInfo.Length;
-
-            var rangeHeader = Request.Headers["Range"].ToString();
-            if (!string.IsNullOrEmpty(rangeHeader))
-            {
-                var range = rangeHeader.Replace("bytes=", "").Split('-');
-                var start = long.Parse(range[0]);
-                var end = range.Length > 1 && !string.IsNullOrEmpty(range[1]) 
-                    ? long.Parse(range[1]) 
-                    : fileLength - 1;
-
-                var length = end - start + 1;
-                var buffer = new byte[length];
-
-                using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-                {
-                    stream.Seek(start, SeekOrigin.Begin);
-                    await stream.ReadAsync(buffer, 0, (int)length);
-                }
-
-                Response.Headers.Add("Content-Range", $"bytes {start}-{end}/{fileLength}");
-                Response.Headers.Add("Accept-Ranges", "bytes");
-                Response.ContentLength = length;
-
-                return File(buffer, "video/mp4", enableRangeProcessing: true);
-            }
-
             return PhysicalFile(filePath, "video/mp4", enableRangeProcessing: true);
         }
     }

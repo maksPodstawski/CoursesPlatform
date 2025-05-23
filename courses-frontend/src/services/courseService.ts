@@ -30,3 +30,27 @@ export async function getCoursesByPriceRange(min: number, max: number) {
 	}
 	return await response.json();
 }*/
+
+export async function getPurchasedCourses() {
+	const response = await fetch(`${config.apiBaseUrl}/api/courses/purchases/user`, {
+		credentials: 'include',
+	});
+	if (!response.ok) {
+		throw new Error('Failed to fetch purchased courses');
+	}
+	return await response.json();
+}
+
+export async function getStagesByCourse(courseId: string) {
+	const response = await fetch(`${config.apiBaseUrl}/api/stages/course/${courseId}`, {
+		credentials: 'include',
+	});
+	if (!response.ok) {
+		throw new Error('Failed to fetch stages for course');
+	}
+	return await response.json();
+}
+
+export function getStageVideoStreamUrl(stageId: string) {
+	return `${config.apiBaseUrl}/api/stages/${stageId}/video/stream`;
+}

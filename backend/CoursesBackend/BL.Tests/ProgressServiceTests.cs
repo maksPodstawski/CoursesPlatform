@@ -16,12 +16,13 @@ namespace BL.Tests
     public class ProgressServiceTests
     {
         private readonly Mock<IProgressRepository> _mockProgressRepository;
+        private readonly Mock<IStageRepository> _mockStageRepository;
         private readonly ProgressService _progressService;
 
         public ProgressServiceTests()
         {
             _mockProgressRepository = new Mock<IProgressRepository>();
-            _progressService = new ProgressService(_mockProgressRepository.Object);
+            _progressService = new ProgressService(_mockProgressRepository.Object, _mockStageRepository.Object);
         }
 
         [Fact]
