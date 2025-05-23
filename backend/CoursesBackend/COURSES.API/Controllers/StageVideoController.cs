@@ -15,19 +15,22 @@ namespace COURSES.API.Controllers
         private readonly IStageService _stageService;
         private readonly IPurchasedCoursesService _purchasedCoursesService;
         private readonly IWebHostEnvironment _environment;
+        private readonly ICreatorService _creatorService;
         private const string UPLOAD_DIRECTORY = "UploadedVideos";
 
         public StageVideoController(
             IStageService stageService,
             IPurchasedCoursesService purchasedCoursesService,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            ICreatorService creatorService)
         {
             _stageService = stageService;
             _purchasedCoursesService = purchasedCoursesService;
             _environment = environment;
+            _creatorService=creatorService;
         }
 
-        [Authorize(Roles = IdentityRoleConstants.Admin)]
+        [Authorize(Roles = IdentityRoleConstants.User)]
         [HttpPost("{stageId}/video")]
         public async Task<IActionResult> UploadVideo(Guid stageId, IFormFile file)
         {
@@ -40,6 +43,14 @@ namespace COURSES.API.Controllers
             var stage = await _stageService.GetStageByIdAsync(stageId);
             if (stage == null)
                 return NotFound("Stage not found");
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var isCreator = await _creatorService.IsUserCreatorOfCourseAsync(Guid.Parse(userId), stage.CourseId);
+            if (!isCreator)
+                return Forbid();
 
             var uploadPath = Path.Combine(_environment.ContentRootPath, UPLOAD_DIRECTORY, stageId.ToString());
             Directory.CreateDirectory(uploadPath);
