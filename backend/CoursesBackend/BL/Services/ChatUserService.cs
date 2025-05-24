@@ -31,7 +31,7 @@ namespace BL.Services
 
         public async Task<ChatUser> AddUserToChatAsync(Guid chatId, Guid userId)
         {
-            var isInChat = await IsUserInChatAsync(chatId, userId);
+            var isInChat = await IsUserInChatAsync(userId, chatId);
             if (!isInChat)
             {
                 var chatUser = new ChatUser
@@ -63,6 +63,15 @@ namespace BL.Services
         {
             var chatUsers =  _chatUserRepository.GetChatUsers();
             return await Task.FromResult(chatUsers.Any(cu => cu.ChatId == chatId && cu.UserId == userId));
+        }
+
+        public Task<List<Chat>> GetChatsOfUser(Guid userId)
+        {
+            return _chatUserRepository.GetChatUsers()
+                .Where(cu => cu.UserId == userId)
+                .Select(cu => cu.Chat)
+                .ToListAsync();
+
         }
     }
 }

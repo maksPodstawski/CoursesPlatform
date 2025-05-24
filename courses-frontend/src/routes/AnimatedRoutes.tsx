@@ -6,10 +6,14 @@ import { Login } from "../pages/Login";
 import { Register } from "../pages/Register";
 import HomeContent from "../pages/HomeContent";
 import Courses from "../pages/Courses";
+
+import ChatTestPage from "../pages/ChatTestPage.tsx";
+
 import PurchasedCourses from "../pages/PurchasedCourses";
 
+
 const AnimatedRoutes = () => {
-    const location = useLocation();
+	const location = useLocation();
 
   return (
     <AnimatePresence mode="wait">

@@ -14,5 +14,6 @@ namespace IBL
         Task<ChatUser> AddUserToChatAsync(Guid chatId, Guid userId);
         Task<ChatUser?> RemoveUserFromChatAsync(Guid chatId, Guid userId);
         Task<bool> IsUserInChatAsync(Guid chatId, Guid userId);
+        Task<List<Chat>> GetChatsOfUser(Guid userId);
     }
 }
