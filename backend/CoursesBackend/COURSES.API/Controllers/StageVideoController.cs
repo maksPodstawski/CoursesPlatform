@@ -15,19 +15,22 @@ namespace COURSES.API.Controllers
         private readonly IStageService _stageService;
         private readonly IPurchasedCoursesService _purchasedCoursesService;
         private readonly IWebHostEnvironment _environment;
+        private readonly ICreatorService _creatorService;
         private const string UPLOAD_DIRECTORY = "UploadedVideos";
 
         public StageVideoController(
             IStageService stageService,
             IPurchasedCoursesService purchasedCoursesService,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            ICreatorService creatorService)
         {
             _stageService = stageService;
             _purchasedCoursesService = purchasedCoursesService;
             _environment = environment;
+            _creatorService=creatorService;
         }
 
-        [Authorize(Roles = IdentityRoleConstants.Admin)]
+        [Authorize(Roles = IdentityRoleConstants.User)]
         [HttpPost("{stageId}/video")]
         public async Task<IActionResult> UploadVideo(Guid stageId, IFormFile file)
         {
@@ -40,6 +43,14 @@ namespace COURSES.API.Controllers
             var stage = await _stageService.GetStageByIdAsync(stageId);
             if (stage == null)
                 return NotFound("Stage not found");
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var isCreator = await _creatorService.IsUserCreatorOfCourseAsync(Guid.Parse(userId), stage.CourseId);
+            if (!isCreator)
+                return Forbid();
 
             var uploadPath = Path.Combine(_environment.ContentRootPath, UPLOAD_DIRECTORY, stageId.ToString());
             Directory.CreateDirectory(uploadPath);
@@ -85,34 +96,6 @@ namespace COURSES.API.Controllers
             var filePath = Path.Combine(_environment.ContentRootPath, stage.VideoPath);
             if (!System.IO.File.Exists(filePath))
                 return NotFound("Video file not found");
-
-            var fileInfo = new FileInfo(filePath);
-            var fileLength = fileInfo.Length;
-
-            var rangeHeader = Request.Headers["Range"].ToString();
-            if (!string.IsNullOrEmpty(rangeHeader))
-            {
-                var range = rangeHeader.Replace("bytes=", "").Split('-');
-                var start = long.Parse(range[0]);
-                var end = range.Length > 1 && !string.IsNullOrEmpty(range[1]) 
-                    ? long.Parse(range[1]) 
-                    : fileLength - 1;
-
-                var length = end - start + 1;
-                var buffer = new byte[length];
-
-                using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-                {
-                    stream.Seek(start, SeekOrigin.Begin);
-                    await stream.ReadAsync(buffer, 0, (int)length);
-                }
-
-                Response.Headers.Add("Content-Range", $"bytes {start}-{end}/{fileLength}");
-                Response.Headers.Add("Accept-Ranges", "bytes");
-                Response.ContentLength = length;
-
-                return File(buffer, "video/mp4", enableRangeProcessing: true);
-            }
 
             return PhysicalFile(filePath, "video/mp4", enableRangeProcessing: true);
         }

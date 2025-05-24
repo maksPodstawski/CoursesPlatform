@@ -50,7 +50,7 @@ namespace COURSES.API.Controllers
             return Ok(stages.Select(StageResponseDTO.FromStage));
         }
 
-        [Authorize(Roles = IdentityRoleConstants.Admin)]
+        [Authorize(Roles = IdentityRoleConstants.User)]
         [HttpPost]
         public async Task<ActionResult<StageResponseDTO>> CreateStage([FromBody] CreateStageDTO createStageDto)
         {
@@ -84,7 +84,7 @@ namespace COURSES.API.Controllers
                 StageResponseDTO.FromStage(createdStage));
         }
 
-        [Authorize(Roles = IdentityRoleConstants.Admin)]
+        [Authorize(Roles = IdentityRoleConstants.User)]
         [HttpPut("{id}")]
         public async Task<ActionResult<StageResponseDTO>> UpdateStage(Guid id, [FromBody] UpdateStageDTO updateStageDto)
         {
@@ -117,7 +117,7 @@ namespace COURSES.API.Controllers
             return Ok(StageResponseDTO.FromStage(updatedStage));
         }
 
-        [Authorize(Roles = IdentityRoleConstants.Admin)]
+        [Authorize(Roles = IdentityRoleConstants.User)]
         [HttpDelete("{id}")]
         public async Task<ActionResult<StageResponseDTO>> DeleteStage(Guid id)
         {

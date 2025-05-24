@@ -17,7 +17,9 @@ namespace DAL
 
         public IQueryable<Course> GetCourses()
         {
-            return _context.Courses;
+            return _context.Courses
+                .Include(c => c.Creators)
+                .ThenInclude(creator => creator.User);
         }
 
         public Course? GetCourseById(Guid courseId)

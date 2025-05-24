@@ -92,10 +92,23 @@ namespace COURSES.API.Controllers
                 return Unauthorized();
 
             var purchases = await _purchasedCoursesService.GetPurchasedCoursesByUserIdAsync(Guid.Parse(userId));
-            return Ok(purchases.Select(PurchaseCourseResponseDTO.FromPurchasedCourse));
+
+            var courseIds = purchases.Select(p => p.CourseId).ToList();
+
+            var courses = new List<Course>();
+            foreach (var courseId in courseIds)
+            {
+                var course = await _courseService.GetCourseByIdAsync(courseId);
+                if (course != null)
+                {
+                    courses.Add(course);
+                }
+            }
+
+            return Ok(courses);
         }
 
-        [Authorize(Roles = IdentityRoleConstants.Admin)]
+        [Authorize]
         [HttpGet("course/{courseId}")]
         public async Task<ActionResult<IEnumerable<PurchaseCourseResponseDTO>>> GetCoursePurchases(Guid courseId)
         {

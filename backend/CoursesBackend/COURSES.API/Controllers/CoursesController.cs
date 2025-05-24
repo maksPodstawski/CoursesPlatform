@@ -13,11 +13,13 @@ namespace COURSES.API.Controllers
     {
         private readonly ICourseService _courseService;
         private readonly ICreatorService _creatorService;
+        private readonly IPurchasedCoursesService _purchasedCoursesService;
 
-        public CoursesController(ICourseService courseService, ICreatorService creatorService)
+        public CoursesController(ICourseService courseService, ICreatorService creatorService, IPurchasedCoursesService purchasedCoursesService)
         {
             _courseService = courseService;
             _creatorService = creatorService;
+            _purchasedCoursesService=purchasedCoursesService;
         }
 
         [HttpGet]
@@ -70,6 +72,16 @@ namespace COURSES.API.Controllers
                 var createdCourse = await _courseService.AddCourseAsync(course);
 
                 var creator = await _creatorService.AddCreatorFromUserAsync(Guid.Parse(userId), createdCourse.Id);
+
+                var purchase = new PurchasedCourses
+                {
+                    UserId = Guid.Parse(userId),
+                    CourseId = createdCourse.Id,
+                    PurchasedPrice = createdCourse.Price,
+                    PurchasedAt = DateTime.UtcNow,
+                    IsActive = true
+                };
+                await _purchasedCoursesService.AddPurchasedCourseAsync(purchase);
 
                 return CreatedAtAction(
                     nameof(GetCourseById), 
