@@ -27,7 +27,10 @@ const NavBar: React.FC<NavBarProps> = ({ sidebarOpen, toggleSidebar }) => {
                 <div className={`nav-links ${sidebarOpen ? "hide-on-mobile" : ""}`}>
                     <Link to="/courses">Courses</Link>
                     {isLoggedIn && (
-                        <Link to="/my-courses">My Courses</Link>
+                        <>
+                            <Link to="/my-courses">My Courses</Link>
+                            <Link to="/chats">Chats</Link>
+                        </>
                     )}
                     {isLoggedIn ? (
                         <button onClick={handleLogout} className="btn logout">Logout</button>
@@ -48,7 +51,10 @@ const NavBar: React.FC<NavBarProps> = ({ sidebarOpen, toggleSidebar }) => {
                 <Link to="/" onClick={toggleSidebar}>Home</Link>
                 <Link to="/courses" onClick={toggleSidebar}>Courses</Link>
                 {isLoggedIn && (
-                    <Link to="/my-courses" onClick={toggleSidebar}>My Courses</Link>
+                    <>
+                        <Link to="/my-courses" onClick={toggleSidebar}>My Courses</Link>
+                        <Link to="/chats" onClick={toggleSidebar}>Chats</Link>
+                    </>
                 )}
                 {isLoggedIn ? (
                     <button onClick={() => { handleLogout(); toggleSidebar(); }} className="btn logout">Logout</button>

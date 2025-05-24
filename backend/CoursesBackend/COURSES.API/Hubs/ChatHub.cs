@@ -77,16 +77,11 @@ namespace COURSES.API.Hubs
             var userId = GetUserId();
             if (userId == null) return;
 
-            bool alreadyIn = await _chatUserService.IsUserInChatAsync(userId.Value, chatId);
-            if (!alreadyIn)
+            bool isMember = await _chatUserService.IsUserInChatAsync(chatId, userId.Value);
+            if (!isMember)
             {
-                var result = await _chatUserService.AddUserToChatAsync(chatId, userId.Value);
-                if (result == null)
-                {
-                    throw new HubException("Failed to join chat");
-                }
+                return;
             }
-
             await Groups.AddToGroupAsync(Context.ConnectionId, chatId.ToString());
         }
 

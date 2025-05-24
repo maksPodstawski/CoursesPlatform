@@ -24,6 +24,7 @@ namespace BL.Services
             return await _messageRepository
                  .GetMessages()
                  .Where(m => m.ChatId == chatId && !m.IsDeleted)
+                 .Include(m => m.Author)
                  .ToListAsync();
         }
 

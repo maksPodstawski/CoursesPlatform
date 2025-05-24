@@ -376,9 +376,10 @@ namespace BL.Tests
             var result = await service.AddUserToChatAsync(chatId, userId);
 
             Assert.NotNull(result);
-            Assert.Single(fakeRepo.GetChatUsers());
-            Assert.Equal(chatId, fakeRepo.GetChatUsers().First().ChatId);
-            Assert.Equal(userId, fakeRepo.GetChatUsers().First().UserId);
+            var storedUsers = fakeRepo.GetChatUsers().ToList();
+            Assert.Single(storedUsers);
+            Assert.Equal(chatId, storedUsers.First().ChatId);
+            Assert.Equal(userId, storedUsers.First().UserId);
         }
     }
 }

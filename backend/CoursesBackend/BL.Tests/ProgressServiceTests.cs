@@ -22,6 +22,7 @@ namespace BL.Tests
         public ProgressServiceTests()
         {
             _mockProgressRepository = new Mock<IProgressRepository>();
+            _mockStageRepository = new Mock<IStageRepository>();
             _progressService = new ProgressService(_mockProgressRepository.Object, _mockStageRepository.Object);
         }
 

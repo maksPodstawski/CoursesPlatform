@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
 import { getPurchasedCourses, getStageVideoStreamUrl } from "../services/courseService";
-import {
-	type Course,
-	getCourseStagesWithProgress,
-	markStageAsCompleted,
-	type StageWithProgress,
-	startStage,
-} from "../services/progressService";
-import "./PurchasedCourses.css";
+import { getCourseStagesWithProgress, markStageAsCompleted, startStage } from "../services/progressService";
+import { chatService } from "../services/chatService";
+import "../styles/PurchasedCourses.css";
+import type { Course, StageWithProgress } from "../types/courses.ts";
 
 const PurchasedCourses = () => {
 	const [courses, setCourses] = useState<Course[]>([]);
@@ -103,6 +99,37 @@ const PurchasedCourses = () => {
 		}
 	}, [stages]);
 
+	const handleAskAuthor = async () => {
+		if (!selectedCourse) return;
+
+		try {
+			const courseId = selectedCourse.courseId || selectedCourse.id;
+			if (!courseId) {
+				console.error("No course ID found");
+				return;
+			}
+
+			const courseName = selectedCourse.name;
+			const userName = localStorage.getItem("userName") || "User";
+			const chatName = `${userName} - ${courseName}`;
+
+			try {
+				const newChat = await chatService.createCourseChat(chatName, courseId);
+				await chatService.joinChat(newChat.id);
+
+				window.location.href = `/chats?chatId=${newChat.id}`;
+			} catch (error: any) {
+				if (error.response?.status === 409) {
+					window.location.href = "/chats";
+				} else {
+					throw error;
+				}
+			}
+		} catch (error) {
+			console.error("Error creating chat:", error);
+		}
+	};
+
 	return (
 		<div className="purchased-courses-root">
 			{!selectedCourse && !loading && (
@@ -144,6 +171,9 @@ const PurchasedCourses = () => {
 									</li>
 								))}
 							</ul>
+							<button type="button" className="purchased-courses-sidebar-ask-author-btn" onClick={handleAskAuthor}>
+								Ask Author
+							</button>
 						</div>
 						<div className="purchased-courses-sidebar-stage-index">
 							{selectedStage && stages.length > 0 && (
@@ -163,18 +193,6 @@ const PurchasedCourses = () => {
 					<main className="purchased-courses-main">
 						{selectedStage && (
 							<>
-								<div className="purchased-courses-main-header">
-									<div>
-										<h1 className="purchased-courses-main-title">{selectedStage.name}</h1>
-										<div className="purchased-courses-main-desc">{selectedStage.description}</div>
-									</div>
-									<div className="purchased-courses-main-progress-label">
-										{completedCount}/{stages.length} completed
-									</div>
-								</div>
-								<div className="purchased-courses-main-progress-bar">
-									<div className="purchased-courses-main-progress-bar-inner" style={{ width: `${progress}%` }} />
-								</div>
 								<div className="purchased-courses-main-video-wrap">
 									<div className="custom-video-player-wrapper">
 										<ReactPlayer
@@ -187,6 +205,18 @@ const PurchasedCourses = () => {
 											onPlay={handleVideoStart}
 										/>
 									</div>
+								</div>
+								<div className="purchased-courses-main-header">
+									<div>
+										<h1 className="purchased-courses-main-title">{selectedStage.name}</h1>
+										<div className="purchased-courses-main-desc">{selectedStage.description}</div>
+									</div>
+									<div className="purchased-courses-main-progress-label">
+										{completedCount}/{stages.length} completed
+									</div>
+								</div>
+								<div className="purchased-courses-main-progress-bar">
+									<div className="purchased-courses-main-progress-bar-inner" style={{ width: `${progress}%` }} />
 								</div>
 								<div className="purchased-courses-main-nav">
 									<button

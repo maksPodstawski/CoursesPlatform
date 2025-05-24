@@ -19,37 +19,81 @@ namespace COURSES.API.Controllers
         private readonly IUserService _userService;
         private readonly IChatUserService _chatUserService;
         private readonly IMessageService _messageService;
-        public ChatController(IChatService chatService, IUserService userService, IChatUserService chatUserService, IMessageService messageService)
+        private readonly ICreatorService _creatorService;
+
+        public ChatController(IChatService chatService, IUserService userService, IChatUserService chatUserService, IMessageService messageService, ICreatorService creatorService)
         {
             _chatService = chatService;
             _userService = userService;
             _chatUserService = chatUserService;
             _messageService = messageService;
+            _creatorService = creatorService;
         }
 
-        [HttpPost("create")]
-        public async Task<IActionResult> CreateChat([FromBody] CreateChatDTO createChatDto)
+        /* [HttpPost("create")]
+         public async Task<IActionResult> CreateChat([FromBody] CreateChatDTO createChatDto)
+         {
+             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+             if (createChatDto == null)
+             {
+                 return BadRequest("Invalid chat data.");
+             }
+             if (string.IsNullOrEmpty(userId))
+             {
+                 return Unauthorized();
+             }
+
+             var chat = new Chat
+             {
+                 Id = Guid.NewGuid(),
+                 Name = createChatDto.Name,
+             };
+
+             await _chatService.AddChatAsync(chat);
+             await _chatUserService.AddUserToChatAsync(chat.Id, Guid.Parse(userId));
+             return Ok(new CreateChatResponseDTO { Id = chat.Id, Name = chat.Name });
+         }*/
+
+        [HttpPost("/course/create")]
+        public async Task<IActionResult> CreateCourseChat([FromBody] CreateChatDTO createChatDto, [FromQuery] Guid courseId)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
             if (createChatDto == null)
-            {
                 return BadRequest("Invalid chat data.");
-            }
+
             if (string.IsNullOrEmpty(userId))
-            {
                 return Unauthorized();
+
+            var userGuid = Guid.Parse(userId);
+
+            var existingChat = await _chatService.GetChatByAuthorAndCourseAsync(userGuid, courseId);
+            if (existingChat != null)
+            {
+                return Conflict("Chat for this user and course already exists.");
             }
 
             var chat = new Chat
             {
                 Id = Guid.NewGuid(),
                 Name = createChatDto.Name,
+                ChatAuthorId = userGuid,
+                CourseId = courseId
             };
 
+            var creators = await _creatorService.GetCreatorsByCourseAsync(courseId);
+
             await _chatService.AddChatAsync(chat);
-            await _chatUserService.AddUserToChatAsync(chat.Id, Guid.Parse(userId));
+            await _chatUserService.AddUserToChatAsync(chat.Id, userGuid);
+
+            foreach (var creator in creators)
+            {
+                await _chatUserService.AddUserToChatAsync(chat.Id, creator.UserId);
+            }
+
             return Ok(new CreateChatResponseDTO { Id = chat.Id, Name = chat.Name });
         }
+
 
         [HttpPost("{chatId}/join")]
         public async Task<IActionResult> JoinChat(Guid chatId)
@@ -97,7 +141,17 @@ namespace COURSES.API.Controllers
 
             var messages = await _messageService.GetMessagesByChatIdAsync(chatId);
 
-            return Ok(messages);
+            var result = messages.Select(m => new MessageDTO
+            {
+                Id = m.Id,
+                ChatId = m.ChatId,
+                AuthorId = m.AuthorId,
+                AuthorName = m.Author?.FirstName ?? "",
+                Content = m.Content,
+                CreatedAt = m.CreatedAt
+            }).ToList();
+
+            return Ok(result);
         }
     }
 }

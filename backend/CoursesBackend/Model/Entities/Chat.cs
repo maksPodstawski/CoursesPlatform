@@ -5,10 +5,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Model
 {
     [Table("Chats")]
+    [Index(nameof(CourseId), nameof(ChatAuthorId), IsUnique = true)]
     public class Chat
     {
         [Key]
@@ -17,6 +19,15 @@ namespace Model
         [MaxLength(50)]
         [Required]
         public string Name { get; set; } = string.Empty;
+
+        [Required]
+        [ForeignKey(nameof(Course))]
+        public Guid CourseId { get; set; }
+
+        [Required]
+        [ForeignKey(nameof(User))]
+        public Guid ChatAuthorId { get; set; }
+
         public ICollection<ChatUser>? Users { get; set; } = new List<ChatUser>();
         public ICollection<Message>? Messages { get; set; } = new List<Message>();
     }

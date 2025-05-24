@@ -70,5 +70,11 @@ namespace BL.Services
             var chat = await Task.FromResult(_chatRepository.GetChatById(chatId));
             return chat != null;
         }
+
+        public async Task<Chat?> GetChatByAuthorAndCourseAsync(Guid authorId, Guid courseId)
+        {
+            return await _chatRepository.GetChats()
+                .FirstOrDefaultAsync(c => c.ChatAuthorId == authorId && c.CourseId == courseId);
+        }
     }
 }
