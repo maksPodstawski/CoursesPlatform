@@ -1,10 +1,21 @@
-import { useEffect, useState } from "react";
-import { getCourses } from "../services/courseService";
-import type { Course } from "../types/courses.ts";
+import { useEffect, useState } from 'react';
+import { getCourses } from '../services/courseService';
+import { useNavigate } from "react-router-dom";
+import CourseCard from "../components/CourseCard.tsx";
+import BuyButton from "../components/BuyButton.tsx";
+
+interface Course {
+	id: string;
+	name: string;
+	description: string;
+	price: number;
+	imageUrl: string;
+}
 
 const Courses = () => {
-	const [courses, setCourses] = useState([]);
+	const [courses, setCourses] = useState<Course[]>([]);
 	const [loading, setLoading] = useState(true);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		const fetchCourses = async () => {
@@ -12,30 +23,36 @@ const Courses = () => {
 				const data = await getCourses();
 				setCourses(data);
 			} catch (error) {
-				console.error("Błąd:", error);
+				console.error('Error:', error);
 			} finally {
 				setLoading(false);
 			}
 		};
-
 		fetchCourses();
 	}, []);
 
+
 	return (
 		<div>
-			<h1>Kursy</h1>
-			{loading ? (
-				<p>Ładowanie...</p>
-			) : (
-				<ul>
+			<h1>Courses</h1>
+			{loading ? <p>Loading...</p> : (
+				<div className="courses-grid">
 					{courses.map((course: Course) => (
-						<li key={course.id}>
-							<h2>{course.name}</h2>
-							<p>{course.description}</p>
-							<img alt="course" src={course.imageUrl} style={{ width: "200px", height: "200px", objectFit: "cover" }} />
-						</li>
+						<CourseCard
+							key={course.id}
+							course={course}
+							actions={
+								<div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+									<BuyButton courseId={course.id} price={course.price} redirectAfterLogin="/courses" />
+									<button type="button" className="btn btn-primary"
+											onClick={() => navigate(`/courses/${course.id}`)}>
+										Details
+									</button>
+								</div>
+							}
+						/>
 					))}
-				</ul>
+				</div>
 			)}
 		</div>
 	);

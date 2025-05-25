@@ -9,9 +9,17 @@ export const config = {
 		getCourses: "/api/courses",
 		getCoursesByTitle: "/api/courses",
 		getCoursesByPriceRange: "/api/courses/price-range",
+		getCreatorCourses: "/api/Creator/courses",
 		getPurchasedCourses: "/api/courses/purchases/user",
+		getPurchasedCoursesUser: "/api/courses/purchases/user",
 		getStagesByCourse: "/api/stages/course/",
+		getReviewsCourse: "/api/Reviews/course/{courseId}",
+
 		streamStageVideo: "/api/stages/",
+		addCourse: "/api/courses",
+		buyCourse: "/api/courses/purchases",
+		addReview: "/api/Reviews",
+		avgRating: "/api/Reviews/course/{courseId}/average-rating",
 	},
 } as const;
 

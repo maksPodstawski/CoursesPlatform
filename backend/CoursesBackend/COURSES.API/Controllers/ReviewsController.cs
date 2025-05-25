@@ -138,5 +138,12 @@ namespace COURSES.API.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("course/{courseId}/average-rating")]
+        public async Task<ActionResult<double?>> GetAverageRating(Guid courseId)
+        {
+            var avg = await _reviewService.GetAverageRatingForCourseAsync(courseId);
+            return Ok(avg);
+        }
     }
 } 
