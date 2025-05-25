@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { HubConnectionBuilder, type HubConnection } from "@microsoft/signalr";
-import { chatService, type Message, type CreateChatResponseDTO } from "../services/chatService";
+import { chatService } from "../services/chatService";
+import type { Message, CreateChatResponseDTO } from "../types/courses";
 import { config } from "../config";
 import "../styles/Chats.css";
 
