@@ -12,6 +12,7 @@ import {AddCourse} from "../pages/AddCourse.tsx";
 import CreatorCourses from "../pages/CreatorCourses.tsx";
 import PurchasedCourses from "../pages/PurchasedCourses.tsx";
 import CourseDetails from "../pages/CourseDetails.tsx";
+import AdminPanel from "../pages/AdminPanel";
 
 const AnimatedRoutes = () => {
 	const location = useLocation();
@@ -29,6 +30,7 @@ const AnimatedRoutes = () => {
 				<Route path="/" element={<PageWrapper><HomeContent /></PageWrapper>}/>
 				<Route path="/my-courses" element={<PageWrapper><MyCourses /></PageWrapper>}/>
 				<Route path="/chats" element={<PageWrapper><Chats /></PageWrapper>}/>
+				<Route path="/admin" element={<PageWrapper><AdminPanel /></PageWrapper>} />
 			</Routes>
 		</AnimatePresence>
 	);

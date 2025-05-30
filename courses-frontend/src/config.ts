@@ -1,5 +1,5 @@
 export const config = {
-	apiBaseUrl: import.meta.env.API_BASE_URL || "https://api.czester.ovh",
+	apiBaseUrl: import.meta.env.API_BASE_URL || "https://localhost:7207",
 	apiEndpoints: {
 		login: "/api/account/login",
 		register: "/api/account/register",
@@ -23,4 +23,4 @@ export const config = {
 	},
 } as const;
 
-export const API_URL = "https://api.czester.ovh";
+export const API_URL = "https://localhost:7207";
