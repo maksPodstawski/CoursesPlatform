@@ -32,6 +32,7 @@ export const authService = {
 	},
 
 	async register(data: RegisterRequest) {
+
 		const response = await fetch(`${config.apiBaseUrl}${config.apiEndpoints.register}`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -39,6 +40,11 @@ export const authService = {
 			credentials: "include",
 		});
 
-		if (!response.ok) throw new Error("Registration failed");
+		if (!response.ok) {
+			const errorBody = await response.json();
+			const error: any = new Error("Registration failed");
+			error.response = { status: response.status, data: errorBody };
+			throw error;
+		}
 	},
 };
