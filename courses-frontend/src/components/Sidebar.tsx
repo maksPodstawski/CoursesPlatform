@@ -17,13 +17,13 @@ export default function Sidebar() {
 	return (
 		<aside className="sidemenu">
 			<div className="sidemenu__top">
-				<div className="sidemenu__profile-section">
+				{/*<div className="sidemenu__profile-section">
 					<User className="sidemenu__avatar" size={48} />
 					<div>
 						<div className="sidemenu__name">Polska Sigma</div>
 						<div className="sidemenu__role">Course Creator</div>
 					</div>
-				</div>
+				</div>*/}
 				<nav className="sidemenu__nav">
 					{navItems.map(({ label, icon, path }) => (
 						<Link key={label} to={path} className={`sidemenu__link ${location.pathname === path ? "active" : ""}`}>

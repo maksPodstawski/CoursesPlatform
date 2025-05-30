@@ -25,11 +25,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	};
 
 	const logout = async () => {
-		await authService.logout();
-		setIsLoggedIn(false);
-		localStorage.removeItem("isLoggedIn");
-		localStorage.removeItem("userId");
-		localStorage.removeItem("userName");
+		try {
+			await authService.logout();
+		} finally {
+			setIsLoggedIn(false);
+			localStorage.removeItem("isLoggedIn");
+			localStorage.removeItem("userId");
+			localStorage.removeItem("userName");
+		}
 	};
 
 	return <AuthContext.Provider value={{ isLoggedIn, login, logout }}>{children}</AuthContext.Provider>;

@@ -4,7 +4,6 @@ import { HubConnectionBuilder, type HubConnection } from "@microsoft/signalr";
 import { chatService } from "../services/chatService";
 import type { Message, CreateChatResponseDTO } from "../types/courses";
 import { config } from "../config";
-import "../styles/Chats.css";
 import Sidebar from "../components/Sidebar.tsx";
 
 interface SignalRMessage {

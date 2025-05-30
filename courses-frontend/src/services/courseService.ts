@@ -1,10 +1,8 @@
 import { config } from '../config';
+import { fetchClient } from './fetchClient';
 
 export async function getCourses() {
-	const response = await fetch(`${config.apiBaseUrl}${config.apiEndpoints.getCourses}`);
-	if (!response.ok) {
-		throw new Error('Failed to download courses');
-	}
+	const response = await fetchClient.fetch(config.apiEndpoints.getCourses);
 	return await response.json();
 }
 /*
@@ -32,22 +30,12 @@ export async function getCoursesByPriceRange(min: number, max: number) {
 }*/
 
 export async function getPurchasedCourses() {
-	const response = await fetch(`${config.apiBaseUrl}/api/courses/purchases/user`, {
-		credentials: 'include',
-	});
-	if (!response.ok) {
-		throw new Error('Failed to fetch purchased courses');
-	}
+	const response = await fetchClient.fetch('/api/courses/purchases/user');
 	return await response.json();
 }
 
 export async function getStagesByCourse(courseId: string) {
-	const response = await fetch(`${config.apiBaseUrl}/api/stages/course/${courseId}`, {
-		credentials: 'include',
-	});
-	if (!response.ok) {
-		throw new Error('Failed to fetch stages for course');
-	}
+	const response = await fetchClient.fetch(`/api/stages/course/${courseId}`);
 	return await response.json();
 }
 

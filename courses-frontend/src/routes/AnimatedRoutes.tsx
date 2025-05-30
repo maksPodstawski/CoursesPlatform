@@ -1,6 +1,7 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { PageWrapper } from "../utils/animations";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 import { Login } from "../pages/Login";
 import { Register } from "../pages/Register";
@@ -13,6 +14,7 @@ import CreatorCourses from "../pages/CreatorCourses.tsx";
 import PurchasedCourses from "../pages/PurchasedCourses.tsx";
 import CourseDetails from "../pages/CourseDetails.tsx";
 import CreatorPanel from "../pages/CreatorPanel.tsx";
+import CreatorPanelChats from "../pages/CreatorPanelChats.tsx";
 
 const AnimatedRoutes = () => {
 	const location = useLocation();
@@ -24,7 +26,6 @@ const AnimatedRoutes = () => {
 					path="/login"
 					element={
 						<PageWrapper>
-							{" "}
 							<Login />
 						</PageWrapper>
 					}
@@ -49,7 +50,9 @@ const AnimatedRoutes = () => {
 					path="/add-course"
 					element={
 						<PageWrapper>
-							<AddCourse />
+							<ProtectedRoute>
+								<AddCourse />
+							</ProtectedRoute>
 						</PageWrapper>
 					}
 				/>
@@ -57,7 +60,9 @@ const AnimatedRoutes = () => {
 					path="/creator-courses"
 					element={
 						<PageWrapper>
-							<CreatorCourses />
+							<ProtectedRoute>
+								<CreatorCourses />
+							</ProtectedRoute>
 						</PageWrapper>
 					}
 				/>
@@ -65,7 +70,9 @@ const AnimatedRoutes = () => {
 					path="/purchased-courses"
 					element={
 						<PageWrapper>
-							<PurchasedCourses />
+							<ProtectedRoute>
+								<PurchasedCourses />
+							</ProtectedRoute>
 						</PageWrapper>
 					}
 				/>
@@ -89,7 +96,9 @@ const AnimatedRoutes = () => {
 					path="/my-courses"
 					element={
 						<PageWrapper>
-							<MyCourses />
+							<ProtectedRoute>
+								<MyCourses />
+							</ProtectedRoute>
 						</PageWrapper>
 					}
 				/>
@@ -97,11 +106,28 @@ const AnimatedRoutes = () => {
 					path="/chats"
 					element={
 						<PageWrapper>
-							<Chats />
+							<ProtectedRoute>
+								<Chats />
+							</ProtectedRoute>
 						</PageWrapper>
 					}
 				/>
-				<Route path="/creatorpanel" element={<CreatorPanel />} />
+				<Route 
+					path="/creatorpanel" 
+					element={
+						<ProtectedRoute>
+							<CreatorPanel />
+						</ProtectedRoute>
+					} 
+				/>
+				<Route 
+					path="/creatorpanel/chats" 
+					element={
+						<ProtectedRoute>
+							<CreatorPanelChats />
+						</ProtectedRoute>
+					} 
+				/>
 			</Routes>
 		</AnimatePresence>
 	);
