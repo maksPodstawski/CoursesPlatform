@@ -15,6 +15,7 @@ import PurchasedCourses from "../pages/PurchasedCourses.tsx";
 import CourseDetails from "../pages/CourseDetails.tsx";
 import CreatorPanel from "../pages/CreatorPanel.tsx";
 import CreatorPanelChats from "../pages/CreatorPanelChats.tsx";
+import MyProfile from "../pages/MyProfile.tsx";
 
 const AnimatedRoutes = () => {
 	const location = useLocation();
@@ -112,6 +113,15 @@ const AnimatedRoutes = () => {
 						</PageWrapper>
 					}
 				/>
+				<Route 
+					path="/my-profile" 
+					element={
+						<PageWrapper>
+							<ProtectedRoute>
+								<MyProfile/>
+							</ProtectedRoute>
+						</PageWrapper>
+					} />
 				<Route 
 					path="/creatorpanel" 
 					element={

@@ -20,6 +20,7 @@ export const config = {
 		buyCourse: "/api/courses/purchases",
 		addReview: "/api/Reviews",
 		avgRating: "/api/Reviews/course/{courseId}/average-rating",
+		getUserProfile: "/api/user/me",
 	},
 } as const;
 
