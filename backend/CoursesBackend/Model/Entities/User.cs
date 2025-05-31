@@ -22,6 +22,8 @@ namespace Model
         public ICollection<Review>? Reviews { get; set; } = new List<Review>();
         public ICollection<Progress>? Progresses { get; set; } = new List<Progress>();
 
+        public byte[]? ProfilePicture { get; set; }
+
         public static User Create(string email, string firstName, string lastName)
         {
             return new User

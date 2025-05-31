@@ -35,7 +35,10 @@ public class UserController : ControllerBase
         {
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Email = user.Email
+            Email = user.Email,
+            ProfilePictureBase64 = user.ProfilePicture != null
+            ? Convert.ToBase64String(user.ProfilePicture)
+            : null
         };
     }
 
@@ -56,6 +59,25 @@ public class UserController : ControllerBase
         user.FirstName = dto.FirstName;
         user.LastName = dto.LastName;
         user.Email = dto.Email;
+
+        if (!string.IsNullOrEmpty(dto.ProfilePictureBase64))
+        {
+            try
+            {
+                var base64Data = dto.ProfilePictureBase64;
+                var commaIndex = base64Data.IndexOf(',');
+                if (commaIndex >= 0)
+                {
+                    base64Data = base64Data.Substring(commaIndex + 1);
+                }
+
+                user.ProfilePicture = Convert.FromBase64String(base64Data);
+            }
+            catch
+            {
+                return BadRequest("Invalid image format.");
+            }
+        }
 
         var updated = await _userService.UpdateUserAsync(user);
         if (updated == null)
