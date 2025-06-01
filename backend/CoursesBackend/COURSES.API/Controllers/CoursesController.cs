@@ -40,6 +40,29 @@ namespace COURSES.API.Controllers
             return Ok(CourseResponseDTO.FromCourse(course));
         }
 
+        [HttpGet("{courseId}/instructor")]
+        public async Task<ActionResult<InstructorResponseDTO>> GetCourseInstructor(Guid courseId)
+        {
+            var course = await _courseService.GetCourseByIdAsync(courseId);
+            if (course == null)
+            {
+                return NotFound("Course not found");
+            }
+
+            var creators = await _creatorService.GetCreatorsByCourseAsync(courseId);
+            var creator = creators.FirstOrDefault();
+            if (creator == null)
+            {
+                return NotFound("Course instructor not found");
+            }
+
+            return Ok(new InstructorResponseDTO
+            {
+                Name = creator.User.ToString(),
+                Title = creator.Title
+            });
+        }
+
         [HttpGet("price-range")]
         public async Task<ActionResult<IEnumerable<CourseResponseDTO>>> GetCoursesByPriceRange([FromQuery] decimal minPrice, [FromQuery] decimal maxPrice)
         {
