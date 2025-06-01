@@ -1,23 +1,22 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { config } from "../config";
 import { fetchClient } from "../services/fetchClient";
+import { UserProfile } from "../types/user";
 
-type UserProfile = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  profilePictureBase64?: string | null;
-};
+
 
 export default function MyProfile() {
   const [profile, setProfile] = useState<UserProfile>({
     firstName: "",
     lastName: "",
     email: "",
+    userName: "",
+    phoneNumber: "",
     profilePictureBase64: null,
   });
-  const [isEditing, setIsEditing] = useState(false);
+  const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     fetchClient
@@ -25,27 +24,33 @@ export default function MyProfile() {
         credentials: "include",
         headers: { "Cache-Control": "no-cache" },
       })
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error("Unauthorized");
         return res.json();
       })
-      .then(data => {
+      .then((data) => {
         const base64 = data.profilePictureBase64
           ? `data:image/png;base64,${data.profilePictureBase64}`
           : null;
-        setProfile({
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
+
+        const fetchedProfile: UserProfile = {
+          firstName: data.firstName || "",
+          lastName: data.lastName || "",
+          email: data.email || "",
+          userName: data.userName || "",
+          phoneNumber: data.phoneNumber || "",
           profilePictureBase64: base64,
-        });
+        };
+
+        setProfile(fetchedProfile);
+        setEditedProfile(fetchedProfile);
         setPreviewImage(base64);
       })
-      .catch(() => alert("Nie udało się pobrać danych profilu"));
+      .catch(() => alert("Failed to load profile data"));
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
+    setEditedProfile({ ...editedProfile, [e.target.name]: e.target.value });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,20 +59,28 @@ export default function MyProfile() {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64 = reader.result?.toString() ?? null;
-        setProfile(prev => ({ ...prev, profilePictureBase64: base64 }));
+        setEditedProfile((prev) => ({
+          ...prev,
+          profilePictureBase64: base64,
+        }));
         setPreviewImage(base64);
       };
       reader.readAsDataURL(file);
     } else {
-      alert("Wybierz plik PNG lub JPG");
+      alert("Only PNG or JPG files are allowed.");
     }
   };
 
   const handleSave = () => {
+    if (editedProfile.phoneNumber && !/^\d{0,20}$/.test(editedProfile.phoneNumber)) {
+      alert("Phone number can contain only digits (up to 20).");
+      return;
+    }
+
     const payload = {
-      ...profile,
-      profilePictureBase64: profile.profilePictureBase64
-        ? profile.profilePictureBase64.split(",")[1]
+      ...editedProfile,
+      profilePictureBase64: editedProfile.profilePictureBase64
+        ? editedProfile.profilePictureBase64.split(",")[1]
         : null,
     };
 
@@ -81,96 +94,144 @@ export default function MyProfile() {
         credentials: "include",
         body: JSON.stringify(payload),
       })
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error("Update failed");
-        alert("Zapisano zmiany");
+        alert("Changes saved");
+        setProfile(editedProfile);
         setIsEditing(false);
       })
-      .catch(() => alert("Nie udało się zapisać danych"));
+      .catch(() => alert("Failed to save changes"));
+  };
+
+  const handleCancel = () => {
+    setEditedProfile(profile);
+    setPreviewImage(profile.profilePictureBase64);
+    setIsEditing(false);
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-10 text-white">
-      <h1 className="text-2xl mb-6">My Profile</h1>
+    <div className="profile-container">
+      <h2>My Profile</h2>
 
-      {/* Zdjęcie profilowe */}
-        <div className="mb-6 flex flex-col items-center">
-    {previewImage ? (
-      <img
-        src={previewImage}
-        alt="Profile"
-        className="rounded border border-gray-500 mb-2 object-cover"
-        style={{ width: "250px", height: "250px" }}
-      />
-    ) : (
-      <div
-        className="bg-gray-700 flex items-center justify-center text-gray-400 rounded border border-gray-500 mb-2"
-        style={{ width: "250px", height: "250px" }}
-      >
-        No Image
-      </div>
-            )}
-            {isEditing && (
-              <input type="file" accept="image/png, image/jpeg" onChange={handleFileChange} />
-            )}
-      </div>
-
-      <div className="mb-4">
-        <span className="font-semibold">First Name:</span>{" "}
-        {isEditing ? (
-          <input
-            className="bg-gray-800 border border-gray-600 p-1 rounded ml-2"
-            name="firstName"
-            value={profile.firstName}
-            onChange={handleChange}
+      <div style={{ marginBottom: "1rem" }}>
+        {previewImage ? (
+          <img
+            src={previewImage}
+            alt="Profile"
+            style={{ width: "150px", height: "150px", borderRadius: "50%", objectFit: "cover", marginBottom: "0.5rem" }}
           />
         ) : (
-          <span className="ml-2">{profile.firstName}</span>
+          <div
+            style={{
+              width: "150px",
+              height: "150px",
+              borderRadius: "50%",
+              backgroundColor: "#ccc",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              marginBottom: "0.5rem",
+            }}
+          >
+            No Image
+          </div>
+        )}
+
+        {isEditing && (
+          <input
+            type="file"
+            accept="image/png, image/jpeg"
+            onChange={handleFileChange}
+          />
         )}
       </div>
 
-      <div className="mb-4">
-        <span className="font-semibold">Last Name:</span>{" "}
-        {isEditing ? (
-          <input
-            className="bg-gray-800 border border-gray-600 p-1 rounded ml-2"
-            name="lastName"
-            value={profile.lastName}
-            onChange={handleChange}
-          />
-        ) : (
-          <span className="ml-2">{profile.lastName}</span>
-        )}
-      </div>
+      {!isEditing ? (
+        <>
+          <div className="profile-field">
+            <label>First Name:</label>
+            <span>{profile.firstName}</span>
+          </div>
+          <div className="profile-field">
+            <label>Last Name:</label>
+            <span>{profile.lastName}</span>
+          </div>
+          <div className="profile-field">
+            <label>Email:</label>
+            <span>{profile.email}</span>
+          </div>
+          <div className="profile-field">
+            <label>Username:</label>
+            <span>{profile.userName}</span>
+          </div>
+          <div className="profile-field">
+            <label>Phone Number:</label>
+            <span>{profile.phoneNumber}</span>
+          </div>
 
-      <div className="mb-4">
-        <span className="font-semibold">Email:</span>{" "}
-        {isEditing ? (
-          <input
-            className="bg-gray-800 border border-gray-600 p-1 rounded ml-2"
-            name="email"
-            value={profile.email}
-            onChange={handleChange}
-          />
-        ) : (
-          <span className="ml-2">{profile.email}</span>
-        )}
-      </div>
-
-      {isEditing ? (
-        <button
-          onClick={handleSave}
-          className="px-4 py-2 bg-green-600 rounded hover:bg-green-700 transition"
-        >
-          Zapisz zmiany
-        </button>
+          <div className="profile-actions">
+            <button className="btn primary" onClick={() => setIsEditing(true)}>
+              Edit
+            </button>
+          </div>
+        </>
       ) : (
-        <button
-          onClick={() => setIsEditing(true)}
-          className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition"
-        >
-          Edytuj dane
-        </button>
+        <>
+          <div className="profile-field">
+            <label>First Name:</label>
+            <input
+              type="text"
+              name="firstName"
+              value={editedProfile.firstName}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="profile-field">
+            <label>Last Name:</label>
+            <input
+              type="text"
+              name="lastName"
+              value={editedProfile.lastName}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="profile-field">
+            <label>Email:</label>
+            <input
+              type="email"
+              name="email"
+              value={editedProfile.email}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="profile-field">
+            <label>Username:</label>
+            <input
+              type="text"
+              name="userName"
+              value={editedProfile.userName}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="profile-field">
+            <label>Phone Number:</label>
+            <input
+              type="tel"
+              name="phoneNumber"
+              value={editedProfile.phoneNumber}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="profile-actions">
+            <button className="btn primary" onClick={handleSave}>
+              Save
+            </button>
+            <button className="btn primary" onClick={handleCancel}>
+              Cancel
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

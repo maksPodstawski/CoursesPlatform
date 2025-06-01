@@ -22,6 +22,10 @@ namespace Model
         public ICollection<Review>? Reviews { get; set; } = new List<Review>();
         public ICollection<Progress>? Progresses { get; set; } = new List<Progress>();
 
+        [MaxLength(20)]
+        [RegularExpression(@"^\d{0,20}$", ErrorMessage = "Numer telefonu może zawierać tylko cyfry (maks. 20 znaków).")]
+        public override string? PhoneNumber { get; set; }
+
         public byte[]? ProfilePicture { get; set; }
 
         public static User Create(string email, string firstName, string lastName)

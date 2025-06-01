@@ -17,6 +17,7 @@ public class UserController : ControllerBase
     {
         _userService = userService;
     }
+
     // GET /api/user/me
     [HttpGet("me")]
     [Authorize]
@@ -36,9 +37,11 @@ public class UserController : ControllerBase
             FirstName = user.FirstName,
             LastName = user.LastName,
             Email = user.Email,
+            UserName = user.UserName,
+            PhoneNumber = user.PhoneNumber,
             ProfilePictureBase64 = user.ProfilePicture != null
-            ? Convert.ToBase64String(user.ProfilePicture)
-            : null
+                ? Convert.ToBase64String(user.ProfilePicture)
+                : null
         };
     }
 
@@ -59,6 +62,8 @@ public class UserController : ControllerBase
         user.FirstName = dto.FirstName;
         user.LastName = dto.LastName;
         user.Email = dto.Email;
+        user.UserName = dto.UserName;
+        user.PhoneNumber = dto.PhoneNumber;
 
         if (!string.IsNullOrEmpty(dto.ProfilePictureBase64))
         {
@@ -68,7 +73,7 @@ public class UserController : ControllerBase
                 var commaIndex = base64Data.IndexOf(',');
                 if (commaIndex >= 0)
                 {
-                    base64Data = base64Data.Substring(commaIndex + 1);
+                    base64Data = base64Data[(commaIndex + 1)..];
                 }
 
                 user.ProfilePicture = Convert.FromBase64String(base64Data);
