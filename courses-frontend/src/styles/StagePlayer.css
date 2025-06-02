@@ -1,0 +1,232 @@
+.stage-player {
+  display: flex;
+  height: 100vh;
+  background-color: #1a1a1a;
+}
+
+.stage-player__sidebar {
+  width: 320px;
+  background-color: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.stage-player__sidebar--left {
+  border-right: 1px solid #3a3a3a;
+}
+
+.stage-player__sidebar--right {
+  border-left: 1px solid #3a3a3a;
+}
+
+.stage-player__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.stage-player__header {
+  padding: 1rem;
+  background-color: #2a2a2a;
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.stage-player__header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stage-player__navigation {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stage-player__back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #9ca3af;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.stage-player__back-btn:hover {
+  color: white;
+  background-color: #3a3a3a;
+}
+
+.stage-player__controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stage-player__control-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #9ca3af;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.stage-player__control-btn:hover {
+  color: white;
+  background-color: #3a3a3a;
+}
+
+.stage-player__icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.stage-player__badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+}
+
+.stage-player__badge--completed {
+  background-color: #00ff88;
+  color: black;
+}
+
+.stage-player__info {
+  padding: 1rem;
+  background-color: #2a2a2a;
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.stage-player__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.25rem;
+}
+
+.stage-player__description {
+  color: #9ca3af;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.stage-player__meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.stage-player__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.stage-player__video-container {
+  flex: 1;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.stage-player__no-video {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-color: #1a1a1a;
+  color: #fff;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.stage-player__no-video p {
+  margin: 0;
+}
+
+.stage-player__no-video-subtitle {
+  margin-top: 0.5rem !important;
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.stage-player__nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #2a2a2a;
+  border-top: 1px solid #3a3a3a;
+}
+
+.stage-player__nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: 1px solid #3a3a3a;
+  background: none;
+  color: #9ca3af;
+}
+
+.stage-player__nav-btn:hover:not(:disabled) {
+  background-color: #3a3a3a;
+  color: white;
+}
+
+.stage-player__nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stage-player__nav-btn--next {
+  background-color: #00ff88;
+  color: black;
+  border: none;
+}
+
+.stage-player__nav-btn--next:hover:not(:disabled) {
+  background-color: rgba(0, 255, 136, 0.9);
+  color: black;
+}
+
+.stage-player__sidebar-nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: #232323;
+  border-top: 1px solid #3a3a3a;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+}
+
+.stage-player__sidebar--left .stages-sidebar__content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  margin-bottom: 60px; /* space for nav buttons */
+} 

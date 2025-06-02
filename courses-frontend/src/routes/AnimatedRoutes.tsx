@@ -8,7 +8,6 @@ import { Register } from "../pages/Register";
 import HomeContent from "../pages/HomeContent";
 import Courses from "../pages/Courses";
 import Chats from "../pages/Chats";
-import MyCourses from "../pages/MyCourses.tsx";
 import { AddCourse } from "../pages/AddCourse.tsx";
 import CreatorCourses from "../pages/CreatorCourses.tsx";
 import PurchasedCourses from "../pages/PurchasedCourses.tsx";
@@ -16,6 +15,10 @@ import CourseDetails from "../pages/CourseDetails.tsx";
 import CreatorPanel from "../pages/CreatorPanel.tsx";
 import CreatorPanelChats from "../pages/CreatorPanelChats.tsx";
 import MyProfile from "../pages/MyProfile.tsx";
+import MyCoursesPage from "../pages/MyCoursesPage.tsx";
+import { CoursePage } from "../pages/CourseViewPage.tsx";
+import StagePlayerPage from "../pages/StagePlayerPage.tsx";
+
 
 const AnimatedRoutes = () => {
 	const location = useLocation();
@@ -98,7 +101,7 @@ const AnimatedRoutes = () => {
 					element={
 						<PageWrapper>
 							<ProtectedRoute>
-								<MyCourses />
+								<MyCoursesPage />
 							</ProtectedRoute>
 						</PageWrapper>
 					}
@@ -122,25 +125,45 @@ const AnimatedRoutes = () => {
 							</ProtectedRoute>
 						</PageWrapper>
 					} />
-				<Route 
-					path="/creatorpanel" 
+				<Route
+					path="/creatorpanel"
 					element={
 						<ProtectedRoute>
 							<CreatorPanel />
 						</ProtectedRoute>
-					} 
+					}
 				/>
-				<Route 
-					path="/creatorpanel/chats" 
+				<Route
+					path="/creatorpanel/chats"
 					element={
 						<ProtectedRoute>
 							<CreatorPanelChats />
 						</ProtectedRoute>
-					} 
+					}
+				/>
+				<Route
+					path="/course/:id"
+					element={
+						<PageWrapper>
+							<ProtectedRoute>
+								<CoursePage />
+							</ProtectedRoute>
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="/course/:id/stage/:stageId"
+					element={
+						<PageWrapper>
+							<ProtectedRoute>
+								<StagePlayerPage />
+							</ProtectedRoute>
+						</PageWrapper>
+					}
 				/>
 			</Routes>
 		</AnimatePresence>
 	);
 };
 
-export default AnimatedRoutes;
+export { AnimatedRoutes as default };

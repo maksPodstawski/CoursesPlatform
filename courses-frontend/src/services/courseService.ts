@@ -42,3 +42,13 @@ export async function getStagesByCourse(courseId: string) {
 export function getStageVideoStreamUrl(stageId: string) {
 	return `${config.apiBaseUrl}/api/stages/${stageId}/video/stream`;
 }
+
+export async function getCourseById(courseId: string) {
+	const response = await fetchClient.fetch(`/api/courses/${courseId}`);
+	return await response.json();
+}
+
+export async function getCourseInstructor(courseId: string) {
+	const response = await fetchClient.fetch(`/api/courses/${courseId}/instructor`);
+	return await response.json();
+}

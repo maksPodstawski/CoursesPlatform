@@ -25,6 +25,11 @@ export const chatService = {
 		return response.json();
 	},
 
+	async getChatByCourse(courseId: string): Promise<CreateChatResponseDTO> {
+		const response = await fetchClient.fetch(`/api/chat/by-course/${courseId}`);
+		return response.json();
+	},
+
 	async joinChat(chatId: string): Promise<void> {
 		await fetchClient.fetch(`/api/chat/${chatId}/join`, {
 			method: "POST"

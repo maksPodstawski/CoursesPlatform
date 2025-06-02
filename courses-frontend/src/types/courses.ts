@@ -1,25 +1,42 @@
-export type Progress = {
+export interface Stage {
+	id: string;
+	courseId: string;
+	name: string;
+	description: string;
+	duration: number;
+	videoPath?: string;
+	createdAt: string;
+	isCompleted: boolean;
+	locked: boolean;
+}
+
+export interface Progress {
 	id: string;
 	userId: string;
 	stageId: string;
-	lastAccessedAt: string;
-	isCompleted: boolean;
+	completed: boolean;
 	startedAt: string;
-	completedAt: string | null;
-};
+	completedAt?: string;
+}
 
-export type StageWithProgress = {
+export interface StageWithProgress extends Stage {
+	progress?: Progress;
+}
+
+export interface Message {
+	id: string;
+	chatId: string;
+	authorId: string;
+	authorName: string;
+	content: string;
+	createdAt: string;
+}
+
+export interface CreateChatResponseDTO {
 	id: string;
 	name: string;
-	description: string;
-	videoPath: string;
-	duration: number;
-	order: number;
-	isCompleted: boolean;
-	startedAt: string | null;
-	completedAt: string | null;
-	lastAccessedAt: string | null;
-};
+	createdAt: string;
+}
 
 export type Course = {
 	courseId?: string;
@@ -29,26 +46,12 @@ export type Course = {
 	imageUrl: string;
 };
 
-export type Message = {
-	id: string;
-	content: string;
-	authorId: string;
-	authorName: string;
-	createdAt: string;
-	chatId: string;
-};
-
 export type Chat = {
 	id: string;
 	name: string;
 	createdAt: string;
 	updatedAt: string;
 	participants: string[];
-};
-
-export type CreateChatResponseDTO = {
-	id: string;
-	name: string;
 };
 
 export type CreateChatDTO = {
