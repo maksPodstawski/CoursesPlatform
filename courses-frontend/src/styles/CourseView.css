@@ -400,3 +400,101 @@
 		padding-right: 0;
 	}
 }
+.modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.6);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+}
+
+.modal {
+	background: white;
+	padding: 2rem;
+	border-radius: 10px;
+	width: 400px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.modal h2 {
+	margin-bottom: 1rem;
+}
+
+.modal label {
+	display: block;
+	margin-top: 1rem;
+}
+
+.modal textarea {
+	width: 100%;
+	height: 80px;
+	resize: vertical;
+}
+
+.modal-actions {
+	margin-top: 1.5rem;
+	display: flex;
+	justify-content: flex-end;
+	gap: 1rem;
+}
+
+.error {
+	color: red;
+	margin-top: 0.5rem;
+}
+.rating-stars {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.rating-label {
+	font-size: 14px;
+	color:white;
+	font-size: 16px;
+  	font-weight: bold;
+	margin-right: 8px;
+}
+
+.star-icon {
+  cursor: pointer;
+  color: #666666;
+  transition: color 0.2s;
+}
+
+.star-icon.filled {
+  color: #FFD700; 
+}
+
+.review-actions {
+	display: flex;
+	justify-content: flex-start;
+	gap: 12px;
+	margin-top: 16px;
+}
+.review-form label {
+  display: block;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 8px; 
+}
+
+.comment-textarea {
+  width: 100%;
+  min-height: 120px; 
+  background-color: #2a2a2a; 
+  color: #ffffff; 
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  resize: vertical;
+  margin-bottom: 16px;
+}

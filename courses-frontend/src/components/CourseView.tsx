@@ -1,10 +1,21 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Play, BookOpen, Clock, Star, Video, Check, Lock } from "lucide-react";
+import {
+	ArrowLeft,
+	Play,
+	BookOpen,
+	Clock,
+	Star,
+	Video,
+	Check,
+	Lock,
+	Pencil
+} from "lucide-react";
 import "../styles/CourseView.css";
 import { getCourseById, getCourseInstructor } from "../services/courseService";
 import { getCourseStagesWithProgress } from "../services/progressService";
 import type { StageWithProgress as ApiStageWithProgress } from "../types/courses";
+import { createReview } from "../services/reviewService";
 
 type Course = {
 	id?: string;
@@ -48,7 +59,7 @@ type CourseDetails = {
 const mapToCourseDetails = (
 	course: Course,
 	stages: ApiStageWithProgress[],
-	instructor: { name: string; avatar: string; title: string },
+	instructor: { name: string; avatar: string; title: string }
 ): CourseDetails => {
 	const completedStages = stages.filter((s) => s.isCompleted).length;
 	const totalDuration = stages.reduce((sum, s) => sum + s.duration, 0);
@@ -67,7 +78,7 @@ const mapToCourseDetails = (
 		totalDuration,
 		progress,
 		rating: 4.8,
-		reviews: 324,
+		reviews: 324, 
 		currentStage,
 		stages: stages.map((s, index) => ({
 			id: s.id,
@@ -79,8 +90,8 @@ const mapToCourseDetails = (
 			completed: s.isCompleted,
 			locked: !s.progress?.startedAt && index > 0 && !stages[index - 1]?.isCompleted,
 			current: s.id === currentStage,
-			createdAt: s.progress?.startedAt || new Date().toISOString(),
-		})),
+			createdAt: s.progress?.startedAt || new Date().toISOString()
+		}))
 	};
 };
 
@@ -97,11 +108,32 @@ export default function CourseView() {
 	const { id } = useParams<{ id: string }>();
 	const [course, setCourse] = useState<CourseDetails | null>(null);
 	const [loading, setLoading] = useState(true);
+	const [showReviewForm, setShowReviewForm] = useState(false);
+	const [rating, setRating] = useState(5);
+	const [comment, setComment] = useState("");
+	const [hoveredRating, setHoveredRating] = useState<number | null>(null);
 
 	const navigate = useNavigate();
 
 	const goToStage = (stageId: string) => {
 		navigate(`/course/${course?.id}/stage/${stageId}`);
+	};
+
+	const handleAddReview = async () => {
+		if (!id) return;
+
+		try {
+			await createReview({
+				courseId: id,
+				rating,
+				comment
+			});
+			alert("Review submitted successfully!");
+			setShowReviewForm(false);
+		} catch (error) {
+			alert("Error submitting review.");
+			console.error(error);
+		}
 	};
 
 	useEffect(() => {
@@ -111,7 +143,7 @@ export default function CourseView() {
 				const [courseData, stages, instructor] = await Promise.all([
 					getCourseById(id!),
 					getCourseStagesWithProgress(id!),
-					getCourseInstructor(id!),
+					getCourseInstructor(id!)
 				]);
 				const details = mapToCourseDetails(courseData, stages, instructor);
 				setCourse(details);
@@ -174,7 +206,52 @@ export default function CourseView() {
 							<Play size={16} />
 							Continue Learning
 						</button>
+						<button type="button" className="btn-secondary" onClick={() => setShowReviewForm(true)}>
+							<Pencil size={16} />
+							Add Review
+						</button>
 					</div>
+
+					{showReviewForm && (
+						<div className="review-form">
+							<h3>Add Your Review</h3>
+							<div className="rating-stars">
+								<span className="rating-label">Rating:</span>
+								{[1, 2, 3, 4, 5].map((star) => (
+									<span
+										key={star}
+										onMouseEnter={() => setHoveredRating(star)}
+										onMouseLeave={() => setHoveredRating(null)}
+										onClick={() => setRating(star)}
+										style={{
+											cursor: "pointer",
+											color: star <= (hoveredRating ?? rating) ? "#f5c518" : "#444",
+											fontSize: "24px"
+										}}
+									>
+										★
+									</span>
+								))}
+							</div>
+							<label htmlFor="comment">
+								Comment:
+								</label>
+								<textarea
+								id="comment"
+								value={comment}
+								onChange={(e) => setComment(e.target.value)}
+								className="comment-textarea"
+								/>
+							<div className="review-actions">
+								<button onClick={handleAddReview} className="btn-primary">
+									Submit
+								</button>
+								<button onClick={() => setShowReviewForm(false)} className="btn-secondary">
+									Cancel
+								</button>
+							</div>
+						</div>
+					)}
 				</div>
 
 				<div className="thumbnail-container">
@@ -198,7 +275,9 @@ export default function CourseView() {
 					{course.stages.map((stage, index) => (
 						<li
 							key={stage.id}
-							className={`stage ${stage.completed ? "completed" : ""} ${stage.current ? "current" : ""} ${stage.locked ? "locked" : ""}`}
+							className={`stage ${stage.completed ? "completed" : ""} ${stage.current ? "current" : ""} ${
+								stage.locked ? "locked" : ""
+							}`}
 						>
 							<div className="stage-icon">
 								{stage.completed ? <Check size={20} /> : stage.locked ? <Lock size={20} /> : index + 1}

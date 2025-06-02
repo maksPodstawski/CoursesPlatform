@@ -57,3 +57,8 @@ export type Chat = {
 export type CreateChatDTO = {
 	name: string;
 };
+export type CreateReviewRequest = {
+	courseId: string;
+	rating: number;
+	comment: string;
+};
