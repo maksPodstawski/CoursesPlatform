@@ -547,6 +547,13 @@ main {
   border-radius: 12px;
   margin-bottom: 1rem;
 }
+
+.field-error {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
 .profile-container {
   display: flex;
   flex-direction: column;
@@ -597,4 +604,5 @@ main {
 
 .profile-actions .btn + .btn {
   margin-left: 1rem;
+
 }

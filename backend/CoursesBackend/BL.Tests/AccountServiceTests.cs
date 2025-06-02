@@ -46,6 +46,7 @@ namespace BL.Tests
             {
                 Email = "test@example.com",
                 Password = "Pass123!",
+                ConfirmPassword = "Pass123!",
                 FirstName = "John",
                 LastName = "Doe"
             };
@@ -72,6 +73,7 @@ namespace BL.Tests
             {
                 Email = "existing@example.com",
                 Password = "Pass123!",
+                ConfirmPassword = "Pass123!",
                 FirstName = "Jane",
                 LastName = "Doe"
             };
