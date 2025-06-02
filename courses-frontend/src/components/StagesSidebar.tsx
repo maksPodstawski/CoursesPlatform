@@ -87,6 +87,7 @@ export function StagesSidebar({
 									currentStageId === stage.id ? "current" : ""
 								} ${stage.locked ? "locked" : ""}`}
 								onClick={() => !stage.locked && onStageSelect(stage.id)}
+								data-course-id={courseId}
 							>
 								<div className="stages-sidebar__stage-content">
 									<div

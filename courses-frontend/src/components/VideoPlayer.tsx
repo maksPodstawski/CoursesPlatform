@@ -145,6 +145,7 @@ export function VideoPlayer({ stageId, stageName, onComplete, autoplay = false }
 				poster={`/api/stages/${stageId}/thumbnail`}
 				onClick={togglePlay}
 				controlsList="nodownload"
+				aria-label={`Video for stage: ${stageName}`}
 			>
 				Your browser does not support the video tag.
 			</video>

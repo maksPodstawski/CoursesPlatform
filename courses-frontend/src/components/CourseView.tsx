@@ -75,11 +75,11 @@ const mapToCourseDetails = (
 			name: s.name,
 			description: s.description,
 			duration: s.duration,
-			videoPath: s.videoPath,
+			videoPath: s.videoPath || "",
 			completed: s.isCompleted,
-			locked: !s.startedAt && index > 0 && !stages[index - 1]?.isCompleted,
+			locked: !s.progress?.startedAt && index > 0 && !stages[index - 1]?.isCompleted,
 			current: s.id === currentStage,
-			createdAt: s.startedAt || new Date().toISOString(),
+			createdAt: s.progress?.startedAt || new Date().toISOString(),
 		})),
 	};
 };

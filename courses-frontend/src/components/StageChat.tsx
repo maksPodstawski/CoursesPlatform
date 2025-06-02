@@ -186,7 +186,7 @@ export function StageChat({ stageId, stageName, courseId, courseName, onClose }:
 							<MessageSquare className="stage-chat__icon" />
 							Chat with Instructor
 						</h2>
-						<p className="stage-chat__subtitle">{stageName}</p>
+						<p className="stage-chat__subtitle">{courseName} - {stageName}</p>
 					</div>
 					<button className="stage-chat__close-btn" onClick={onClose}>
 						<X className="stage-chat__icon" />

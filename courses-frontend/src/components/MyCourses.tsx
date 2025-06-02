@@ -23,7 +23,15 @@ export function MyCourses() {
 	}, []);
 
 	const filteredCourses = courses.filter((course) => {
-		return true;
+		switch (filter) {
+			case "in-progress":
+				if (course) return true;
+				return true; // TODO: Add proper filtering logic when progress tracking is implemented
+			case "completed":
+				return true; // TODO: Add proper filtering logic when progress tracking is implemented
+			default:
+				return true;
+		}
 	});
 
 	return (

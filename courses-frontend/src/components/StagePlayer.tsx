@@ -57,6 +57,7 @@ export function StagePlayer({
 		navigate(`/course/${courseId}`);
 	};
 
+	
 	const formatDuration = (minutes: number): string => {
 		const hours = Math.floor(minutes / 60);
 		const mins = minutes % 60;
