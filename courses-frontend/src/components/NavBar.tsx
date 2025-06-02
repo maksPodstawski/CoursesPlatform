@@ -1,5 +1,5 @@
 import type React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu } from "lucide-react";
 import { useAuth } from "../context/AuthContext.tsx";
 
@@ -12,10 +12,11 @@ const NavBar: React.FC<NavBarProps> = ({ sidebarOpen, toggleSidebar }) => {
   const { isLoggedIn, logout } = useAuth();
   const location = useLocation();
 
+  const navigate = useNavigate();
   const handleLogout = async () => {
     try {
       await logout();
-      window.location.href = "/";
+      navigate("/");
     } catch (error) {
       console.error("Logout failed", error);
     }
