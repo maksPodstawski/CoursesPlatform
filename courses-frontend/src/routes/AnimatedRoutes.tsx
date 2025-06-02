@@ -12,6 +12,7 @@ import { AddCourse } from "../pages/AddCourse.tsx";
 import CreatorCourses from "../pages/CreatorCourses.tsx";
 import PurchasedCourses from "../pages/PurchasedCourses.tsx";
 import CourseDetails from "../pages/CourseDetails.tsx";
+import AdminPanel from "../pages/AdminPanel";
 import CreatorPanel from "../pages/CreatorPanel.tsx";
 import CreatorPanelChats from "../pages/CreatorPanelChats.tsx";
 import MyProfile from "../pages/MyProfile.tsx";
