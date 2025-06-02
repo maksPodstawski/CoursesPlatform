@@ -61,8 +61,18 @@ namespace BL.Services
 
         public async Task<bool> IsUserInChatAsync(Guid chatId, Guid userId)
         {
-            var chatUsers =  _chatUserRepository.GetChatUsers();
-            return await Task.FromResult(chatUsers.Any(cu => cu.ChatId == chatId && cu.UserId == userId));
+            var chatUsers = _chatUserRepository.GetChatUsers().ToList();
+            return chatUsers.Any(cu => cu.ChatId == chatId && cu.UserId == userId);
+        }
+
+
+        public Task<List<Chat>> GetChatsOfUser(Guid userId)
+        {
+            return _chatUserRepository.GetChatUsers()
+                .Where(cu => cu.UserId == userId)
+                .Select(cu => cu.Chat)
+                .ToListAsync();
+
         }
     }
 }

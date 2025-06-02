@@ -1,46 +1,35 @@
-import { config } from '../config';
-
-interface LoginRequest {
-    email: string;
-    password: string;
-}
-
-interface RegisterRequest {
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-}
+import { config } from "../config";
+import type { LoginRequest, RegisterRequest, UserInfo } from "../types/user.ts";
+import { fetchClient } from "./fetchClient";
 
 export const authService = {
-    async login(credentials: LoginRequest) {
-        const response = await fetch(`${config.apiBaseUrl}${config.apiEndpoints.login}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(credentials),
-            credentials: "include",
-        });
+	async login(credentials: LoginRequest) {
+		const response = await fetchClient.fetch(config.apiEndpoints.login, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(credentials),
+		});
 
-        if (!response.ok) throw new Error("Login failed");
-    },
+		if (!response.ok) throw new Error("Login failed");
+	},
 
-    async logout() {
-        const response = await fetch(`${config.apiBaseUrl}${config.apiEndpoints.logout}`, {
-            method: "POST",
-            credentials: "include",
-        });
+	async getMe(): Promise<UserInfo> {
+		const response = await fetchClient.fetch("/api/account/me");
+		if (!response.ok) throw new Error("Failed to get user info");
+		return response.json();
+	},
 
-        if (!response.ok) throw new Error("Logout failed");
-    },
+	async logout() {
+		await fetchClient.logout();
+	},
 
-    async register(data: RegisterRequest) {
-        const response = await fetch(`${config.apiBaseUrl}${config.apiEndpoints.register}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-            credentials: "include",
-        });
+	async register(data: RegisterRequest) {
+		const response = await fetchClient.fetch(config.apiEndpoints.register, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(data),
+		});
 
-        if (!response.ok) throw new Error("Registration failed");
-    },
+		if (!response.ok) throw new Error("Registration failed");
+	},
 };

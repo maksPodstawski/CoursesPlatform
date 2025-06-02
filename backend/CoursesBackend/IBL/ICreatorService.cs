@@ -15,7 +15,7 @@ namespace IBL
         Task<Creator?> DeleteCreatorAsync(Guid creatorId);
         Task<List<Course>> GetCoursesByCreatorAsync(Guid userId);
         Task<bool> IsUserCreatorOfCourseAsync(Guid userId, Guid courseId);
-
+        Task<List<Creator>> GetCreatorsByCourseAsync(Guid courseId);
         Task<Creator> AddCreatorFromUserAsync(Guid userId, Guid courseId);
     }
 }

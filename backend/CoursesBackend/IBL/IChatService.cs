@@ -16,5 +16,6 @@ namespace IBL
         Task<IEnumerable<User>> GetUsersInChatAsync(Guid chatId);
         Task RenameChatAsync(Guid chatId, string chatName);
         Task<bool> ChatExistsAsync(Guid chatId);
+        Task<Chat?> GetChatByAuthorAndCourseAsync(Guid authorId, Guid courseId);
     }
 }

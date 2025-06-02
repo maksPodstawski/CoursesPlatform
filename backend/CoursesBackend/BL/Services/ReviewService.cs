@@ -60,5 +60,17 @@ namespace BL.Services
         {
             return await Task.FromResult(_reviewRepository.DeleteReview(reviewId));
         }
+
+        public async Task<double?> GetAverageRatingForCourseAsync(Guid courseId)
+        {
+            var reviews = await _reviewRepository.GetReviews()
+                .Where(r => r.CourseId == courseId)
+                .ToListAsync();
+
+            if (reviews == null || !reviews.Any())
+                return null;
+
+            return reviews.Average(r => r.Rating);
+        }
     }
 }

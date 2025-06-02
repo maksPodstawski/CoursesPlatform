@@ -64,6 +64,17 @@ namespace BL.Services
                 .ToListAsync();
         }
 
+        public async Task<List<Creator>> GetCreatorsByCourseAsync(Guid courseId)
+        {
+            if (courseId == Guid.Empty)
+                throw new ArgumentException("Course ID cannot be empty.", nameof(courseId));
+            return await _creatorRepository.GetCreators()
+                .Where(c => c.Courses.Any(course => course.Id == courseId))
+                .Include(c => c.User)
+                .Include(c => c.Courses)
+                .ToListAsync();
+        }
+
         public async Task<bool> IsUserCreatorOfCourseAsync(Guid userId, Guid courseId)
         {
             return await _creatorRepository.GetCreators()

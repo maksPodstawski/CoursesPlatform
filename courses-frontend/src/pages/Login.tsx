@@ -11,12 +11,17 @@ export const Login = () => {
 	const navigate = useNavigate();
 	const { login } = useAuth();
 
+	
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setError("");
 
 		try {
 			await authService.login({ email, password });
+			const userInfo = await authService.getMe();
+			localStorage.setItem("userId", userInfo.id);
+			localStorage.setItem("userName", userInfo.firstName);
 			login();
 			navigate("/");
 		} catch (err) {
