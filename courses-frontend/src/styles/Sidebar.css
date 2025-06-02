@@ -1,0 +1,98 @@
+.sidemenu {
+	width: 260px;
+	background-color: #2a2a2a;
+	color: #fff;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	min-height: 100vh;
+	box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+}
+
+.sidemenu__top {
+	padding: 32px 24px 0 24px;
+}
+
+.sidemenu__profile-section {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	margin-bottom: 36px;
+}
+
+.sidemenu__avatar {
+	font-size: 48px;
+	color: #e0e0e0;
+	background: #23272f;
+	border-radius: 50%;
+}
+
+.sidemenu__name {
+	font-weight: 700;
+	font-size: 18px;
+	margin-bottom: 2px;
+}
+
+.sidemenu__role {
+	font-size: 13px;
+	color: #7fffd4;
+	font-weight: 500;
+}
+
+.sidemenu__nav {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.sidemenu__link {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: 12px 18px;
+	border-radius: 8px;
+	text-decoration: none;
+	color: #fff;
+	background-color: transparent;
+	font-size: 16px;
+	font-weight: 500;
+	transition: background 0.18s, color 0.18s;
+	margin-bottom: 2px;
+}
+
+.sidemenu__icon {
+	font-size: 22px;
+	min-width: 22px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.sidemenu__link:hover,
+.sidemenu__link.active {
+	background-color: #00ff88;
+	color: #18191c;
+}
+
+.sidemenu__bottom {
+	border-top: 1px solid #23272f;
+	padding: 20px 24px;
+}
+
+.sidemenu__profile-link {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	text-decoration: none;
+	color: #fff;
+	font-size: 16px;
+	font-weight: 500;
+	padding: 10px 0;
+	border-radius: 6px;
+	transition: background 0.18s, color 0.18s;
+}
+
+.sidemenu__profile-link:hover {
+	background: #23272f;
+	color: #00ff88;
+}

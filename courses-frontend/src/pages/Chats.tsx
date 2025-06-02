@@ -4,7 +4,7 @@ import { HubConnectionBuilder, type HubConnection } from "@microsoft/signalr";
 import { chatService } from "../services/chatService";
 import type { Message, CreateChatResponseDTO } from "../types/courses";
 import { config } from "../config";
-import "../styles/Chats.css";
+import Sidebar from "../components/Sidebar.tsx";
 
 interface SignalRMessage {
 	chatId: string;
@@ -189,59 +189,62 @@ const Chats = () => {
 	const uniqueChats = Array.from(new Map(chats.map((chat) => [chat.id, chat])).values());
 
 	return (
-		<div className="chats-container">
-			<div className="chats-sidebar">
-				<h2>Your Chats</h2>
-				<div className="chats-list">
-					{uniqueChats.map((chat) => (
-						<div
-							key={chat.id}
-							className={`chat-item ${selectedChat?.id === chat.id ? "selected" : ""}`}
-							onClick={() => setSelectedChat(chat)}
-						>
-							<h3>{chat.name}</h3>
-						</div>
-					))}
+		<>
+			<Sidebar />
+			<div className="chats-container">
+				<div className="chats-sidebar">
+					<h2>Your Chats</h2>
+					<div className="chats-list">
+						{uniqueChats.map((chat) => (
+							<div
+								key={chat.id}
+								className={`chat-item ${selectedChat?.id === chat.id ? "selected" : ""}`}
+								onClick={() => setSelectedChat(chat)}
+							>
+								<h3>{chat.name}</h3>
+							</div>
+						))}
+					</div>
+				</div>
+				<div className="chats-main">
+					{selectedChat ? (
+						<>
+							<div className="chat-header">
+								<h2>{selectedChat.name}</h2>
+							</div>
+							<div className="messages-container">
+								{messages.map((message) => {
+									const isCurrentUser = message.authorId === localStorage.getItem("userId");
+									return (
+										<div key={message.id} className={`message ${isCurrentUser ? "sent" : "received"}`}>
+											<div className="message-header">
+												<span className="sender-name">{message.authorName}</span>
+												<span className="message-time">{new Date(message.createdAt).toLocaleTimeString()}</span>
+											</div>
+											<div className="message-content">{message.content}</div>
+										</div>
+									);
+								})}
+							</div>
+							<div className="message-input">
+								<input
+									type="text"
+									value={newMessage}
+									onChange={(e) => setNewMessage(e.target.value)}
+									onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+									placeholder="Type your message..."
+								/>
+								<button type="button" onClick={handleSendMessage}>
+									Send
+								</button>
+							</div>
+						</>
+					) : (
+						<div className="no-chat-selected">Select a chat to start messaging</div>
+					)}
 				</div>
 			</div>
-			<div className="chats-main">
-				{selectedChat ? (
-					<>
-						<div className="chat-header">
-							<h2>{selectedChat.name}</h2>
-						</div>
-						<div className="messages-container">
-							{messages.map((message) => {
-								const isCurrentUser = message.authorId === localStorage.getItem("userId");
-								return (
-									<div key={message.id} className={`message ${isCurrentUser ? "sent" : "received"}`}>
-										<div className="message-header">
-											<span className="sender-name">{message.authorName}</span>
-											<span className="message-time">{new Date(message.createdAt).toLocaleTimeString()}</span>
-										</div>
-										<div className="message-content">{message.content}</div>
-									</div>
-								);
-							})}
-						</div>
-						<div className="message-input">
-							<input
-								type="text"
-								value={newMessage}
-								onChange={(e) => setNewMessage(e.target.value)}
-								onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-								placeholder="Type your message..."
-							/>
-							<button type="button" onClick={handleSendMessage}>
-								Send
-							</button>
-						</div>
-					</>
-				) : (
-					<div className="no-chat-selected">Select a chat to start messaging</div>
-				)}
-			</div>
-		</div>
+		</>
 	);
 };
 

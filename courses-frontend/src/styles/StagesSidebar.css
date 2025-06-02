@@ -1,0 +1,305 @@
+.stages-sidebar {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	background-color: #1a1a1a;
+	color: white;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+}
+
+/* Header Styles */
+.stages-sidebar__header {
+	padding: 16px;
+	border-bottom: 1px solid #3a3a3a;
+}
+
+.stages-sidebar__header-content {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	margin-bottom: 12px;
+}
+
+.stages-sidebar__course-info {
+	flex: 1;
+}
+
+.stages-sidebar__course-name {
+	color: white;
+	font-weight: 600;
+	font-size: 14px;
+	margin: 0 0 4px 0;
+}
+
+.stages-sidebar__course-subtitle {
+	color: #9ca3af;
+	font-size: 12px;
+	margin: 0;
+}
+
+.stages-sidebar__close-btn {
+	background: none;
+	border: none;
+	color: #9ca3af;
+	cursor: pointer;
+	padding: 4px;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+}
+
+.stages-sidebar__close-btn:hover {
+	color: white;
+	background-color: #3a3a3a;
+}
+
+/* Progress Styles */
+.stages-sidebar__progress {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.stages-sidebar__progress-info {
+	display: flex;
+	justify-content: space-between;
+	font-size: 12px;
+}
+
+.stages-sidebar__progress-label {
+	color: #9ca3af;
+}
+
+.stages-sidebar__progress-count {
+	color: #00ff88;
+	font-weight: 500;
+}
+
+.stages-sidebar__progress-bar {
+	height: 8px;
+	background-color: #3a3a3a;
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.stages-sidebar__progress-fill {
+	height: 100%;
+	background-color: #00ff88;
+	border-radius: 4px;
+	transition: width 0.3s ease;
+}
+
+/* Content Styles */
+.stages-sidebar__content {
+	flex: 1;
+	overflow-y: auto;
+}
+
+.stages-sidebar__stages-list {
+	padding: 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+/* Stage Item Styles */
+.stages-sidebar__stage-item {
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.stages-sidebar__stage-main {
+	display: flex;
+	align-items: center;
+	padding: 12px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	background-color: #3a3a3a;
+}
+
+.stages-sidebar__stage-main:hover:not(.locked) {
+	background-color: #4a4a4a;
+}
+
+.stages-sidebar__stage-main.current {
+	background-color: rgba(0, 255, 136, 0.1);
+	border-left: 2px solid #00ff88;
+}
+
+.stages-sidebar__stage-main.locked {
+	background-color: #2a2a2a;
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.stages-sidebar__stage-content {
+	display: flex;
+	align-items: center;
+	flex: 1;
+	min-width: 0;
+}
+
+/* Stage Icon Styles */
+.stages-sidebar__stage-icon {
+	padding: 8px;
+	border-radius: 50%;
+	margin-right: 12px;
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.stages-sidebar__stage-icon.completed {
+	background-color: rgba(0, 255, 136, 0.2);
+	color: #00ff88;
+}
+
+.stages-sidebar__stage-icon.locked {
+	background-color: #3a3a3a;
+	color: #6b7280;
+}
+
+.stages-sidebar__stage-icon.default {
+	background-color: #4a4a4a;
+	color: #d1d5db;
+}
+
+/* Stage Info Styles */
+.stages-sidebar__stage-info {
+	flex: 1;
+	min-width: 0;
+}
+
+.stages-sidebar__stage-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 4px;
+}
+
+.stages-sidebar__stage-name {
+	color: white;
+	font-weight: 500;
+	font-size: 14px;
+	margin: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.stages-sidebar__expand-btn {
+	background: none;
+	border: none;
+	color: #9ca3af;
+	cursor: pointer;
+	padding: 4px;
+	margin-left: 8px;
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 2px;
+	transition: color 0.2s ease;
+}
+
+.stages-sidebar__expand-btn:hover {
+	color: white;
+}
+
+.stages-sidebar__stage-meta {
+	display: flex;
+	align-items: center;
+	font-size: 12px;
+	color: #9ca3af;
+	gap: 4px;
+}
+
+.stages-sidebar__meta-separator {
+	margin: 0 4px;
+}
+
+.stages-sidebar__completed-text {
+	color: #00ff88;
+}
+
+/* Stage Details Styles */
+.stages-sidebar__stage-details {
+	padding: 12px;
+	background-color: #2a2a2a;
+	border-top: 1px solid #3a3a3a;
+}
+
+.stages-sidebar__stage-description {
+	color: #d1d5db;
+	font-size: 12px;
+	margin: 0 0 12px 0;
+	line-height: 1.4;
+}
+
+.stages-sidebar__stage-actions {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.stages-sidebar__stage-features {
+	display: flex;
+	align-items: center;
+	font-size: 12px;
+	color: #9ca3af;
+	gap: 4px;
+}
+
+.stages-sidebar__action-btn {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 4px 8px;
+	font-size: 12px;
+	height: 24px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	border: 1px solid transparent;
+}
+
+.stages-sidebar__action-btn.watch {
+	background-color: #00ff88;
+	color: black;
+	border: none;
+}
+
+.stages-sidebar__action-btn.watch:hover {
+	background-color: rgba(0, 255, 136, 0.9);
+}
+
+.stages-sidebar__action-btn.review {
+	background: transparent;
+	color: #00ff88;
+	border: 1px solid #00ff88;
+}
+
+.stages-sidebar__action-btn.review:hover {
+	background-color: rgba(0, 255, 136, 0.1);
+}
+
+/* Scrollbar Styles */
+.stages-sidebar__content::-webkit-scrollbar {
+	width: 6px;
+}
+
+.stages-sidebar__content::-webkit-scrollbar-track {
+	background: #2a2a2a;
+}
+
+.stages-sidebar__content::-webkit-scrollbar-thumb {
+	background: #4a4a4a;
+	border-radius: 3px;
+}
+
+.stages-sidebar__content::-webkit-scrollbar-thumb:hover {
+	background: #5a5a5a;
+}

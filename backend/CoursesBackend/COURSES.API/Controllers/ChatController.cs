@@ -140,8 +140,9 @@ namespace COURSES.API.Controllers
             if (!isMember) return Forbid();
 
             var messages = await _messageService.GetMessagesByChatIdAsync(chatId);
+            var lastMessages = messages.OrderByDescending(m => m.CreatedAt).Take(count).OrderBy(m => m.CreatedAt);
 
-            var result = messages.Select(m => new MessageDTO
+            var result = lastMessages.Select(m => new MessageDTO
             {
                 Id = m.Id,
                 ChatId = m.ChatId,
@@ -152,6 +153,41 @@ namespace COURSES.API.Controllers
             }).ToList();
 
             return Ok(result);
+        }
+
+        [HttpGet("by-course/{courseId}")]
+        public async Task<IActionResult> GetChatByCourse(Guid courseId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null) return Unauthorized();
+
+            var userGuid = Guid.Parse(userId);
+            var chat = await _chatService.GetChatByAuthorAndCourseAsync(userGuid, courseId);
+            
+            if (chat == null)
+            {
+                var newChat = new Chat
+                {
+                    Id = Guid.NewGuid(),
+                    Name = $"Course Chat - {courseId}",
+                    ChatAuthorId = userGuid,
+                    CourseId = courseId
+                };
+
+                var creators = await _creatorService.GetCreatorsByCourseAsync(courseId);
+
+                await _chatService.AddChatAsync(newChat);
+                await _chatUserService.AddUserToChatAsync(newChat.Id, userGuid);
+
+                foreach (var creator in creators)
+                {
+                    await _chatUserService.AddUserToChatAsync(newChat.Id, creator.UserId);
+                }
+
+                return Ok(new CreateChatResponseDTO { Id = newChat.Id, Name = newChat.Name });
+            }
+
+            return Ok(new CreateChatResponseDTO { Id = chat.Id, Name = chat.Name });
         }
     }
 }

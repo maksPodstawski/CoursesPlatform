@@ -17,3 +17,11 @@ export type UserInfo = {
 	firstName: string;
 	lastName: string;
 };
+export type UserProfile = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  userName: string;
+  phoneNumber: string;
+  profilePictureBase64: string | null;
+};

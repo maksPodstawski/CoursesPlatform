@@ -9,7 +9,7 @@ namespace IBL
 {
     public interface IMessageService
     {
-        Task<List<Message>> GetMessagesByChatIdAsync(Guid chatId);
+        Task<List<Message>> GetMessagesByChatIdAsync(Guid chatId, int count = 50);
         Task<Message?> GetMessageByIdAsync(Guid messageId);
         Task<Message> AddMessageAsync(Message message);
         Task<Message?> EditMessageAsync(Guid messageId, string newContent);

@@ -1,5 +1,5 @@
 import type React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Menu } from "lucide-react";
 import {useAuth} from "../context/AuthContext.tsx";
 
@@ -10,11 +10,12 @@ interface NavBarProps {
 
 const NavBar: React.FC<NavBarProps> = ({ sidebarOpen, toggleSidebar }) => {
   const { isLoggedIn, logout } = useAuth();
+  const navigate = useNavigate();
 
     const handleLogout = async () => {
         try {
             await logout();
-            window.location.href = "/";
+            navigate("/");
         } catch (error) {
             console.error("Logout failed", error);
         }
@@ -33,6 +34,7 @@ const NavBar: React.FC<NavBarProps> = ({ sidebarOpen, toggleSidebar }) => {
                             <Link to={"/purchased-courses"}>Purchased Courses</Link>
                             <Link to="/my-courses">My Courses</Link>
                             <Link to="/chats">Chats</Link>
+                            <Link to="/my-profile">My Profile</Link>
                         </>
                     )}
                     {isLoggedIn ? (
