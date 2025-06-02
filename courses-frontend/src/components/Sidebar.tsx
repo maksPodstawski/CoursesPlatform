@@ -6,7 +6,7 @@ const navItems = [
 	{ label: "Dashboard", icon: <Home size={22} />, path: "/creatorpanel" },
 	{ label: "My Courses", icon: <Book size={22} />, path: "/courses" },
 	{ label: "Student Chats", icon: <MessageCircle size={22} />, path: "/creatorpanel/chats" },
-	{ label: "Create Course", icon: <Plus size={22} />, path: "/create" },
+	{ label: "Create Course", icon: <Plus size={22} />, path: "/add-course" },
 	{ label: "Analytics", icon: <BarChart size={22} />, path: "/analytics" },
 	{ label: "Settings", icon: <Settings size={22} />, path: "/settings" },
 ];

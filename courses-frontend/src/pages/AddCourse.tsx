@@ -1,71 +1,110 @@
+import '../styles/AddCourse.css';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { config } from "../config";
+import Sidebar from "../components/Sidebar";
 
+type CourseForm = {
+  name: string;
+  description: string;
+  imageUrl: string;
+  duration: number;
+  price: number;
+};
 
 export const AddCourse = () => {
-    const [form, setForm] = useState({
-        name: "",
-        description: "",
-        imageUrl: "",
-        duration: 1,
-        price: 1,
-    });
-    const [error, setError] = useState("");
-    const navigate = useNavigate();
+  const [form, setForm] = useState<CourseForm>({
+    name: "",
+    description: "",
+    imageUrl: "",
+    duration: 1,
+    price: 1,
+  });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setForm(prev => ({
-            ...prev,
-            [name]: name === "duration" || name === "price" ? Number(value) : value
-        }));
-    };
+  const navigate = useNavigate();
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError("");
-        try {
-            const response = await fetch(`${config.apiBaseUrl}${config.apiEndpoints.addCourse}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify(form),
-            });
-            if (!response.ok) throw new Error("Failed to add course");
-            navigate("/courses");
-        } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : "Unknown error");
-        }
-    };
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: name === "duration" || name === "price" ? parseFloat(value.replace(',', '.')) : value,
+    }));
+  };
 
-    return (
-        <div>
-            <h2>Add Course</h2>
-            <form onSubmit={handleSubmit}>
-                {error && <div>{error}</div>}
-                <div>
-                    <label htmlFor="name">Name</label>
-                    <input name="name" value={form.name} onChange={handleChange} required />
-                </div>
-                <div>
-                    <label htmlFor="description">Description</label>
-                    <textarea name="description" value={form.description} onChange={handleChange} />
-                </div>
-                <div>
-                    <label htmlFor="imageUrl">Image URL</label>
-                    <input name="imageUrl" value={form.imageUrl} onChange={handleChange} required />
-                </div>
-                <div>
-                    <label htmlFor="duration">Duration</label>
-                    <input name="duration" type="number" min="1" value={form.duration} onChange={handleChange} required />
-                </div>
-                <div>
-                    <label htmlFor="price">Price</label>
-                    <input name="price" type="number" min="1" value={form.price} onChange={handleChange} required />
-                </div>
-                <button type="submit" className="btn btn-primary">Add Course</button>
-            </form>
-        </div>
-    );
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch(`${config.apiBaseUrl}${config.apiEndpoints.addCourse}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(form),
+      });
+
+      if (res.ok) {
+        navigate("/courses");
+      }
+    } catch (err) {
+      console.error("Error submitting course:", err);
+    }
+  };
+
+  const renderField = (
+    label: string,
+    name: keyof CourseForm,
+    type: "text" | "number" | "textarea" = "text",
+    placeholder?: string
+  ) => (
+    <div className="form-group">
+      <label htmlFor={name}>{label}</label>
+      {type === "textarea" ? (
+        <textarea
+          id={name}
+          name={name}
+          value={form[name]}
+          onChange={handleChange}
+          className="form-input"
+          placeholder={placeholder}
+        />
+      ) : (
+        <input
+          id={name}
+          name={name}
+          type={type}
+          value={form[name]}
+          onChange={handleChange}
+          className="form-input"
+          placeholder={placeholder}
+          min={type === "number" ? 1 : undefined}
+          step={type === "number" ? "0.01" : undefined}
+        />
+      )}
+    </div>
+  );
+
+  return (
+    <div className="page-layout">
+      <Sidebar />
+      <main className="main-content">
+        <form className="form" onSubmit={handleSubmit}>
+          <div className="form-title-container">
+            <h2 className="form-title">Add New Course</h2>
+          </div>
+
+          {renderField("Course Name", "name", "text", "Enter course name")}
+          {renderField("Description", "description", "textarea", "Enter course description")}
+          {renderField("Image URL", "imageUrl", "text", "https://example.com/image.jpg")}
+          {renderField("Duration", "duration", "number", "Duration in weeks")}
+          {renderField("Price", "price", "number", "Course price")}
+
+          <button type="submit" className="btn">
+            Submit Course
+          </button>
+        </form>
+      </main>
+    </div>
+  );
 };

@@ -19,6 +19,7 @@ import MyProfile from "../pages/MyProfile.tsx";
 import MyCoursesPage from "../pages/MyCoursesPage.tsx";
 import { CoursePage } from "../pages/CourseViewPage.tsx";
 import StagePlayerPage from "../pages/StagePlayerPage.tsx";
+import { AddStage } from "../pages/AddStage.tsx";
 
 
 const AnimatedRoutes = () => {
@@ -43,6 +44,7 @@ const AnimatedRoutes = () => {
 				<Route path="/course/:id" element={<PageWrapper><ProtectedRoute><CoursePage /></ProtectedRoute></PageWrapper>} />
 				<Route path="/course/:id/stage/:stageId" element={<PageWrapper><ProtectedRoute><StagePlayerPage /></ProtectedRoute></PageWrapper>} />
 				<Route path="/admin" element={<PageWrapper><ProtectedRoute><AdminPanel /></ProtectedRoute></PageWrapper>} />
+				<Route path="/add-stage" element={<PageWrapper><ProtectedRoute><AddStage /></ProtectedRoute></PageWrapper>} />
 
 			</Routes>
 		</AnimatePresence>

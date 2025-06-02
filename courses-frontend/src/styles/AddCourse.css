@@ -1,0 +1,138 @@
+.form {
+  max-width: 500px;
+  margin: 4rem auto;
+  padding: 2rem;
+  background-color: #1e1e1e;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  color: #e0e0e0;
+}
+
+.form-title {
+  position: relative;
+  display: inline-block;
+  margin: 0 auto 2rem;
+  font-size: 1.8rem;
+  color: #ffffff;
+  text-align: center;
+}
+
+.form-title-container {
+  text-align: center;
+}
+
+.form-title::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background-color: #3dc55f;
+  border-radius: 4px;
+}
+
+.form-group {
+  margin-bottom: 2rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 0;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid #2a2a2a;
+  color: #ffffff;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+  border-radius: 0;
+}
+
+input,
+input:focus {
+  border-radius: 0 !important;
+}
+
+.form-input::placeholder {
+  color: #888;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.form-input:focus {
+  border-bottom-color: #3dc55f;
+}
+
+.btn {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #3dc55f;
+  color: #121212;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #49e670;
+  box-shadow: 0 0 10px #49e670;
+}
+
+.btn:disabled {
+  background-color: #2f2f2f;
+  cursor: not-allowed;
+  color: #888;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .form {
+    padding: 1.5rem;
+    margin: 2rem 1rem;
+  }
+
+  .form h2 {
+    font-size: 1.5rem;
+  }
+}
+
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #1e1e1e inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #1e1e1e inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.page-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #121212;
+}
+
+.main-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-top: 0;
+}
+

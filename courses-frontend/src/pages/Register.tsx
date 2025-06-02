@@ -1,3 +1,4 @@
+import '../styles/Register.css';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { validateRegisterForm } from "../validation/registerValidation";
@@ -57,81 +58,49 @@ export const Register = () => {
         }
     };
 
+    const renderField = (name: keyof RegisterRequest, type: string, placeholder: string) => (
+        <div className="form-group">
+            <input
+                id={name}
+                name={name}
+                type={type}
+                className={`form-input ${fieldErrors[name] ? 'error' : ''}`}
+                value={formData[name]}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder={placeholder}
+            />
+            {fieldErrors[name] && (
+                <div className="field-error">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                        className="icon"
+                        width="16"
+                        height="16"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                    </svg>
+                    <span>{fieldErrors[name]}</span>
+                </div>
+            )}
+        </div>
+    );
+
     return (
         <div className="form">
             <h2>Create your account</h2>
             <form onSubmit={handleSubmit}>
                 {generalError && <div className="error">{generalError}</div>}
 
-                <div className="form-group">
-                    <label htmlFor="firstName" className="form-label">First Name</label>
-                    <input
-                        id="firstName"
-                        name="firstName"
-                        type="text"
-                        className="form-input"
-                        value={formData.firstName}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                    />
-                    {fieldErrors.firstName && <div className="field-error">{fieldErrors.firstName}</div>}
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="lastName" className="form-label">Last Name</label>
-                    <input
-                        id="lastName"
-                        name="lastName"
-                        type="text"
-                        className="form-input"
-                        value={formData.lastName}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                    />
-                    {fieldErrors.lastName && <div className="field-error">{fieldErrors.lastName}</div>}
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="email" className="form-label">Email address</label>
-                    <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        className="form-input"
-                        value={formData.email}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                    />
-                    {fieldErrors.email && <div className="field-error">{fieldErrors.email}</div>}
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="password" className="form-label">Password</label>
-                    <input
-                        id="password"
-                        name="password"
-                        type="password"
-                        className="form-input"
-                        value={formData.password}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                    />
-                    {fieldErrors.password && <div className="field-error">{fieldErrors.password}</div>}
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
-                    <input
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        type="password"
-                        className="form-input"
-                        value={formData.confirmPassword}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                    />
-                    {fieldErrors.confirmPassword && <div className="field-error">{fieldErrors.confirmPassword}</div>}
-                </div>
+                {renderField("firstName", "text", "First Name")}
+                {renderField("lastName", "text", "Last Name")}
+                {renderField("email", "email", "Email address")}
+                {renderField("password", "password", "Password")}
+                {renderField("confirmPassword", "password", "Confirm Password")}
 
                 <button
                     type="submit"

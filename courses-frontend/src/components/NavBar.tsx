@@ -33,8 +33,6 @@ const NavBar: React.FC<NavBarProps> = ({ sidebarOpen, toggleSidebar }) => {
 					<Link to="/courses">Courses</Link>
 					{isLoggedIn && (
 						<>
-							<Link to="/add-course">Add Course</Link>
-							<Link to={"/creator-courses"}>Creating Courses</Link>
 							<Link to={"/purchased-courses"}>Purchased Courses</Link>
 							<Link to="/my-courses">My Courses</Link>
 							<Link to="/chats">Chats</Link>
@@ -69,8 +67,6 @@ const NavBar: React.FC<NavBarProps> = ({ sidebarOpen, toggleSidebar }) => {
 				</Link>
 				{isLoggedIn && (
 					<>
-						<Link to="/add-course">Add Course</Link>
-						<Link to={"/creator-courses"}>Creating Courses</Link>
 						<Link to={"/purchased-courses"}>Purchased Courses</Link>
 						<Link to="/my-courses" onClick={toggleSidebar}>
 							My Courses

@@ -243,6 +243,9 @@ main {
   border: 1px solid #e0e0e0;
   padding: 0.5rem 1rem;
   border-radius: 8px;
+  display: inline-block;
+  text-align: center;
+  width: 5.5rem;
 }
 
 .btn.logout:hover {
@@ -411,6 +414,7 @@ main {
   overflow: hidden;
   position: relative;
   transform-style: preserve-3d;
+  margin-bottom: 60px;
 }
 
 .stats-heading {
@@ -456,7 +460,6 @@ main {
   background-color: #1e1e1e;
   padding: 2rem;
   text-align: center;
-  margin-top: 60px;
 }
 
 .footer-content {
