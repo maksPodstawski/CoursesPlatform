@@ -547,3 +547,62 @@ main {
   border-radius: 12px;
   margin-bottom: 1rem;
 }
+
+.field-error {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background-color: #1e1e1e;
+  padding: 2rem;
+  border-radius: 16px;
+  max-width: 600px;
+  margin: 2rem auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.profile-container h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  color: #ffffff;
+  align-self: flex-start;
+}
+
+.profile-field {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  color: #cfd8dc;
+  width: 100%;
+}
+
+.profile-field label {
+  font-weight: bold;
+  margin-right: 0.5rem;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.profile-field input {
+  padding: 0.6rem;
+  border: none;
+  border-radius: 8px;
+  width: 100%;
+  background-color: #2a2a2a;
+  color: #fff;
+}
+
+.profile-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.profile-actions .btn + .btn {
+  margin-left: 1rem;
+
+}

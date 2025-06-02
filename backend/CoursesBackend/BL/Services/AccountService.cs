@@ -64,7 +64,7 @@ namespace BL.Services
             var user = await _userManager.FindByEmailAsync(loginRequestDTO.Email);
             if (user == null || !await _userManager.CheckPasswordAsync(user, loginRequestDTO.Password))
             {
-                throw new LoginFailedException(email: loginRequestDTO.Email);
+                throw new LoginFailedException();
             }
 
 

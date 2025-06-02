@@ -1,43 +1,59 @@
-import { useState } from 'react';
-import { authService } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
-
-interface RegisterFormData {
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-}
+import { authService } from '../services/authService';
+import { validateRegisterForm } from "../validation/registerValidation";
+import { useForm } from '../hooks/useForm';
+import { mapBackendErrors } from '../utils/errorHandling';
+import type { RegisterRequest } from "../types/user";
+import {registerFieldMapping, registerInitialValues} from "../constants/forms.ts";
 
 export const Register = () => {
-    const [formData, setFormData] = useState<RegisterFormData>({
-        email: '',
-        password: '',
-        firstName: '',
-        lastName: ''
-    });
-    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+    const {
+        formData,
+        fieldErrors,
+        setFieldErrors,
+        generalError,
+        setGeneralError,
+        handleChange,
+        handleBlur,
+        validateAll,
+        isSubmitting,
+        setIsSubmitting
+    } = useForm<RegisterRequest>(registerInitialValues, validateRegisterForm);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
+        setFieldErrors({});
+        setGeneralError('');
 
+        if (!validateAll()) return;
+
+        setIsSubmitting(true);
         try {
             await authService.register(formData);
             navigate('/login');
-        } catch (err: any) {
-            // Tutaj komunikat z beckendu będziegit
-            const message = err?.message || 'Registration failed. Please try again.';
-            setError(message);
+        } catch (err: unknown) {
+            const error = err as Error & {
+                response?: {
+                    status: number,
+                    data: { errors?: Record<string, string[]> }
+                }
+            };
+
+            const response = error.response;
+
+            if (response?.status === 400 && response.data?.errors) {
+                const mappedErrors = mapBackendErrors<RegisterRequest>(
+                    response.data.errors,
+                    registerFieldMapping
+                );
+                setFieldErrors(mappedErrors);
+            } else {
+                setGeneralError(error.message || 'Registration failed. Please try again.');
+            }
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -45,7 +61,7 @@ export const Register = () => {
         <div className="form">
             <h2>Create your account</h2>
             <form onSubmit={handleSubmit}>
-                {error && <div className="error">{error}</div>}
+                {generalError && <div className="error">{generalError}</div>}
 
                 <div className="form-group">
                     <label htmlFor="firstName" className="form-label">First Name</label>
@@ -53,11 +69,12 @@ export const Register = () => {
                         id="firstName"
                         name="firstName"
                         type="text"
-                        required
                         className="form-input"
                         value={formData.firstName}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                     />
+                    {fieldErrors.firstName && <div className="field-error">{fieldErrors.firstName}</div>}
                 </div>
 
                 <div className="form-group">
@@ -66,11 +83,12 @@ export const Register = () => {
                         id="lastName"
                         name="lastName"
                         type="text"
-                        required
                         className="form-input"
                         value={formData.lastName}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                     />
+                    {fieldErrors.lastName && <div className="field-error">{fieldErrors.lastName}</div>}
                 </div>
 
                 <div className="form-group">
@@ -79,11 +97,12 @@ export const Register = () => {
                         id="email"
                         name="email"
                         type="email"
-                        required
                         className="form-input"
                         value={formData.email}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                     />
+                    {fieldErrors.email && <div className="field-error">{fieldErrors.email}</div>}
                 </div>
 
                 <div className="form-group">
@@ -92,15 +111,34 @@ export const Register = () => {
                         id="password"
                         name="password"
                         type="password"
-                        required
                         className="form-input"
                         value={formData.password}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                     />
+                    {fieldErrors.password && <div className="field-error">{fieldErrors.password}</div>}
                 </div>
 
-                <button type="submit" className="btn btn-primary">
-                    Create Account
+                <div className="form-group">
+                    <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
+                    <input
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type="password"
+                        className="form-input"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                    />
+                    {fieldErrors.confirmPassword && <div className="field-error">{fieldErrors.confirmPassword}</div>}
+                </div>
+
+                <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? 'Creating account...' : 'Create Account'}
                 </button>
             </form>
         </div>

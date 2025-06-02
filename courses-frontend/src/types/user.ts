@@ -6,6 +6,7 @@ export type LoginRequest = {
 export type RegisterRequest = {
 	email: string;
 	password: string;
+	confirmPassword: string;
 	firstName: string;
 	lastName: string;
 };
@@ -15,4 +16,12 @@ export type UserInfo = {
 	email: string;
 	firstName: string;
 	lastName: string;
+};
+export type UserProfile = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  userName: string;
+  phoneNumber: string;
+  profilePictureBase64: string | null;
 };

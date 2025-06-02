@@ -11,20 +11,18 @@ interface NavBarProps {
 const NavBar: React.FC<NavBarProps> = ({ sidebarOpen, toggleSidebar }) => {
   const { isLoggedIn, logout } = useAuth();
   const location = useLocation();
-
-  const navigate = useNavigate();
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate("/");
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
-  };
-
-  // Sprawdź czy jesteś na /admin
   const isAdminPanel = location.pathname.startsWith("/admin");
+  const navigate = useNavigate();
 
+    const handleLogout = async () => {
+        try {
+            await logout();
+            navigate("/");
+        } catch (error) {
+            console.error("Logout failed", error);
+        }
+    };
+  
   return (
     <nav className="nav">
       <div className="nav-content">

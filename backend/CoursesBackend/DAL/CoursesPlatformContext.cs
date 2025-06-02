@@ -30,7 +30,7 @@ namespace DAL
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseNpgsql("Server=localhost;Port=15432;Database=postgres;User Id=postgres;Password=postgres");
+                optionsBuilder.UseNpgsql("Server=localhost;Port=15432;Database=postgres;User Id=postgres;Password=postgres", x => x.MigrationsAssembly("DAL"));
             }
         }
 

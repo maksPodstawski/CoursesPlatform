@@ -1,15 +1,8 @@
-import { config } from '../config';
+import { fetchClient } from './fetchClient';
 
 export const weatherService = {
     async getForecast() {
-        const response = await fetch(`${config.apiBaseUrl}/api/weatherforecast`, {
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch weather forecast');
-        }
-
+        const response = await fetchClient.fetch('/api/weatherforecast');
         return response.json();
     }
 }; 

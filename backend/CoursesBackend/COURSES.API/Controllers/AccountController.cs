@@ -1,4 +1,5 @@
-﻿using BL.Services;
+﻿using BL.Exceptions;
+using BL.Services;
 using IBL;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -22,15 +23,55 @@ namespace COURSES.API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDTO registerRequest)
         {
-            await accountService.RegisterAsync(registerRequest);
-            return Ok();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                await accountService.RegisterAsync(registerRequest);
+                return Ok();
+            }
+            catch (UserAlreadyExistsException ex)
+            {
+                var errors = new Dictionary<string, string[]>
+                {
+                    { "Email", new[] { ex.Message } }
+                };
+
+                return BadRequest(new { errors });
+            }
+            catch (RegistrationFailedException ex)
+            {
+                var errors = new Dictionary<string, string[]>
+                {
+                    { "Password", ex.Message.Split(Environment.NewLine) }
+                };
+
+                return BadRequest(new { errors });
+            }
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO loginRequest)
         {
-            await accountService.LoginAsync(loginRequest);
-            return Ok();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                await accountService.LoginAsync(loginRequest);
+                return Ok();
+            }
+            catch (LoginFailedException ex)
+            {
+                var errors = new Dictionary<string, string[]>
+                {
+                    { "Login", new[] { ex.Message } }
+                };
+
+                return BadRequest(new { errors });
+            }
+
         }
 
         [HttpPost("refresh")]
