@@ -21,6 +21,8 @@ export const config = {
 		addReview: "/api/Reviews",
 		avgRating: "/api/Reviews/course/{courseId}/average-rating",
 		getUserProfile: "/api/user/me",
+
+		addStage: "/api/stages"
 	},
 } as const;
 

@@ -104,7 +104,7 @@ main {
 
 .sidebar a:hover,
 .sidebar .btn.logout:hover {
-  color: #3dc55f;
+  color: #ffffff;
 }
 
 .sidebar .close-btn {
@@ -151,7 +151,7 @@ main {
 
 .nav-links a:hover,
 .nav-links .btn.logout:hover {
-  color: #3dc55f;
+  color: #ffffff;
 }
 
 /* Hero */
@@ -239,16 +239,23 @@ main {
 }
 
 .btn.logout {
-  background: transparent;
-  border: 1px solid #e0e0e0;
+  background: #1e1e1e;
+  color: #ffffff;
+  border: 1px solid #dc2626;
   padding: 0.5rem 1rem;
   border-radius: 8px;
+  display: inline-block;
+  text-align: center;
+  width: 5.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .btn.logout:hover {
-  background-color: #333;
-  color: #ff5252;
-  border-color: #ff5252;
+  background: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 0 10px #ef4444;
+  transition: all 0.3s ease;
 }
 
 .scroll-top-btn {
@@ -411,6 +418,7 @@ main {
   overflow: hidden;
   position: relative;
   transform-style: preserve-3d;
+  margin-bottom: 60px;
 }
 
 .stats-heading {
@@ -456,7 +464,6 @@ main {
   background-color: #1e1e1e;
   padding: 2rem;
   text-align: center;
-  margin-top: 60px;
 }
 
 .footer-content {

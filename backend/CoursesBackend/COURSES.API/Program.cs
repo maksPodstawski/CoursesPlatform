@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Model;
 using Scalar.AspNetCore;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -134,7 +135,19 @@ builder.Services.AddAuthentication(opt =>
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();    
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+// Zwiêksz limit rozmiaru przesy³anych plików (do 100 MB)
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 1024 * 1024 * 100; // 100 MB
+});
+
+// Zwiêksz limit request body w Kestrel (jeœli korzystasz z domyœlnego serwera)
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Limits.MaxRequestBodySize = 1024 * 1024 * 100; // 100 MB
+});
 
 var app = builder.Build();
 
