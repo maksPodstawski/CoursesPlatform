@@ -4,7 +4,7 @@ import "../styles/Sidebar.css";
 
 const navItems = [
 	{ label: "Dashboard", icon: <Home size={22} />, path: "/creatorpanel" },
-	{ label: "My Courses", icon: <Book size={22} />, path: "/courses" },
+	{ label: "My Courses", icon: <Book size={22} />, path: "/my-courses" },
 	{ label: "Student Chats", icon: <MessageCircle size={22} />, path: "/creatorpanel/chats" },
 	{ label: "Create Course", icon: <Plus size={22} />, path: "/add-course" },
 	{ label: "Analytics", icon: <BarChart size={22} />, path: "/analytics" },
