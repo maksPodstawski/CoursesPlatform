@@ -229,10 +229,10 @@ export default function CourseView() {
 
 					<div className="course-meta">
 						<span>
-							<BookOpen size={16} /> {course.completedStages}/{course.totalStages} stages
+							<BookOpen size={16}/> {course.completedStages}/{course.totalStages} stages
 						</span>
 						<span>
-							<Clock size={16} /> {formatDuration(course.totalDuration)}
+							<Clock size={16}/> {formatDuration(course.totalDuration)}
 						</span>
 						<span>
 							<Star size={16} />
@@ -245,7 +245,7 @@ export default function CourseView() {
 					</div>
 
 					<div className="instructor">
-						<img src={course.instructor.avatar} alt={course.instructor.name} className="avatar" />
+						<img src={course.instructor.avatar} alt={course.instructor.name} className="avatar"/>
 						<div className="instructor-info">
 							<div className="name">{course.instructor.name}</div>
 							<div className="title">{course.instructor.title}</div>
@@ -258,13 +258,12 @@ export default function CourseView() {
 							<span className="progress-percentage">{course.progress}%</span>
 						</div>
 						<div className="progress-bar">
-							<div className="progress-fill" style={{ width: `${course.progress}%` }} />
+							<div className="progress-fill" style={{width: `${course.progress}%`}}/>
 						</div>
 					</div>
-
 					<div className="action-buttons">
 						<button type="button" className="btn-primary" onClick={() => goToStage(course.currentStage)}>
-							<Play size={16} />
+							<Play size={16}/>
 							Continue Learning
 						</button>
 							{userReview ? (
@@ -284,7 +283,6 @@ export default function CourseView() {
 									</button>
 							)}
 					</div>
-
 					{showReviewForm && (
 						<div className="review-form">
 							<h3>Add Your Review</h3>
@@ -329,10 +327,10 @@ export default function CourseView() {
 
 				<div className="thumbnail-container">
 					{course.thumbnail ? (
-						<img src={course.thumbnail} alt="Course thumbnail" className="thumbnail-image" />
+						<img src={course.thumbnail} alt="Course thumbnail" className="thumbnail-image"/>
 					) : (
 						<div className="thumbnail-placeholder">
-							<Video size={48} />
+							<Video size={48}/>
 							<span>Course Preview</span>
 						</div>
 					)}
@@ -341,7 +339,7 @@ export default function CourseView() {
 
 			<div className="stages">
 				<h2>
-					<BookOpen size={24} />
+					<BookOpen size={24}/>
 					Course Stages
 				</h2>
 				<ul>

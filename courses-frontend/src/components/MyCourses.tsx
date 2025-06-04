@@ -39,13 +39,13 @@ export function MyCourses() {
 			<h1>My Courses</h1>
 
 			<div className="filter-buttons">
-				<button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>
+				<button type="button" className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>
 					All
 				</button>
-				<button className={filter === "in-progress" ? "active" : ""} onClick={() => setFilter("in-progress")}>
+				<button type="button" className={filter === "in-progress" ? "active" : ""} onClick={() => setFilter("in-progress")}>
 					In Progress
 				</button>
-				<button className={filter === "completed" ? "active" : ""} onClick={() => setFilter("completed")}>
+				<button type="button" className={filter === "completed" ? "active" : ""} onClick={() => setFilter("completed")}>
 					Completed
 				</button>
 			</div>
