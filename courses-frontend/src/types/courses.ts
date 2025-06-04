@@ -57,3 +57,22 @@ export type Chat = {
 export type CreateChatDTO = {
 	name: string;
 };
+export type CreateReviewRequest = {
+	courseId: string;
+	rating: number;
+	comment: string;
+};
+export interface UpdateReviewRequest {
+	rating: number;
+	comment: string;
+}
+
+export interface ReviewResponseDTO {
+	id: string;
+	rating: number;
+	comment: string;
+	createdAt: string;
+	userName: string;
+	courseId: string;
+	courseName: string;
+}

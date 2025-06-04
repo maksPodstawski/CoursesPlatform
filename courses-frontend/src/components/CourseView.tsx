@@ -1,17 +1,29 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Play, BookOpen, Clock, Star, Video, Check, Lock } from "lucide-react";
+import {
+	ArrowLeft,
+	Play,
+	BookOpen,
+	Clock,
+	Star,
+	Video,
+	Check,
+	Lock,
+	Pencil
+} from "lucide-react";
 import "../styles/CourseView.css";
 import { getCourseById, getCourseInstructor } from "../services/courseService";
 import { getCourseStagesWithProgress } from "../services/progressService";
 import type { StageWithProgress as ApiStageWithProgress } from "../types/courses";
-
+import { createReview, getRatingSummary, getUserReviewForCourse, updateReview, deleteReview } from "../services/reviewService";
 type Course = {
 	id?: string;
 	courseId?: string;
 	name: string;
 	description: string;
 	imageUrl: string;
+	rating?: number;
+	reviewsCount?: number;
 };
 
 type CourseDetails = {
@@ -48,7 +60,7 @@ type CourseDetails = {
 const mapToCourseDetails = (
 	course: Course,
 	stages: ApiStageWithProgress[],
-	instructor: { name: string; avatar: string; title: string },
+	instructor: { name: string; avatar: string; title: string }
 ): CourseDetails => {
 	const completedStages = stages.filter((s) => s.isCompleted).length;
 	const totalDuration = stages.reduce((sum, s) => sum + s.duration, 0);
@@ -66,8 +78,8 @@ const mapToCourseDetails = (
 		completedStages,
 		totalDuration,
 		progress,
-		rating: 4.8,
-		reviews: 324,
+		rating: course.rating ?? 0,
+		reviews: course.reviewsCount ?? 0, 
 		currentStage,
 		stages: stages.map((s, index) => ({
 			id: s.id,
@@ -79,8 +91,8 @@ const mapToCourseDetails = (
 			completed: s.isCompleted,
 			locked: !s.progress?.startedAt && index > 0 && !stages[index - 1]?.isCompleted,
 			current: s.id === currentStage,
-			createdAt: s.progress?.startedAt || new Date().toISOString(),
-		})),
+			createdAt: s.progress?.startedAt || new Date().toISOString()
+		}))
 	};
 };
 
@@ -97,13 +109,87 @@ export default function CourseView() {
 	const { id } = useParams<{ id: string }>();
 	const [course, setCourse] = useState<CourseDetails | null>(null);
 	const [loading, setLoading] = useState(true);
-
+	const [showReviewForm, setShowReviewForm] = useState(false);
+	const [rating, setRating] = useState(5);
+	const [comment, setComment] = useState("");
+	const [hoveredRating, setHoveredRating] = useState<number | null>(null);
+	const [ratingSummary, setRatingSummary] = useState<{ averageRating: number; reviewCount: number } | null>(null);
+	const [userReview, setUserReview] = useState<{ id: string; rating: number; comment: string } | null>(null);
 	const navigate = useNavigate();
 
 	const goToStage = (stageId: string) => {
 		navigate(`/course/${course?.id}/stage/${stageId}`);
 	};
+	const loadUserReview = async (courseId: string) => {
+	try {
+		const review = await getUserReviewForCourse(courseId);
+		setUserReview(review);
+		if (review) {
+			setRating(review.rating);
+			setComment(review.comment);
+		}
+	} catch (error) {
+		console.error("Error loading user review:", error);
+	}
+};
+	const loadRatingSummary = async (courseId: string) => {
+		try {
+			console.log("Loading rating summary for course:", courseId);
+			const summary = await getRatingSummary(courseId);
+			console.log("Loaded rating summary:", summary);
+			setRatingSummary(summary);
+		} catch (error) {
+			console.error("Error loading rating summary:", error);
+		}
+	};
+	const handleSubmitReview = async () => {
+				if (!id) return;
 
+				try {
+					if (userReview && userReview.id) {
+					
+					await updateReview(userReview.id, {
+						rating,
+						comment,
+						courseId: id, 
+					});
+					alert("Review updated successfully!");
+					} else {
+					
+					await createReview({
+						courseId: id,
+						rating,
+						comment,
+					});
+					alert("Review submitted successfully!");
+					}
+					await loadRatingSummary(id);
+					await loadUserReview(id);
+
+					setShowReviewForm(false);
+				} catch (error) {
+					alert("Error submitting review.");
+					console.error(error);
+				}
+				};
+	const handleDeleteReview = async () => {
+		if (!userReview || !id) return;
+
+		const confirmed = window.confirm("Are you sure you want to delete your review?");
+		if (!confirmed) return;
+
+		try {
+			await deleteReview(userReview.id);
+			alert("Review deleted successfully!");
+			setUserReview(null);
+			setRating(5);
+			setComment("");
+			await loadRatingSummary(id);
+		} catch (error) {
+			alert("Error deleting review.");
+			console.error(error);
+		}
+	};
 	useEffect(() => {
 		const load = async () => {
 			try {
@@ -111,10 +197,12 @@ export default function CourseView() {
 				const [courseData, stages, instructor] = await Promise.all([
 					getCourseById(id!),
 					getCourseStagesWithProgress(id!),
-					getCourseInstructor(id!),
+					getCourseInstructor(id!)
 				]);
 				const details = mapToCourseDetails(courseData, stages, instructor);
 				setCourse(details);
+				await loadRatingSummary(courseData.id);
+				await loadUserReview(courseData.id);
 			} catch (error) {
 				console.error("Error loading course:", error);
 			} finally {
@@ -147,7 +235,12 @@ export default function CourseView() {
 							<Clock size={16}/> {formatDuration(course.totalDuration)}
 						</span>
 						<span>
-							<Star size={16}/> {course.rating} ({course.reviews} reviews)
+							<Star size={16} />
+							{ratingSummary ? (
+								`${ratingSummary.averageRating} (${ratingSummary.reviewCount} reviews)`
+							) : (
+								"No reviews yet"
+							)}
 						</span>
 					</div>
 
@@ -168,20 +261,68 @@ export default function CourseView() {
 							<div className="progress-fill" style={{width: `${course.progress}%`}}/>
 						</div>
 					</div>
-
 					<div className="action-buttons">
 						<button type="button" className="btn-primary" onClick={() => goToStage(course.currentStage)}>
 							<Play size={16}/>
 							Continue Learning
 						</button>
-						<button type="button" className="btn-secondary"
-								onClick={() => navigate(`/course/${course.id}/add-review`, {
-									state: {courseTitle: course.title}
-								})}>
-							<Star size={16}/>
-							Add Review
-						</button>
+							{userReview ? (
+							<>
+								<button type="button" className="btn-secondary" onClick={() => setShowReviewForm(true)}>
+									<Pencil size={16} />
+									Edit Review
+								</button>
+								<button type="button" className="btn-danger" onClick={handleDeleteReview}>
+									Delete Review
+								</button>
+							</>
+								) : (
+									<button type="button" className="btn-secondary" onClick={() => setShowReviewForm(true)}>
+										<Pencil size={16} />
+										{userReview ? "Edit Review" : "Add Review"}
+									</button>
+							)}
 					</div>
+					{showReviewForm && (
+						<div className="review-form">
+							<h3>Add Your Review</h3>
+							<div className="rating-stars">
+								<span className="rating-label">Rating:</span>
+								{[1, 2, 3, 4, 5].map((star) => (
+									<span
+										key={star}
+										onMouseEnter={() => setHoveredRating(star)}
+										onMouseLeave={() => setHoveredRating(null)}
+										onClick={() => setRating(star)}
+										style={{
+											cursor: "pointer",
+											color: star <= (hoveredRating ?? rating) ? "#f5c518" : "#444",
+											fontSize: "24px"
+										}}
+									>
+										★
+									</span>
+								))}
+							</div>
+							<label htmlFor="comment">
+								Comment:
+								</label>
+								<textarea
+								id="comment"
+								value={comment}
+								onChange={(e) => setComment(e.target.value)}
+								className="comment-textarea"
+								/>
+							<div className="review-actions">
+								<button onClick={handleSubmitReview} className="btn-primary">
+									Submit
+								</button>
+								<button onClick={() => setShowReviewForm(false)} className="btn-secondary">
+									Cancel
+								</button>
+							</div>
+						</div>
+					)}
 				</div>
 
 				<div className="thumbnail-container">
@@ -205,7 +346,9 @@ export default function CourseView() {
 					{course.stages.map((stage, index) => (
 						<li
 							key={stage.id}
-							className={`stage ${stage.completed ? "completed" : ""} ${stage.current ? "current" : ""} ${stage.locked ? "locked" : ""}`}
+							className={`stage ${stage.completed ? "completed" : ""} ${stage.current ? "current" : ""} ${
+								stage.locked ? "locked" : ""
+							}`}
 						>
 							<div className="stage-icon">
 								{stage.completed ? <Check size={20} /> : stage.locked ? <Lock size={20} /> : index + 1}

@@ -34,7 +34,7 @@ export default function Sidebar() {
 				</nav>
 			</div>
 			<div className="sidemenu__bottom">
-				<Link to="/profile" className="sidemenu__profile-link">
+				<Link to="/my-profile" className="sidemenu__profile-link">
 					<User className="sidemenu__icon" size={22} />
 					Profile
 				</Link>
