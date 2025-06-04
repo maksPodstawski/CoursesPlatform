@@ -19,11 +19,14 @@ namespace BL.Services
         {
             _messageRepository = messageRepository;
         }
-        public async Task<List<Message>> GetMessagesByChatIdAsync(Guid chatId)
+        public async Task<List<Message>> GetMessagesByChatIdAsync(Guid chatId, int count = 50)
         {
             return await _messageRepository
                  .GetMessages()
                  .Where(m => m.ChatId == chatId && !m.IsDeleted)
+                 .OrderByDescending(m => m.CreatedAt)
+                 .Take(count)
+                 .OrderBy(m => m.CreatedAt)
                  .Include(m => m.Author)
                  .ToListAsync();
         }

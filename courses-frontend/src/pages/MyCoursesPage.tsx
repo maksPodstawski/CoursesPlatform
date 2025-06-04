@@ -1,3 +1,14 @@
+import { MyCourses } from "../components/MyCourses.tsx";
+
+export default function MyCoursesPage() {
+	return (
+		<main className="flex-1 overflow-hidden bg-[#1a1a1a]">
+			<MyCourses />
+		</main>
+	);
+}
+
+/*
 import { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
 import { getPurchasedCourses, getStageVideoStreamUrl } from "../services/courseService";
@@ -257,3 +268,4 @@ const MyCourses = () => {
 };
 
 export default MyCourses;
+*/

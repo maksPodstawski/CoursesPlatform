@@ -1,106 +1,113 @@
-import { useState } from 'react';
-import { authService } from '../services/authService';
+import '../styles/Register.css';
 import { useNavigate } from 'react-router-dom';
-
-interface RegisterFormData {
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-}
+import { authService } from '../services/authService';
+import { validateRegisterForm } from "../validation/registerValidation";
+import { useForm } from '../hooks/useForm';
+import { mapBackendErrors } from '../utils/errorHandling';
+import type { RegisterRequest } from "../types/user";
+import {registerFieldMapping, registerInitialValues} from "../constants/forms.ts";
 
 export const Register = () => {
-    const [formData, setFormData] = useState<RegisterFormData>({
-        email: '',
-        password: '',
-        firstName: '',
-        lastName: ''
-    });
-    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+    const {
+        formData,
+        fieldErrors,
+        setFieldErrors,
+        generalError,
+        setGeneralError,
+        handleChange,
+        handleBlur,
+        validateAll,
+        isSubmitting,
+        setIsSubmitting
+    } = useForm<RegisterRequest>(registerInitialValues, validateRegisterForm);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
+        setFieldErrors({});
+        setGeneralError('');
 
+        if (!validateAll()) return;
+
+        setIsSubmitting(true);
         try {
             await authService.register(formData);
             navigate('/login');
-        } catch (err: any) {
-            // Tutaj komunikat z beckendu będziegit
-            const message = err?.message || 'Registration failed. Please try again.';
-            setError(message);
+        } catch (err: unknown) {
+            const error = err as Error & {
+                response?: {
+                    status: number,
+                    data: { errors?: Record<string, string[]> }
+                }
+            };
+
+            const response = error.response;
+
+            if (response?.status === 400 && response.data?.errors) {
+                const mappedErrors = mapBackendErrors<RegisterRequest>(
+                    response.data.errors,
+                    registerFieldMapping
+                );
+                setFieldErrors(mappedErrors);
+            } else {
+                setGeneralError(error.message || 'Registration failed. Please try again.');
+            }
+        } finally {
+            setIsSubmitting(false);
         }
     };
+
+    const renderField = (name: keyof RegisterRequest, type: string, placeholder: string) => (
+        <div className="form-group">
+            <input
+                id={name}
+                name={name}
+                type={type}
+                className={`form-input ${fieldErrors[name] ? 'error' : ''}`}
+                value={formData[name]}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder={placeholder}
+            />
+            {fieldErrors[name] && (
+                <div className="field-error">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                        className="icon"
+                        width="16"
+                        height="16"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                    </svg>
+                    <span>{fieldErrors[name]}</span>
+                </div>
+            )}
+        </div>
+    );
 
     return (
         <div className="form">
             <h2>Create your account</h2>
             <form onSubmit={handleSubmit}>
-                {error && <div className="error">{error}</div>}
+                {generalError && <div className="error">{generalError}</div>}
 
-                <div className="form-group">
-                    <label htmlFor="firstName" className="form-label">First Name</label>
-                    <input
-                        id="firstName"
-                        name="firstName"
-                        type="text"
-                        required
-                        className="form-input"
-                        value={formData.firstName}
-                        onChange={handleChange}
-                    />
-                </div>
+                {renderField("firstName", "text", "First Name")}
+                {renderField("lastName", "text", "Last Name")}
+                {renderField("email", "email", "Email address")}
+                {renderField("password", "password", "Password")}
+                {renderField("confirmPassword", "password", "Confirm Password")}
 
-                <div className="form-group">
-                    <label htmlFor="lastName" className="form-label">Last Name</label>
-                    <input
-                        id="lastName"
-                        name="lastName"
-                        type="text"
-                        required
-                        className="form-input"
-                        value={formData.lastName}
-                        onChange={handleChange}
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="email" className="form-label">Email address</label>
-                    <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        required
-                        className="form-input"
-                        value={formData.email}
-                        onChange={handleChange}
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="password" className="form-label">Password</label>
-                    <input
-                        id="password"
-                        name="password"
-                        type="password"
-                        required
-                        className="form-input"
-                        value={formData.password}
-                        onChange={handleChange}
-                    />
-                </div>
-
-                <button type="submit" className="btn btn-primary">
-                    Create Account
+                <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? 'Creating account...' : 'Create Account'}
                 </button>
             </form>
         </div>

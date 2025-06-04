@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BL.Exceptions
 {
-    public class LoginFailedException(string email): Exception($"Invalid email: {email} or password")
+    public class LoginFailedException(): Exception($"Invalid email or password.")
     {
     }
 }

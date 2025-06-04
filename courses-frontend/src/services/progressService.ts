@@ -1,11 +1,10 @@
-import axios from "axios";
-import { API_URL } from "../config";
+import { fetchClient } from "./fetchClient";
 import type { Progress, StageWithProgress } from "../types/courses.ts";
 
 export const getProgressByStage = async (stageId: string): Promise<Progress | null> => {
 	try {
-		const response = await axios.get(`${API_URL}/api/progress/stage/${stageId}`, { withCredentials: true });
-		return response.data as Progress;
+		const response = await fetchClient.fetch(`/api/progress/stage/${stageId}`);
+		return await response.json() as Progress;
 	} catch (error) {
 		console.error("Error fetching stage progress:", error);
 		return null;
@@ -14,8 +13,8 @@ export const getProgressByStage = async (stageId: string): Promise<Progress | nu
 
 export const getUserProgress = async (): Promise<Progress[]> => {
 	try {
-		const response = await axios.get(`${API_URL}/api/progress/user`, { withCredentials: true });
-		return response.data as Progress[];
+		const response = await fetchClient.fetch("/api/progress/user");
+		return await response.json() as Progress[];
 	} catch (error) {
 		console.error("Error fetching user progress:", error);
 		return [];
@@ -24,8 +23,8 @@ export const getUserProgress = async (): Promise<Progress[]> => {
 
 export const getCourseStagesWithProgress = async (courseId: string): Promise<StageWithProgress[]> => {
 	try {
-		const response = await axios.get(`${API_URL}/api/progress/course/${courseId}`, { withCredentials: true });
-		return response.data as StageWithProgress[];
+		const response = await fetchClient.fetch(`/api/progress/course/${courseId}`);
+		return await response.json() as StageWithProgress[];
 	} catch (error) {
 		console.error("Error fetching course stages with progress:", error);
 		return [];
@@ -34,7 +33,9 @@ export const getCourseStagesWithProgress = async (courseId: string): Promise<Sta
 
 export const markStageAsCompleted = async (stageId: string): Promise<boolean> => {
 	try {
-		await axios.post(`${API_URL}/api/progress/stage/${stageId}/complete`, {}, { withCredentials: true });
+		await fetchClient.fetch(`/api/progress/stage/${stageId}/complete`, {
+			method: "POST"
+		});
 		return true;
 	} catch (error) {
 		console.error("Error marking stage as completed:", error);
@@ -44,8 +45,10 @@ export const markStageAsCompleted = async (stageId: string): Promise<boolean> =>
 
 export const startStage = async (stageId: string): Promise<Progress | null> => {
 	try {
-		const response = await axios.post(`${API_URL}/api/progress/stage/${stageId}/start`, {}, { withCredentials: true });
-		return response.data as Progress;
+		const response = await fetchClient.fetch(`/api/progress/stage/${stageId}/start`, {
+			method: "POST"
+		});
+		return await response.json() as Progress;
 	} catch (error) {
 		console.error("Error starting stage:", error);
 		return null;

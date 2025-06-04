@@ -139,11 +139,42 @@ namespace COURSES.API.Controllers
             return NoContent();
         }
 
-        [HttpGet("course/{courseId}/average-rating")]
-        public async Task<ActionResult<double?>> GetAverageRating(Guid courseId)
+        [HttpGet("course/{courseId}/rating-summary")]
+        public async Task<IActionResult> GetRatingSummary(Guid courseId)
         {
-            var avg = await _reviewService.GetAverageRatingForCourseAsync(courseId);
-            return Ok(avg);
+            var course = await _courseService.GetCourseByIdAsync(courseId);
+            if (course == null)
+            {
+                return NotFound("Course not found");
+            }
+
+            var averageRating = await _reviewService.GetAverageRatingForCourseAsync(courseId);
+            var reviewCount = await _reviewService.GetReviewsByCourseIdAsync(courseId);
+
+         
+            return Ok(new
+            {
+                averageRating = Math.Round(averageRating ?? 0, 1), // zaokr¹glone np. 4.3
+                reviewCount = reviewCount.Count
+            });
+        }
+        [Authorize]
+        [HttpGet("course/{courseId}/user")]
+        public async Task<ActionResult<ReviewResponseDTO>> GetUserReviewForCourse(Guid courseId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var review = await _reviewService.GetReviewByUserAndCourseIdAsync(Guid.Parse(userId), courseId);
+            if (review == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(ReviewResponseDTO.FromReview(review));
         }
     }
 } 

@@ -573,10 +573,14 @@ namespace DAL.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
+
+                    b.Property<byte[]>("ProfilePicture")
+                        .HasColumnType("bytea");
 
                     b.Property<string>("RefreshToken")
                         .HasColumnType("text");

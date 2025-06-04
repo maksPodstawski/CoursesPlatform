@@ -49,15 +49,18 @@ namespace COURSES.API.Hubs
             bool isMember = await _chatUserService.IsUserInChatAsync(chatId, userId.Value);
             if (!isMember) return;
 
+            var user = await _userService.GetUserByIdAsync(userId.Value);
+            if (user == null) return;
 
             var message = new Message
             {
                 Id = Guid.NewGuid(),
                 ChatId = chatId,
                 AuthorId = userId.Value,
-                Author = await _userService.GetUserByIdAsync(userId.Value),
+                Author = user,
                 Content = content,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                IsDeleted = false
             };
 
             await _messageService.AddMessageAsync(message);
