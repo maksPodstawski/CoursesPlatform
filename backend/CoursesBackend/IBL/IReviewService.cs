@@ -17,5 +17,6 @@ namespace IBL
         Task<Review?> UpdateReviewAsync(Review review);
         Task<Review?> DeleteReviewAsync(Guid reviewId);
         Task<double?> GetAverageRatingForCourseAsync(Guid courseId);
+        Task DeleteReviewsAsync(IEnumerable<Guid> reviewIds);
     }
 }
