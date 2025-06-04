@@ -2,16 +2,6 @@ import { config } from "../config";
 import { CreateReviewRequest } from "../types/courses";
 import { fetchClient } from "./fetchClient";
 
-export async function getReviewsByCourse(courseId: string) {
-    const response = await fetch(`${config.apiBaseUrl}/api/reviews/course/${courseId}`, {
-        credentials: "include"
-    });
-    if (!response.ok) {
-        throw new Error("Nie udało się pobrać recenzji");
-    }
-    return await response.json();
-}
-
 export async function deleteReviews(reviewIds: string[]) {
     const response = await fetch(`${config.apiBaseUrl}/api/reviews/delete-many`, {
         method: "POST",
@@ -21,7 +11,7 @@ export async function deleteReviews(reviewIds: string[]) {
     });
     if (!response.ok) {
         throw new Error("Nie udało się usunąć recenzji");
-    }
+    }}
 
 export async function createReview(data: CreateReviewRequest): Promise<void> {
 	await fetchClient.fetch(`/api/reviews`, {
