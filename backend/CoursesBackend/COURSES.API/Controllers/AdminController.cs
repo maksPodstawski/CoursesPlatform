@@ -4,6 +4,7 @@ using Model.Constans;
 using IBL;
 using Model;
 using Model.DTO;
+using static Model.DTO.ReviewResponseDTO;
 
 namespace COURSES.API.Controllers
 {
@@ -14,11 +15,19 @@ namespace COURSES.API.Controllers
     {
         private readonly ICategoryService _categoryService;
         private readonly ISubcategoryService _subcategoryService;
+        private readonly ICourseService _courseService;
+        private readonly IReviewService _reviewService;
 
-        public AdminController(ICategoryService categoryService, ISubcategoryService subcategoryService)
+        public AdminController(
+            ICategoryService categoryService,
+            ISubcategoryService subcategoryService,
+            ICourseService courseService,
+            IReviewService reviewService)
         {
             _categoryService = categoryService;
             _subcategoryService = subcategoryService;
+            _courseService = courseService;
+            _reviewService = reviewService;
         }
 
         [HttpGet("dashboard")]
@@ -69,6 +78,47 @@ namespace COURSES.API.Controllers
 
             return CreatedAtAction(nameof(AddSubcategory), new { id = resultDto.Id }, resultDto);
         }
+
+        [HttpDelete("course/{courseId}")]
+        public async Task<IActionResult> DeleteCourse(Guid courseId)
+        {
+            var deleted = await _courseService.DeleteCourseAsync(courseId);
+            if (deleted == null)
+                return NotFound("Course not found");
+
+            return Ok(new { message = "Course deleted", name = deleted.Name });
+        }
+
+        [HttpPost("reviews/delete-many")]
+        public async Task<IActionResult> DeleteReviews([FromBody] DeleteReviewsDto dto)
+        {
+            if (dto?.ReviewIds == null || !dto.ReviewIds.Any())
+                return BadRequest("Review ID not found");
+
+            await _reviewService.DeleteReviewsAsync(dto.ReviewIds);
+            return Ok(new { message = "Review deleted" });
+        }
+
+        [HttpDelete("category/{categoryId}")]
+        public async Task<IActionResult> DeleteCategory(Guid categoryId)
+        {
+            var deleted = await _categoryService.DeleteCategoryAsync(categoryId);
+            if (deleted == null)
+                return NotFound("Category not found");
+
+            return Ok(new { message = "Category deleted", name = deleted.Name });
+        }
+
+        [HttpDelete("subcategory/{subcategoryId}")]
+        public async Task<IActionResult> DeleteSubcategory(Guid subcategoryId)
+        {
+            var deleted = await _subcategoryService.DeleteSubcategoryAsync(subcategoryId);
+            if (deleted == null)
+                return NotFound("Subcategory not found");
+
+            return Ok(new { message = "Subcategory deleted", name = deleted.Name });
+        }
+
     }
 }
 

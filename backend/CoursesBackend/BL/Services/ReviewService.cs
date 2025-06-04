@@ -72,6 +72,18 @@ namespace BL.Services
 
             return reviews.Average(r => r.Rating);
         }
+
+
+        public async Task DeleteReviewsAsync(IEnumerable<Guid> reviewIds)
+        {
+            foreach (var id in reviewIds)
+            {
+                _reviewRepository.DeleteReview(id);
+            }
+
+            await Task.CompletedTask;
+        }
+
         public async Task<Review?> GetReviewByUserAndCourseIdAsync(Guid userId, Guid courseId)
         {
                 var review = await _reviewRepository.GetReviews()
