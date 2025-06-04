@@ -133,13 +133,14 @@ namespace BL.Tests
                 Comment = "Updated"
             };
 
-            _mockReviewRepository.Setup(r => r.AddReview(review)).Returns(review);
+            _mockReviewRepository.Setup(r => r.UpdateReview(review)).Returns(review);
 
             var result = await _reviewService.UpdateReviewAsync(review);
 
             Assert.NotNull(result);
             Assert.Equal("Updated", result.Comment);
         }
+
 
         [Fact]
         public async Task DeleteReviewAsync_ExistingId_DeletesAndReturnsReview()
