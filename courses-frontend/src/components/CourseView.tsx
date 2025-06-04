@@ -15,14 +15,15 @@ import "../styles/CourseView.css";
 import { getCourseById, getCourseInstructor } from "../services/courseService";
 import { getCourseStagesWithProgress } from "../services/progressService";
 import type { StageWithProgress as ApiStageWithProgress } from "../types/courses";
-import { createReview } from "../services/reviewService";
-
+import { createReview, getRatingSummary, getUserReviewForCourse, updateReview, deleteReview } from "../services/reviewService";
 type Course = {
 	id?: string;
 	courseId?: string;
 	name: string;
 	description: string;
 	imageUrl: string;
+	rating?: number;
+	reviewsCount?: number;
 };
 
 type CourseDetails = {
@@ -77,8 +78,8 @@ const mapToCourseDetails = (
 		completedStages,
 		totalDuration,
 		progress,
-		rating: 4.8,
-		reviews: 324, 
+		rating: course.rating ?? 0,
+		reviews: course.reviewsCount ?? 0, 
 		currentStage,
 		stages: stages.map((s, index) => ({
 			id: s.id,
@@ -112,30 +113,83 @@ export default function CourseView() {
 	const [rating, setRating] = useState(5);
 	const [comment, setComment] = useState("");
 	const [hoveredRating, setHoveredRating] = useState<number | null>(null);
-
+	const [ratingSummary, setRatingSummary] = useState<{ averageRating: number; reviewCount: number } | null>(null);
+	const [userReview, setUserReview] = useState<{ id: string; rating: number; comment: string } | null>(null);
 	const navigate = useNavigate();
 
 	const goToStage = (stageId: string) => {
 		navigate(`/course/${course?.id}/stage/${stageId}`);
 	};
+	const loadUserReview = async (courseId: string) => {
+	try {
+		const review = await getUserReviewForCourse(courseId);
+		setUserReview(review);
+		if (review) {
+			setRating(review.rating);
+			setComment(review.comment);
+		}
+	} catch (error) {
+		console.error("Error loading user review:", error);
+	}
+};
+	const loadRatingSummary = async (courseId: string) => {
+		try {
+			console.log("Loading rating summary for course:", courseId);
+			const summary = await getRatingSummary(courseId);
+			console.log("Loaded rating summary:", summary);
+			setRatingSummary(summary);
+		} catch (error) {
+			console.error("Error loading rating summary:", error);
+		}
+	};
+	const handleSubmitReview = async () => {
+				if (!id) return;
 
-	const handleAddReview = async () => {
-		if (!id) return;
+				try {
+					if (userReview && userReview.id) {
+					
+					await updateReview(userReview.id, {
+						rating,
+						comment,
+						courseId: id, 
+					});
+					alert("Review updated successfully!");
+					} else {
+					
+					await createReview({
+						courseId: id,
+						rating,
+						comment,
+					});
+					alert("Review submitted successfully!");
+					}
+					await loadRatingSummary(id);
+					await loadUserReview(id);
+
+					setShowReviewForm(false);
+				} catch (error) {
+					alert("Error submitting review.");
+					console.error(error);
+				}
+				};
+	const handleDeleteReview = async () => {
+		if (!userReview || !id) return;
+
+		const confirmed = window.confirm("Are you sure you want to delete your review?");
+		if (!confirmed) return;
 
 		try {
-			await createReview({
-				courseId: id,
-				rating,
-				comment
-			});
-			alert("Review submitted successfully!");
-			setShowReviewForm(false);
+			await deleteReview(userReview.id);
+			alert("Review deleted successfully!");
+			setUserReview(null);
+			setRating(5);
+			setComment("");
+			await loadRatingSummary(id);
 		} catch (error) {
-			alert("Error submitting review.");
+			alert("Error deleting review.");
 			console.error(error);
 		}
 	};
-
 	useEffect(() => {
 		const load = async () => {
 			try {
@@ -147,6 +201,8 @@ export default function CourseView() {
 				]);
 				const details = mapToCourseDetails(courseData, stages, instructor);
 				setCourse(details);
+				await loadRatingSummary(courseData.id);
+				await loadUserReview(courseData.id);
 			} catch (error) {
 				console.error("Error loading course:", error);
 			} finally {
@@ -179,7 +235,12 @@ export default function CourseView() {
 							<Clock size={16} /> {formatDuration(course.totalDuration)}
 						</span>
 						<span>
-							<Star size={16} /> {course.rating} ({course.reviews} reviews)
+							<Star size={16} />
+							{ratingSummary ? (
+								`${ratingSummary.averageRating} (${ratingSummary.reviewCount} reviews)`
+							) : (
+								"No reviews yet"
+							)}
 						</span>
 					</div>
 
@@ -206,10 +267,22 @@ export default function CourseView() {
 							<Play size={16} />
 							Continue Learning
 						</button>
-						<button type="button" className="btn-secondary" onClick={() => setShowReviewForm(true)}>
-							<Pencil size={16} />
-							Add Review
-						</button>
+							{userReview ? (
+							<>
+								<button type="button" className="btn-secondary" onClick={() => setShowReviewForm(true)}>
+									<Pencil size={16} />
+									Edit Review
+								</button>
+								<button type="button" className="btn-danger" onClick={handleDeleteReview}>
+									Delete Review
+								</button>
+							</>
+								) : (
+									<button type="button" className="btn-secondary" onClick={() => setShowReviewForm(true)}>
+										<Pencil size={16} />
+										{userReview ? "Edit Review" : "Add Review"}
+									</button>
+							)}
 					</div>
 
 					{showReviewForm && (
@@ -243,7 +316,7 @@ export default function CourseView() {
 								className="comment-textarea"
 								/>
 							<div className="review-actions">
-								<button onClick={handleAddReview} className="btn-primary">
+								<button onClick={handleSubmitReview} className="btn-primary">
 									Submit
 								</button>
 								<button onClick={() => setShowReviewForm(false)} className="btn-secondary">
