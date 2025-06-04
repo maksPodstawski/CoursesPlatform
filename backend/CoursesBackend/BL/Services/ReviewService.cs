@@ -80,7 +80,9 @@ namespace BL.Services
             {
                 _reviewRepository.DeleteReview(id);
             }
+
             await Task.CompletedTask;
+        }
 
         public async Task<Review?> GetReviewByUserAndCourseIdAsync(Guid userId, Guid courseId)
         {
