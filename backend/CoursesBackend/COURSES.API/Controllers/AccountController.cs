@@ -33,21 +33,21 @@ namespace COURSES.API.Controllers
             }
             catch (UserAlreadyExistsException ex)
             {
-                var errors = new Dictionary<string, string[]>
+                var errors = new SerializableError
                 {
                     { "Email", new[] { ex.Message } }
                 };
 
-                return BadRequest(new { errors });
+                return BadRequest(errors);
             }
             catch (RegistrationFailedException ex)
             {
-                var errors = new Dictionary<string, string[]>
+                var errors = new SerializableError
                 {
                     { "Password", ex.Message.Split(Environment.NewLine) }
                 };
 
-                return BadRequest(new { errors });
+                return BadRequest(errors);
             }
         }
 
@@ -64,12 +64,12 @@ namespace COURSES.API.Controllers
             }
             catch (LoginFailedException ex)
             {
-                var errors = new Dictionary<string, string[]>
+                var errors = new SerializableError
                 {
                     { "Login", new[] { ex.Message } }
                 };
 
-                return BadRequest(new { errors });
+                return BadRequest(errors);
             }
 
         }
