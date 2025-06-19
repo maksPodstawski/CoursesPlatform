@@ -33,6 +33,7 @@ namespace BL.Services
             );
 
             var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"reCAPTCHA response: {json}");
             var result = JsonSerializer.Deserialize<RecaptchaResponseDTO>(json);
             return result.Success && result.Score >= 0.5;
         }
