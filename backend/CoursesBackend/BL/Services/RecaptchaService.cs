@@ -34,7 +34,7 @@ namespace BL.Services
 
             var json = await response.Content.ReadAsStringAsync();
             var result = JsonSerializer.Deserialize<RecaptchaResponseDTO>(json);
-            return result.Success && result.Score >= 1;
+            return result.Success && result.Score >= 0.5;
         }
     }
 }
