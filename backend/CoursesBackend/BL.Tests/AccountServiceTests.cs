@@ -23,6 +23,7 @@ namespace BL.Tests
         private readonly Mock<IAuthTokenService> _authTokenServiceMock;
         private readonly Mock<IUserRepository> _userRepositoryMock;
         private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
+        private readonly Mock<IRecaptchaService> _recaptchaServiceMock;
         private readonly AccountService _accountService;
 
         public AccountServiceTests()
@@ -31,12 +32,15 @@ namespace BL.Tests
             _authTokenServiceMock = new Mock<IAuthTokenService>();
             _userRepositoryMock = new Mock<IUserRepository>();
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+            _recaptchaServiceMock = new Mock<IRecaptchaService>();
 
             _accountService = new AccountService(
                 _authTokenServiceMock.Object,
                 _userManagerMock.Object,
                 _userRepositoryMock.Object,
-                _httpContextAccessorMock.Object);
+                _httpContextAccessorMock.Object,
+                _recaptchaServiceMock.Object
+            );
         }
 
         [Fact]
@@ -48,7 +52,8 @@ namespace BL.Tests
                 Password = "Pass123!",
                 ConfirmPassword = "Pass123!",
                 FirstName = "John",
-                LastName = "Doe"
+                LastName = "Doe",
+                RecaptchaToken = "dummy-token"
             };
 
             _userManagerMock.Setup(x => x.FindByEmailAsync(dto.Email))
@@ -75,7 +80,8 @@ namespace BL.Tests
                 Password = "Pass123!",
                 ConfirmPassword = "Pass123!",
                 FirstName = "Jane",
-                LastName = "Doe"
+                LastName = "Doe",
+                RecaptchaToken = "dummy-token"
             };
 
             _userManagerMock.Setup(x => x.FindByEmailAsync(dto.Email))
