@@ -7,6 +7,7 @@ import ScrollToTopButton from "./components/ScrollToTopButton";
 import AnimatedRoutes from "./routes/AnimatedRoutes";
 import { AuthProvider } from "./context/AuthContext.tsx";
 import "./App.css";
+import { config } from "./config.ts";
 
 function App() {
 	const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -14,7 +15,7 @@ function App() {
 
 	return (
 		<GoogleReCaptchaProvider
-			reCaptchaKey={"6Le_kFsrAAAAALpPsvN5ogmajyec6H3_jjf7QRL1"}
+			reCaptchaKey={config.recaptchaSiteKey}
 			scriptProps={{
 				async: false,
 				defer: false,
