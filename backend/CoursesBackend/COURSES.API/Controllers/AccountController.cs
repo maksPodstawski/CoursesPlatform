@@ -13,11 +13,13 @@ namespace COURSES.API.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly IAccountService accountService;
+        private readonly IAccountService _accountService;
+        private readonly IRecaptchaService _recaptchaService;
 
-        public AccountController(IAccountService accountService)
+        public AccountController(IAccountService accountService, IRecaptchaService recaptchaService)
         {
-            this.accountService = accountService;
+            this._accountService = accountService;
+            this._recaptchaService = recaptchaService;
         }
 
         [HttpPost("register")]
@@ -26,9 +28,14 @@ namespace COURSES.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            if (!await _recaptchaService.VerifyAsync(registerRequest.RecaptchaToken))
+            {
+                return BadRequest("CAPTCHA verification failed");
+            }
+
             try
             {
-                await accountService.RegisterAsync(registerRequest);
+                await _accountService.RegisterAsync(registerRequest);
                 return Ok();
             }
             catch (UserAlreadyExistsException ex)
@@ -59,7 +66,7 @@ namespace COURSES.API.Controllers
 
             try
             {
-                await accountService.LoginAsync(loginRequest);
+                await _accountService.LoginAsync(loginRequest);
                 return Ok();
             }
             catch (LoginFailedException ex)
@@ -79,7 +86,7 @@ namespace COURSES.API.Controllers
         {
             var refreshToken = Request.Cookies["REFRESH_TOKEN"];
 
-            await accountService.RefreshTokenAsync(refreshToken);
+            await _accountService.RefreshTokenAsync(refreshToken);
 
             return Ok();
         }
@@ -90,7 +97,7 @@ namespace COURSES.API.Controllers
         {
             try
             {
-                var userDTO = await accountService.GetMeAsync();
+                var userDTO = await _accountService.GetMeAsync();
                 return Ok(userDTO);
             }
             catch (UnauthorizedAccessException ex)
@@ -106,7 +113,7 @@ namespace COURSES.API.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            await accountService.LogoutAsync();
+            await _accountService.LogoutAsync();
             return Ok();
         }
     }

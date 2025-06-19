@@ -27,5 +27,8 @@ namespace Model.DTO
         [Required(ErrorMessage = "The password confirmation field is required.")]
         [Compare(nameof(Password), ErrorMessage = "Confirmation password and password must be the same.")]
         public required string ConfirmPassword { get; init; }
+
+        [Required(ErrorMessage = "The recaptcha token field is required.")]
+        public required string RecaptchaToken { get; init;}
     }
 }

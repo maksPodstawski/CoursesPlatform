@@ -9,6 +9,7 @@ export type RegisterRequest = {
 	confirmPassword: string;
 	firstName: string;
 	lastName: string;
+	recaptchaToken: string;
 };
 
 export type UserInfo = {
@@ -18,10 +19,10 @@ export type UserInfo = {
 	lastName: string;
 };
 export type UserProfile = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  userName: string;
-  phoneNumber: string;
-  profilePictureBase64: string | null;
+	firstName: string;
+	lastName: string;
+	email: string;
+	userName: string;
+	phoneNumber: string;
+	profilePictureBase64: string | null;
 };
