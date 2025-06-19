@@ -65,6 +65,9 @@ builder.Services.AddDbContext<CoursesPlatformContext>(options =>
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<IRecaptchaService, RecaptchaService>();
+
 builder.Services.AddScoped<IAuthTokenService, AuthTokenService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAccountService, AccountService>();
@@ -82,6 +85,7 @@ builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<IChatUserRepository, ChatUserRepository>();
 builder.Services.AddScoped<IPurchasedCoursesRepository, PurchasedCoursesRepository>();
 
+builder.Services.AddScoped<IRecaptchaService, RecaptchaService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<ICourseSubcategoryService, CourseSubcategoryService>();
@@ -137,16 +141,14 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
-// Zwiêksz limit rozmiaru przesy³anych plików (do 100 MB)
 builder.Services.Configure<FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = 1024 * 1024 * 100; // 100 MB
+    options.MultipartBodyLengthLimit = 1024 * 1024 * 100;
 });
 
-// Zwiêksz limit request body w Kestrel (jeœli korzystasz z domyœlnego serwera)
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    serverOptions.Limits.MaxRequestBodySize = 1024 * 1024 * 100; // 100 MB
+    serverOptions.Limits.MaxRequestBodySize = 1024 * 1024 * 100;
 });
 
 var app = builder.Build();
@@ -169,15 +171,15 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-/*if (app.Environment.IsDevelopment())
-{*/
+if (app.Environment.IsDevelopment())
+{
     app.MapOpenApi();
     app.MapScalarApiReference(opt =>
     {
         opt.WithTitle("Courses API");
 
     });
-//}
+}
 app.UseCors("AllowedOrigins");
 app.UseExceptionHandler(_ => { });
 app.UseHttpsRedirection();

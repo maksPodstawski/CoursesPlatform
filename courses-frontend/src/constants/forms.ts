@@ -5,7 +5,8 @@ export const registerInitialValues: RegisterRequest = {
     password: '',
     confirmPassword: '',
     firstName: '',
-    lastName: ''
+    lastName: '',
+    recaptchaToken: ''
 };
 
 export const registerFieldMapping: Record<string, keyof RegisterRequest> = {

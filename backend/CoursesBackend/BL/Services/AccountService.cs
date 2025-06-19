@@ -22,13 +22,15 @@ namespace BL.Services
         private readonly UserManager<User> _userManager;
         private readonly IUserRepository _userRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IRecaptchaService _recaptchaService;
 
-        public AccountService(IAuthTokenService authTokenService, UserManager<User> userManager, IUserRepository userRepository, IHttpContextAccessor httpContextAccessor)
+        public AccountService(IAuthTokenService authTokenService, UserManager<User> userManager, IUserRepository userRepository, IHttpContextAccessor httpContextAccessor, IRecaptchaService recaptchaService)
         {
             _authTokenService = authTokenService;
             _userManager = userManager;
             _userRepository = userRepository;
             _httpContextAccessor = httpContextAccessor;
+            _recaptchaService = recaptchaService;
         }
 
         public async Task RegisterAsync(RegisterRequestDTO registerRequestDTO)
