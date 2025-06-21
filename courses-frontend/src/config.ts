@@ -1,5 +1,6 @@
 export const config = {
-	apiBaseUrl: import.meta.env.API_BASE_URL || "https://api.czester.ovh",
+	apiBaseUrl: "https://api.czester.ovh",
+	recaptchaSiteKey: "6LeCc2YrAAAAAEAjuPnZEU9a0clJ0ehNDKRVbvnX",
 	apiEndpoints: {
 		login: "/api/account/login",
 		register: "/api/account/register",
@@ -22,6 +23,6 @@ export const config = {
 		avgRating: "/api/Reviews/course/{courseId}/average-rating",
 		getUserProfile: "/api/user/me",
 
-		addStage: "/api/stages"
+		addStage: "/api/stages",
 	},
 } as const;
