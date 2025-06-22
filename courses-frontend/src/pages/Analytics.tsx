@@ -363,12 +363,9 @@ const Analytics = () => {
 								<XAxis dataKey="name" angle={-45} textAnchor="end" height={120} stroke="#bbbbbb" />
 								<YAxis stroke="#bbbbbb" />
 								<Tooltip
-									formatter={(value: any, name: any, props: any) => {
+									formatter={(value: any, _name: any, props: any) => {
 										const stageData = props.payload;
-										return [
-											`${Number(value).toFixed(2)}% (${stageData.studentsStarted} students started)`,
-											"Completion Rate",
-										];
+										return [`${Number(value).toFixed(2)}% (${stageData.studentsStarted} students started)`, "Completion Rate"];
 									}}
 									contentStyle={{
 										backgroundColor: "#1e1e1e",
