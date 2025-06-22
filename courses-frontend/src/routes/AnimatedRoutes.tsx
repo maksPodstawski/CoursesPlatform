@@ -18,6 +18,8 @@ import { CoursePage } from "../pages/CourseViewPage.tsx";
 import StagePlayerPage from "../pages/StagePlayerPage.tsx";
 import { AddStage } from "../pages/AddStage.tsx";
 import AddReviewForm from "../components/CourseReviewForm.tsx";
+import AdminCategoryManagement from "../pages/admin/AdminCategoryManagement.tsx";
+import AdminCoursesManagement from "../pages/admin/AdminCoursesManagement.tsx";
 
 
 const AnimatedRoutes = () => {
@@ -39,7 +41,17 @@ const AnimatedRoutes = () => {
 				<Route path="/creatorpanel/chats" element={<ProtectedRoute><CreatorPanelChats /></ProtectedRoute>} />
 				<Route path="/course/:id" element={<PageWrapper><ProtectedRoute><CoursePage /></ProtectedRoute></PageWrapper>} />
 				<Route path="/course/:id/stage/:stageId" element={<PageWrapper><ProtectedRoute><StagePlayerPage /></ProtectedRoute></PageWrapper>} />
-				<Route path="/admin" element={<PageWrapper><ProtectedRoute><AdminPanel /></ProtectedRoute></PageWrapper>} />
+				<Route path="/admin/*" element={
+					<PageWrapper>
+						<ProtectedRoute>
+							<Routes>
+								<Route path="" element={<AdminPanel />} />
+								<Route path="categories" element={<AdminCategoryManagement />} />
+								<Route path="courses" element={<AdminCoursesManagement />} />
+							</Routes>
+						</ProtectedRoute>
+					</PageWrapper>
+				} />
 				<Route path="/add-stage" element={<PageWrapper><ProtectedRoute><AddStage /></ProtectedRoute></PageWrapper>} />
 				<Route path="/course/:id/add-review" element={<AddReviewForm />} />
 				<Route path="*" element={<PageWrapper><h1>404 - Page Not Found</h1></PageWrapper>} />
