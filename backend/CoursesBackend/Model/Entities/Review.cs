@@ -30,6 +30,5 @@ namespace Model
 
         [ForeignKey(nameof(CourseId))]
         public Course Course { get; set; }
-
     }
 }

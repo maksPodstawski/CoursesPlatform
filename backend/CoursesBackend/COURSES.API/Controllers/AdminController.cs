@@ -1,9 +1,10 @@
+using IBL;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Model.Constans;
-using IBL;
 using Model;
+using Model.Constans;
 using Model.DTO;
+using System.Security.Claims;
 
 namespace COURSES.API.Controllers
 {
@@ -108,6 +109,31 @@ namespace COURSES.API.Controllers
             return Ok(new { message = "Subcategory deleted", name = deleted.Name });
         }
 
+        [HttpPut("courses/{id}/toggle-visibility")]
+        public async Task<IActionResult> ToggleCourseVisibility(Guid id)
+        {
+            var course = await _courseService.GetCourseByIdAsync(id);
+            if (course == null)
+                return NotFound();
+
+            course.IsHidden = !course.IsHidden;
+            var updated = await _courseService.UpdateCourseAsync(course);
+            return Ok(CourseResponseDTO.FromCourse(updated));
+        }
+
+        [HttpDelete("review/{id}")]
+        public async Task<IActionResult> DeleteReview(Guid id)
+        {
+            var review = await _reviewService.GetReviewByIdAsync(id);
+            if (review == null)
+                return NotFound();
+
+            var deleted = await _reviewService.DeleteReviewAsync(id);
+            if (deleted == null)
+                return BadRequest("Failed to delete review");
+
+            return NoContent();
+        }
     }
 }
 
