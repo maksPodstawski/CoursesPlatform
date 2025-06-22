@@ -99,6 +99,7 @@ builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IChatUserService, ChatUserService>();
 builder.Services.AddScoped<IPurchasedCoursesService, PurchasedCoursesService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddHttpClient<IRecaptchaService, RecaptchaService>();
 
 builder.Services.AddAuthentication(opt =>
 {

@@ -17,7 +17,6 @@ import MyCoursesPage from "../pages/MyCoursesPage.tsx";
 import { CoursePage } from "../pages/CourseViewPage.tsx";
 import StagePlayerPage from "../pages/StagePlayerPage.tsx";
 import { AddStage } from "../pages/AddStage.tsx";
-import AddReviewForm from "../components/CourseReviewForm.tsx";
 
 
 const AnimatedRoutes = () => {
@@ -41,7 +40,6 @@ const AnimatedRoutes = () => {
 				<Route path="/course/:id/stage/:stageId" element={<PageWrapper><ProtectedRoute><StagePlayerPage /></ProtectedRoute></PageWrapper>} />
 				<Route path="/admin" element={<PageWrapper><ProtectedRoute><AdminPanel /></ProtectedRoute></PageWrapper>} />
 				<Route path="/add-stage" element={<PageWrapper><ProtectedRoute><AddStage /></ProtectedRoute></PageWrapper>} />
-				<Route path="/course/:id/add-review" element={<AddReviewForm />} />
 				<Route path="*" element={<PageWrapper><h1>404 - Page Not Found</h1></PageWrapper>} />
 			</Routes>
 		</AnimatePresence>

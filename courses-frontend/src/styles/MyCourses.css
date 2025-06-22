@@ -34,7 +34,6 @@
 .course-card {
 	background-color: #1d1d1d;
 	border: 1px solid #333;
-	padding: 16px;
 	border-radius: 8px;
 	cursor: pointer;
 	transition: border-color 0.2s ease;

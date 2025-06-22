@@ -1,6 +1,6 @@
 export const config = {
-	apiBaseUrl: "https://api.czester.ovh",
-	recaptchaSiteKey: "6LeCc2YrAAAAAEAjuPnZEU9a0clJ0ehNDKRVbvnX",
+	apiBaseUrl: "https://localhost:7207",
+	recaptchaSiteKey: "6Lc03GgrAAAAAKmdJ_q1SP1l54nmz9GaIfhU17U2",
 	apiEndpoints: {
 		login: "/api/account/login",
 		register: "/api/account/register",
