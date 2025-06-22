@@ -1,5 +1,5 @@
 import { config } from "../config";
-import {fetchClient} from "./fetchClient.ts";
+import { fetchClient } from "./fetchClient.ts";
 
 export const adminService = {
     async fetchDashboard(): Promise<void> {
@@ -62,5 +62,29 @@ export const adminService = {
             throw new Error("Failed to delete subcategory");
         }
         return await response.json();
+    },
+
+    async toggleCourseVisibility(courseId: string): Promise<void> {
+        const response = await fetchClient.fetch(`${config.apiBaseUrl}/api/admin/courses/${courseId}/toggle-visibility`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include"
+        });
+        if (!response.ok) {
+            throw new Error("Failed to toggle course visibility");
+        }
+    },
+    async getAllCourses(): Promise<{ id: string; name: string; isHidden: boolean }[]> {
+        const response = await fetchClient.fetch(`${config.apiBaseUrl}/api/courses/all`, {
+            method: "GET",
+            credentials: "include"
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch all courses");
+        }
+
+        return await response.json();
     }
+
 };

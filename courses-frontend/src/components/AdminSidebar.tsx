@@ -1,11 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
-import { FolderCog, LayoutDashboard, User, GraduationCap } from "lucide-react";
+import { FolderCog, LayoutDashboard, User, GraduationCap, MessageSquareMore } from "lucide-react";
 import "../styles/Sidebar.css";
 
 const adminNavItems = [
     { label: "Dashboard", icon: <LayoutDashboard size={22} />, path: "/admin" },
     { label: "Category", icon: <FolderCog size={22} />, path: "/admin/categories" },
     { label: "Courses", icon: <GraduationCap size={22} />, path: "/admin/courses" },
+    { label: "Reviews", icon: <MessageSquareMore size={22} />, path: "/admin/reviews" },
 ];
 
 export default function AdminSidebar() {

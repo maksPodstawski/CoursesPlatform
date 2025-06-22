@@ -20,6 +20,7 @@ import { AddStage } from "../pages/AddStage.tsx";
 import AddReviewForm from "../components/CourseReviewForm.tsx";
 import AdminCategoryManagement from "../pages/admin/AdminCategoryManagement.tsx";
 import AdminCoursesManagement from "../pages/admin/AdminCoursesManagement.tsx";
+import AdminReviewsManagement from "../pages/admin/AdminReviewsManagement.tsx";
 
 
 const AnimatedRoutes = () => {
@@ -48,6 +49,7 @@ const AnimatedRoutes = () => {
 								<Route path="" element={<AdminPanel />} />
 								<Route path="categories" element={<AdminCategoryManagement />} />
 								<Route path="courses" element={<AdminCoursesManagement />} />
+								<Route path="reviews" element={<AdminReviewsManagement />} />
 							</Routes>
 						</ProtectedRoute>
 					</PageWrapper>

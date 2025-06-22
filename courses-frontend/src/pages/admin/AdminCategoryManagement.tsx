@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { adminService } from "../../services/adminService";
 import {
     getCategories,
@@ -26,8 +27,20 @@ export default function AdminCategoryManagement() {
     const [deleteCategoryMsg, setDeleteCategoryMsg] = useState<string | null>(null);
     const [deleteSubcategoryMsg, setDeleteSubcategoryMsg] = useState<string | null>(null);
 
+    const navigate = useNavigate();
+
     useEffect(() => {
-        fetchAll();
+        const initialize = async () => {
+            try {
+                await adminService.fetchDashboard(); // sprawdzenie uprawnień
+                await fetchAll();
+            } catch (err) {
+                console.error("Unauthorized or error:", err);
+                navigate("/"); // przekierowanie na główną
+            }
+        };
+
+        initialize();
     }, []);
 
     useEffect(() => {
@@ -53,11 +66,7 @@ export default function AdminCategoryManagement() {
     const toggleCategory = (categoryId: string) => {
         setExpandedCategories((prev) => {
             const newSet = new Set(prev);
-            if (newSet.has(categoryId)) {
-                newSet.delete(categoryId);
-            } else {
-                newSet.add(categoryId);
-            }
+            newSet.has(categoryId) ? newSet.delete(categoryId) : newSet.add(categoryId);
             return newSet;
         });
     };
