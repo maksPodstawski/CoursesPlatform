@@ -400,7 +400,7 @@ const Analytics = () => {
 									fill="#3dc55f"
 									dataKey="value"
 								>
-									{analytics.courses.map((entry, index) => (
+									{analytics.courses.map((_entry, index) => (
 										<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
 									))}
 								</Pie>
