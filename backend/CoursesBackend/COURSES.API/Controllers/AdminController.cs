@@ -4,7 +4,6 @@ using Model.Constans;
 using IBL;
 using Model;
 using Model.DTO;
-using static Model.DTO.ReviewResponseDTO;
 
 namespace COURSES.API.Controllers
 {
@@ -87,16 +86,6 @@ namespace COURSES.API.Controllers
                 return NotFound("Course not found");
 
             return Ok(new { message = "Course deleted", name = deleted.Name });
-        }
-
-        [HttpPost("reviews/delete-many")]
-        public async Task<IActionResult> DeleteReviews([FromBody] DeleteReviewsDto dto)
-        {
-            if (dto?.ReviewIds == null || !dto.ReviewIds.Any())
-                return BadRequest("Review ID not found");
-
-            await _reviewService.DeleteReviewsAsync(dto.ReviewIds);
-            return Ok(new { message = "Review deleted" });
         }
 
         [HttpDelete("category/{categoryId}")]
