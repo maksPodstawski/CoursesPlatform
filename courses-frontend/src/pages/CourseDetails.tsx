@@ -64,7 +64,7 @@ const CourseDetails = () => {
         setReviews(Array.isArray(reviewsData) ? reviewsData : []);
         setRatingSummary(ratingSummaryData);
       })
-      .catch((err) => {
+      .catch(() => {
         setError("Failed to load course details.");
       })
       .finally(() => setLoading(false));
