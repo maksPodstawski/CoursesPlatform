@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using IBL;
 using Model.DTO;
+using Model;
 
 namespace COURSES.API.Controllers
 {
@@ -8,17 +9,22 @@ namespace COURSES.API.Controllers
     [Route("api/categories/{categoryId}/subcategories")]
     public class SubcategoryController : ControllerBase
     {
-        private readonly ICategoryService _categoryService;
+        private readonly ISubcategoryService _subcategoryService;
 
-        public SubcategoryController(ICategoryService categoryService)
+        public SubcategoryController(ISubcategoryService subcategoryService)    
         {
-            _categoryService = categoryService;
+            _subcategoryService = subcategoryService;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SubcategoryDTO>>> GetSubcategoriesByCategoryId(Guid categoryId)
         {
-            var subcategories = await _categoryService.GetSubcategoriesByCategoryIdAsync(categoryId);
+            Console.WriteLine($" Called with categoryId: {categoryId}");
+
+            var subcategories = await _subcategoryService.GetSubcategoriesByCategoryIdAsync(categoryId);
+
+            Console.WriteLine($" Subcategories found: {subcategories.Count}");
+
             var result = subcategories.Select(s => new SubcategoryDTO
             {
                 Id = s.Id,

@@ -94,5 +94,12 @@ namespace BL.Services
 
             return await Task.FromResult(_courseRepository.DeleteCourse(id));
         }
+
+        public async Task<List<Course>> GetVisibleCoursesAsync()
+        {
+            return await _courseRepository.GetCourses()
+                .Where(c => !c.IsHidden)
+                .ToListAsync();
+        }
     }
 }

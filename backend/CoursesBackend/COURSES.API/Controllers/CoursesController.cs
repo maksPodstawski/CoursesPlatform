@@ -19,10 +19,19 @@ namespace COURSES.API.Controllers
         {
             _courseService = courseService;
             _creatorService = creatorService;
-            _purchasedCoursesService=purchasedCoursesService;
+            _purchasedCoursesService = purchasedCoursesService;
         }
 
         [HttpGet]
+        public async Task<ActionResult<IEnumerable<CourseResponseDTO>>> GetAllVisibleCourses()
+        {
+            var courses = await _courseService.GetVisibleCoursesAsync();
+            return Ok(courses.Select(CourseResponseDTO.FromCourse));
+        }
+
+
+        [HttpGet("all")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<CourseResponseDTO>>> GetAllCourses()
         {
             var courses = await _courseService.GetAllCoursesAsync();
@@ -89,6 +98,7 @@ namespace COURSES.API.Controllers
                     ImageUrl = createCourseDto.ImageUrl,
                     Duration = createCourseDto.Duration,
                     Price = createCourseDto.Price,
+                    IsHidden = createCourseDto.IsHidden,
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -107,8 +117,8 @@ namespace COURSES.API.Controllers
                 await _purchasedCoursesService.AddPurchasedCourseAsync(purchase);
 
                 return CreatedAtAction(
-                    nameof(GetCourseById), 
-                    new { id = createdCourse.Id }, 
+                    nameof(GetCourseById),
+                    new { id = createdCourse.Id },
                     CourseResponseDTO.FromCourse(createdCourse)
                 );
             }
@@ -145,6 +155,7 @@ namespace COURSES.API.Controllers
             existingCourse.ImageUrl = updateCourseDto.ImageUrl;
             existingCourse.Duration = updateCourseDto.Duration;
             existingCourse.Price = updateCourseDto.Price;
+            existingCourse.IsHidden = updateCourseDto.IsHidden;
             existingCourse.UpdatedAt = DateTime.UtcNow;
 
             var updatedCourse = await _courseService.UpdateCourseAsync(existingCourse);
@@ -156,4 +167,4 @@ namespace COURSES.API.Controllers
             return Ok(CourseResponseDTO.FromCourse(updatedCourse));
         }
     }
-} 
+}
