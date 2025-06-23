@@ -13,6 +13,7 @@ namespace Model.DTO
         public int Duration { get; init; }
         [Required]
         public decimal Price { get; init; }
+        public bool IsHidden { get; init; } = false;
     }
 
     public record UpdateCourseDTO
@@ -26,6 +27,7 @@ namespace Model.DTO
         public int Duration { get; init; }
         [Required]
         public decimal Price { get; init; }
+        public bool IsHidden { get; init; } = false;
     }
 
     public record CourseResponseDTO
@@ -43,6 +45,8 @@ namespace Model.DTO
         public int StagesCount { get; init; }
         public List<string> Subcategories { get; init; } = new();
         public List<string> Creators { get; init; } = new();
+        public bool IsHidden { get; init; }
+
 
         public static CourseResponseDTO FromCourse(Course course)
         {
@@ -60,7 +64,8 @@ namespace Model.DTO
                 ReviewsCount = course.Reviews?.Count ?? 0,
                 StagesCount = course.Stages?.Count ?? 0,
                 Subcategories = course.CourseSubcategories?.Select(cs => cs.Subcategory.Name).ToList() ?? new List<string>(),
-                Creators = course.Creators.Select(c => c.User.ToString()).ToList()
+                Creators = course.Creators.Select(c => c.User.ToString()).ToList(),
+                IsHidden = course.IsHidden
             };
         }
     }

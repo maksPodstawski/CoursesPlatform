@@ -62,8 +62,23 @@ export async function updateReview(id: string, data: CreateReviewRequest): Promi
   }
 }
 
+export async function getAllReviews() {
+	const response = await fetchClient.fetch(`/api/reviews`, {
+		method: "GET",
+		credentials: "include"
+	});
+
+	if (!response.ok) {
+		throw new Error("Nie udało się pobrać recenzji.");
+	}
+
+	return response.json();
+}
+
+
 export async function deleteReview(id: string): Promise<void> {
-	await fetchClient.fetch(`/api/reviews/${id}`, {
-		method: "DELETE"
+	await fetchClient.fetch(`/api/admin/review/${id}`, {
+		method: "DELETE",
+		credentials: "include"
 	});
 }

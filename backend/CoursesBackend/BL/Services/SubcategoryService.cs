@@ -32,8 +32,8 @@ namespace BL.Services
         public async Task<List<Subcategory>> GetSubcategoriesByCategoryIdAsync(Guid categoryId)
         {
             return await _subcategoryRepository.GetSubcategories()
-                 .Where(s => s.CategoryId == categoryId)
-                 .ToListAsync();
+                .Where(s => s.CategoryId == categoryId)
+                .ToListAsync();
         }
 
         public async Task<Subcategory> AddSubcategoryAsync(Subcategory subcategory)

@@ -1,6 +1,6 @@
 export const config = {
 	apiBaseUrl: "https://localhost:7207",
-	recaptchaSiteKey: "6Lc03GgrAAAAAKmdJ_q1SP1l54nmz9GaIfhU17U2",
+	recaptchaSiteKey: "6LeCc2YrAAAAAEAjuPnZEU9a0clJ0ehNDKRVbvnX",
 	apiEndpoints: {
 		login: "/api/account/login",
 		register: "/api/account/register",
@@ -20,7 +20,7 @@ export const config = {
 		addCourse: "/api/courses",
 		buyCourse: "/api/courses/purchases",
 		addReview: "/api/Reviews",
-		avgRating: "/api/Reviews/course/{courseId}/average-rating",
+		avgRating: "/api/Reviews/course/{courseId}/rating-summary",
 		getUserProfile: "/api/user/me",
 
 		addStage: "/api/stages",
