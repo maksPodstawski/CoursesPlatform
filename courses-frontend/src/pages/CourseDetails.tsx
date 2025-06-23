@@ -15,6 +15,7 @@ import {
 } from "../services/reviewService";
 import type { Course, Stage, ReviewResponseDTO } from "../types/courses";
 import "../styles/CourseDetails.css";
+import BuyButton from "../components/BuyButton";
 
 const ICONS = [BookOpen, Code, FileText, Video, Database, Rocket];
 
@@ -91,9 +92,7 @@ const CourseDetails = () => {
                 className="course-details-cover-img"
               />
             </div>
-            <button className="course-details-buy-btn">
-              Buy for {course.price ? `$${course.price}` : "Free"}
-            </button>
+            <BuyButton courseId={course.id!} price={course.price!} redirectAfterLogin={`/courses/${course.id}`} />
           </div>
 
           {/* Right: Info */}
