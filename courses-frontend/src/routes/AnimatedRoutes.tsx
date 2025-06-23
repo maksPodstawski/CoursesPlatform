@@ -17,12 +17,10 @@ import MyCoursesPage from "../pages/MyCoursesPage.tsx";
 import { CoursePage } from "../pages/CourseViewPage.tsx";
 import StagePlayerPage from "../pages/StagePlayerPage.tsx";
 import { AddStage } from "../pages/AddStage.tsx";
-import AddReviewForm from "../components/CourseReviewForm.tsx";
 import AdminCategoryManagement from "../pages/admin/AdminCategoryManagement.tsx";
 import AdminCoursesManagement from "../pages/admin/AdminCoursesManagement.tsx";
 import AdminReviewsManagement from "../pages/admin/AdminReviewsManagement.tsx";
 import Analytics from "../pages/Analytics.tsx";
-
 
 const AnimatedRoutes = () => {
 	const location = useLocation();
