@@ -2,26 +2,66 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-import { getCourses } from "../services/courseService";
+import { getCourses, getCourseInstructor, getCourseParticipantsCount } from "../services/courseService";
+import { getRatingSummary } from "../services/reviewService";
 import { AnimatedSection } from "../utils/animations";
 import StatCard from "../components/StatCard";
-import CourseCard from "../components/CourseCard";
+import { CourseCard } from "../components/CourseCard";
 
 const HomeContent = () => {
   const [featuredCourses, setFeaturedCourses] = useState<any[]>([]);
+  const [ratings, setRatings] = useState<Record<string, string>>({});
   const { isLoggedIn } = useAuth();
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         const data = await getCourses();
-        setFeaturedCourses(data.slice(0, 3));
+        const topCourses = data.slice(0, 3);
+        
+        const enhancedData = await Promise.all(
+          topCourses.map(async (course: any) => {
+            const instructor = await getCourseInstructor(course.id);
+            const studentsCount = await getCourseParticipantsCount(course.id);
+            return {
+              ...course,
+              instructor: instructor.name || "N/A",
+              duration: course.duration || "8 hours",
+              studentsCount: studentsCount,
+              level: course.level || ["Beginner", "Intermediate", "Advanced"][Math.floor(Math.random() * 3)],
+              category: course.category || "Programming"
+            };
+          })
+        );
+        
+        setFeaturedCourses(enhancedData);
       } catch (error) {
         console.error("Error while downloading", error);
       }
     };
     fetchCourses();
   }, []);
+
+  useEffect(() => {
+    const fetchAllRatings = async () => {
+      const newRatings: Record<string, string> = {};
+      for (const course of featuredCourses) {
+        try {
+          const summary = await getRatingSummary(course.id);
+          if (summary && typeof summary.averageRating === 'number') {
+            newRatings[course.id] = summary.averageRating.toFixed(1);
+          }
+        } catch (error) {
+          console.error(`Error fetching rating for course ${course.id}:`, error);
+        }
+      }
+      setRatings(newRatings);
+    };
+
+    if (featuredCourses.length > 0) {
+      fetchAllRatings();
+    }
+  }, [featuredCourses]);
 
   return (
       <>
@@ -48,8 +88,12 @@ const HomeContent = () => {
                   <p>No courses found.</p>
               ) : (
                   featuredCourses.map(course => (
-                      <CourseCard key={course.id} course={course} actions={
-                        <Link to={`/courses/${course.id}`} className="btn primary">
+                    <CourseCard 
+                    key={course.id} 
+                    course={course} 
+                    rating={ratings[course.id]}
+                    actions={
+                        <Link to={`/courses/${course.id}`} className="btn btn-primary">
                           View Course
                         </Link>
                       }

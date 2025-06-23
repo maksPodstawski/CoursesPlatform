@@ -379,36 +379,6 @@ main {
   background-color: #49e670;
 }
 
-/* Courses Grid */
-.courses-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-}
-
-.course-card {
-  background-color: #1e1e1e;
-  padding: 1.5rem;
-  border-radius: 16px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-
-.course-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-}
-
-.course-card h3 {
-  font-size: 1.4rem;
-  margin-bottom: 0.8rem;
-}
-
-.course-card p {
-  color: #b0bec5;
-  margin-bottom: 1rem;
-}
-
 /* Stats */
 .stats-section {
   min-height: 300px;
@@ -547,14 +517,6 @@ main {
   overflow-x: auto;
 }
 
-.course-image {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-  border-radius: 12px;
-  margin-bottom: 1rem;
-}
-
 .field-error {
   color: red;
   font-size: 0.875rem;
@@ -588,28 +550,18 @@ main {
 }
 
 .profile-field label {
-  font-weight: bold;
-  margin-right: 0.5rem;
   display: block;
   margin-bottom: 0.25rem;
-}
-
-.profile-field input {
-  padding: 0.6rem;
-  border: none;
-  border-radius: 8px;
-  width: 100%;
-  background-color: #2a2a2a;
-  color: #fff;
+  color: #b0bec5;
 }
 
 .profile-actions {
-  margin-top: 1.5rem;
   display: flex;
-  justify-content: flex-start;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
 }
 
 .profile-actions .btn + .btn {
-  margin-left: 1rem;
-
+  margin-left: 0.5rem;
 }

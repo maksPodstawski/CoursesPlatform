@@ -147,5 +147,14 @@ namespace COURSES.API.Controllers
 
             return Ok(PurchaseCourseResponseDTO.FromPurchasedCourse(updatedPurchase));
         }
+
+        [AllowAnonymous]
+        [HttpGet("course/{courseId}/count")]
+        public async Task<ActionResult<int>> GetCoursePurchaseCount(Guid courseId)
+        {
+            var count = await _purchasedCoursesService.GetPurchaseCountByCourseIdAsync(courseId);
+            return Ok(count);
+        }
+
     }
 } 

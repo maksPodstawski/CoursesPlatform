@@ -52,3 +52,11 @@ export async function getCourseInstructor(courseId: string) {
 	const response = await fetchClient.fetch(`/api/courses/${courseId}/instructor`);
 	return await response.json();
 }
+
+export async function getCourseParticipantsCount(courseId: string) {
+	const response = await fetchClient.fetch(`/api/courses/purchases/course/${courseId}/count`);
+	if (!response.ok) {
+		throw new Error('Failed to fetch course participants count');
+	}
+	return await response.json();
+}

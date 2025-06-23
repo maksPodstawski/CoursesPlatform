@@ -6,10 +6,9 @@ interface BuyButtonProps {
     courseId: string;
     price: number;
     redirectAfterLogin?: string;
-    children?: React.ReactNode;
 }
 
-const BuyButton = ({ courseId, price, redirectAfterLogin, children }: BuyButtonProps) => {
+const BuyButton = ({ courseId, price, redirectAfterLogin }: BuyButtonProps) => {
     const { isLoggedIn } = useAuth();
     const navigate = useNavigate();
 
@@ -45,7 +44,7 @@ const BuyButton = ({ courseId, price, redirectAfterLogin, children }: BuyButtonP
             className="btn btn-primary"
             onClick={handleBuy}
         >
-            {children || "Buy"}
+            Buy ${price}
         </button>
     );
 };

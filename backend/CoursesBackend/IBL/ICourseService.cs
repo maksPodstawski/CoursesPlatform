@@ -13,5 +13,6 @@ namespace IBL
         Task<Course> AddCourseAsync(Course course);
         Task<Course?> UpdateCourseAsync(Course course);
         Task<Course?> DeleteCourseAsync(Guid id);
+        Task<List<Course>> GetVisibleCoursesAsync();
     }
 }

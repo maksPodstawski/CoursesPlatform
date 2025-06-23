@@ -73,5 +73,11 @@ namespace BL.Services
         {
             return await Task.FromResult(_purchasedCoursesRepository.DeletePurchasedCourse(id));
         }
+        public async Task<int> GetPurchaseCountByCourseIdAsync(Guid courseId)
+        {
+            var purchases = await GetPurchasedCoursesByCourseIdAsync(courseId);
+            return purchases.Select(p => p.UserId).Distinct().Count();
+        }
+
     }
 }

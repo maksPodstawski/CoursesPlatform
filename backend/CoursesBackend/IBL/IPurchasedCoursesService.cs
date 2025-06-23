@@ -17,5 +17,7 @@ namespace IBL
         Task<PurchasedCourses> AddPurchasedCourseAsync(PurchasedCourses purchasedCourse);
         Task<PurchasedCourses?> UpdatePurchasedCourseAsync(PurchasedCourses purchasedCourse);
         Task<PurchasedCourses?> DeletePurchasedCourseAsync(Guid id);
+        Task<int> GetPurchaseCountByCourseIdAsync(Guid courseId);
+
     }
 }

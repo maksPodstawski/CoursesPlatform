@@ -31,5 +31,7 @@ namespace Model
         public ICollection<Stage>? Stages { get; set; } = new List<Stage>();
         public ICollection<CourseSubcategory>? CourseSubcategories { get; set; } = new List<CourseSubcategory>();
         public ICollection<Creator> Creators { get; set; } = new List<Creator>();
+        [Required]
+        public bool IsHidden { get; set; } = false;
     }
 }
