@@ -1,7 +1,8 @@
+using IBL;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using IBL;
 using Model;
+using Model.Constans;
 using Model.DTO;
 using System.Security.Claims;
 
@@ -31,10 +32,7 @@ namespace COURSES.API.Controllers
         public async Task<ActionResult<ReviewResponseDTO>> GetReviewById(Guid id)
         {
             var review = await _reviewService.GetReviewByIdAsync(id);
-            if (review == null)
-            {
-                return NotFound();
-            }
+            if (review == null) return NotFound();
             return Ok(ReviewResponseDTO.FromReview(review));
         }
 
@@ -42,10 +40,7 @@ namespace COURSES.API.Controllers
         public async Task<ActionResult<IEnumerable<ReviewResponseDTO>>> GetReviewsByCourse(Guid courseId)
         {
             var course = await _courseService.GetCourseByIdAsync(courseId);
-            if (course == null)
-            {
-                return NotFound("Course not found");
-            }
+            if (course == null) return NotFound("Course not found");
 
             var reviews = await _reviewService.GetReviewsByCourseIdAsync(courseId);
             return Ok(reviews.Select(ReviewResponseDTO.FromReview));
@@ -53,128 +48,73 @@ namespace COURSES.API.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<ReviewResponseDTO>> CreateReview([FromBody] CreateReviewDTO createReviewDto)
+        public async Task<ActionResult<ReviewResponseDTO>> CreateReview([FromBody] CreateReviewDTO dto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized();
-            }
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-            var course = await _courseService.GetCourseByIdAsync(createReviewDto.CourseId);
-            if (course == null)
-            {
-                return NotFound("Course not found");
-            }
+            var course = await _courseService.GetCourseByIdAsync(dto.CourseId);
+            if (course == null) return NotFound("Course not found");
 
-            var existingReviews = await _reviewService.GetReviewsByUserIdAsync(Guid.Parse(userId));
-            if (existingReviews.Any(r => r.CourseId == createReviewDto.CourseId))
-            {
-                return BadRequest("You have already reviewed this course");
-            }
+            var existing = await _reviewService.GetReviewsByUserIdAsync(Guid.Parse(userId));
+            if (existing.Any(r => r.CourseId == dto.CourseId)) return BadRequest("Already reviewed");
 
             var review = new Review
             {
-                Rating = createReviewDto.Rating,
-                Comment = createReviewDto.Comment,
+                Id = Guid.NewGuid(),
+                Rating = dto.Rating,
+                Comment = dto.Comment,
+                CourseId = dto.CourseId,
                 UserId = Guid.Parse(userId),
-                CourseId = createReviewDto.CourseId,
                 CreatedAt = DateTime.UtcNow
             };
 
-            var createdReview = await _reviewService.AddReviewAsync(review);
-            return CreatedAtAction(nameof(GetReviewById), new { id = createdReview.Id }, ReviewResponseDTO.FromReview(createdReview));
+            var created = await _reviewService.AddReviewAsync(review);
+            return CreatedAtAction(nameof(GetReviewById), new { id = created.Id }, ReviewResponseDTO.FromReview(created));
         }
 
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<ActionResult<ReviewResponseDTO>> UpdateReview(Guid id, [FromBody] UpdateReviewDTO updateReviewDto)
+        public async Task<ActionResult<ReviewResponseDTO>> UpdateReview(Guid id, [FromBody] UpdateReviewDTO dto)
         {
             var review = await _reviewService.GetReviewByIdAsync(id);
-            if (review == null)
-            {
-                return NotFound();
-            }
+            if (review == null) return NotFound();
 
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId) || review.UserId != Guid.Parse(userId))
-            {
-                return Forbid();
-            }
+            if (string.IsNullOrEmpty(userId) || review.UserId != Guid.Parse(userId)) return Forbid();
 
-            review.Rating = updateReviewDto.Rating;
-            review.Comment = updateReviewDto.Comment;
+            review.Rating = dto.Rating;
+            review.Comment = dto.Comment;
 
-            var updatedReview = await _reviewService.UpdateReviewAsync(review);
-            if (updatedReview == null)
-            {
-                return BadRequest("Failed to update review");
-            }
+            var updated = await _reviewService.UpdateReviewAsync(review);
+            if (updated == null) return BadRequest("Failed to update");
 
-            return Ok(ReviewResponseDTO.FromReview(updatedReview));
-        }
-
-        [Authorize]
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteReview(Guid id)
-        {
-            var review = await _reviewService.GetReviewByIdAsync(id);
-            if (review == null)
-            {
-                return NotFound();
-            }
-
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId) || review.UserId != Guid.Parse(userId))
-            {
-                return Forbid();
-            }
-
-            var deletedReview = await _reviewService.DeleteReviewAsync(id);
-            if (deletedReview == null)
-            {
-                return BadRequest("Failed to delete review");
-            }
-
-            return NoContent();
+            return Ok(ReviewResponseDTO.FromReview(updated));
         }
 
         [HttpGet("course/{courseId}/rating-summary")]
         public async Task<IActionResult> GetRatingSummary(Guid courseId)
         {
             var course = await _courseService.GetCourseByIdAsync(courseId);
-            if (course == null)
-            {
-                return NotFound("Course not found");
-            }
+            if (course == null) return NotFound("Course not found");
 
-            var averageRating = await _reviewService.GetAverageRatingForCourseAsync(courseId);
-            var reviewCount = await _reviewService.GetReviewsByCourseIdAsync(courseId);
+            var avg = await _reviewService.GetAverageRatingForCourseAsync(courseId);
+            var count = await _reviewService.GetReviewsByCourseIdAsync(courseId);
 
-         
-            return Ok(new
-            {
-                averageRating = Math.Round(averageRating ?? 0, 1), // zaokr¹glone np. 4.3
-                reviewCount = reviewCount.Count
-            });
+            return Ok(new { averageRating = Math.Round(avg ?? 0, 1), reviewCount = count.Count });
         }
+
         [Authorize]
         [HttpGet("course/{courseId}/user")]
         public async Task<ActionResult<ReviewResponseDTO>> GetUserReviewForCourse(Guid courseId)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized();
-            }
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
             var review = await _reviewService.GetReviewByUserAndCourseIdAsync(Guid.Parse(userId), courseId);
-            if (review == null)
-            {
-                return NotFound();
-            }
+            if (review == null) return NotFound();
 
             return Ok(ReviewResponseDTO.FromReview(review));
         }
     }
-} 
+}

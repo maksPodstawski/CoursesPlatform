@@ -21,24 +21,34 @@ namespace BL.Services
 
         public async Task<List<Review>> GetAllReviewsAsync()
         {
-            return await _reviewRepository.GetReviews().ToListAsync();
+            return await _reviewRepository.GetReviews()
+                .Include(r => r.User)
+                .Include(r => r.Course)
+                .ToListAsync();
         }
 
         public async Task<Review?> GetReviewByIdAsync(Guid reviewId)
         {
-            return await Task.FromResult(_reviewRepository.GetReviewById(reviewId));
+            return await _reviewRepository.GetReviews()
+                .Include(r => r.User)
+                .Include(r => r.Course)
+                .FirstOrDefaultAsync(r => r.Id == reviewId);
         }
 
         public async Task<List<Review>> GetReviewsByCourseIdAsync(Guid courseId)
         {
             return await _reviewRepository.GetReviews()
-               .Where(r => r.CourseId == courseId)
-               .ToListAsync();
+                .Include(r => r.User)
+                .Include(r => r.Course)
+                .Where(r => r.CourseId == courseId)
+                .ToListAsync();
         }
 
         public async Task<List<Review>> GetReviewsByUserIdAsync(Guid userId)
         {
             return await _reviewRepository.GetReviews()
+                .Include(r => r.User)
+                .Include(r => r.Course)
                 .Where(r => r.UserId == userId)
                 .ToListAsync();
         }
@@ -46,9 +56,8 @@ namespace BL.Services
         public async Task<Review> AddReviewAsync(Review review)
         {
             review.Id = Guid.NewGuid();
-            //W opini trzeba dodac jeszcze date nowa!!!
+            review.CreatedAt = DateTime.UtcNow;
             return await Task.FromResult(_reviewRepository.AddReview(review));
-            
         }
 
         public async Task<Review?> UpdateReviewAsync(Review review)
@@ -73,7 +82,6 @@ namespace BL.Services
             return reviews.Average(r => r.Rating);
         }
 
-
         public async Task DeleteReviewsAsync(IEnumerable<Guid> reviewIds)
         {
             foreach (var id in reviewIds)
@@ -86,11 +94,10 @@ namespace BL.Services
 
         public async Task<Review?> GetReviewByUserAndCourseIdAsync(Guid userId, Guid courseId)
         {
-                var review = await _reviewRepository.GetReviews()
-            .Where(r => r.UserId == userId && r.CourseId == courseId)
-            .FirstOrDefaultAsync();
-
-                return review;
+            return await _reviewRepository.GetReviews()
+                .Include(r => r.User)
+                .Include(r => r.Course)
+                .FirstOrDefaultAsync(r => r.UserId == userId && r.CourseId == courseId);
         }
     }
 }

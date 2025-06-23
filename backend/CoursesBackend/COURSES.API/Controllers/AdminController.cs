@@ -1,10 +1,11 @@
+﻿using IBL;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Model.Constans;
-using IBL;
 using Model;
+using Model.Constans;
 using Model.DTO;
-using static Model.DTO.ReviewResponseDTO;
+using System.Security.Claims;
+using System.Text.Json;
 
 namespace COURSES.API.Controllers
 {
@@ -17,17 +18,22 @@ namespace COURSES.API.Controllers
         private readonly ISubcategoryService _subcategoryService;
         private readonly ICourseService _courseService;
         private readonly IReviewService _reviewService;
+        private readonly string _perspectiveApiKey;
+
 
         public AdminController(
             ICategoryService categoryService,
             ISubcategoryService subcategoryService,
             ICourseService courseService,
-            IReviewService reviewService)
+            IReviewService reviewService,
+            IConfiguration configuration)
         {
             _categoryService = categoryService;
             _subcategoryService = subcategoryService;
             _courseService = courseService;
             _reviewService = reviewService;
+            _perspectiveApiKey = configuration["GooglePerspective:ApiKey"] ??
+                                 throw new ArgumentNullException("GooglePerspective:ApiKey is not configured.");
         }
 
         [HttpGet("dashboard")]
@@ -89,16 +95,6 @@ namespace COURSES.API.Controllers
             return Ok(new { message = "Course deleted", name = deleted.Name });
         }
 
-        [HttpPost("reviews/delete-many")]
-        public async Task<IActionResult> DeleteReviews([FromBody] DeleteReviewsDto dto)
-        {
-            if (dto?.ReviewIds == null || !dto.ReviewIds.Any())
-                return BadRequest("Review ID not found");
-
-            await _reviewService.DeleteReviewsAsync(dto.ReviewIds);
-            return Ok(new { message = "Review deleted" });
-        }
-
         [HttpDelete("category/{categoryId}")]
         public async Task<IActionResult> DeleteCategory(Guid categoryId)
         {
@@ -119,6 +115,103 @@ namespace COURSES.API.Controllers
             return Ok(new { message = "Subcategory deleted", name = deleted.Name });
         }
 
+        [HttpPut("courses/{id}/toggle-visibility")]
+        public async Task<IActionResult> ToggleCourseVisibility(Guid id)
+        {
+            var course = await _courseService.GetCourseByIdAsync(id);
+            if (course == null)
+                return NotFound();
+
+            course.IsHidden = !course.IsHidden;
+            var updated = await _courseService.UpdateCourseAsync(course);
+            return Ok(CourseResponseDTO.FromCourse(updated));
+        }
+
+        [HttpDelete("review/{id}")]
+        public async Task<IActionResult> DeleteReview(Guid id)
+        {
+            var review = await _reviewService.GetReviewByIdAsync(id);
+            if (review == null)
+                return NotFound();
+
+            var deleted = await _reviewService.DeleteReviewAsync(id);
+            if (deleted == null)
+                return BadRequest("Failed to delete review");
+
+            return NoContent();
+        }
+
+        [HttpGet("toxic-review-count")]
+        public async Task<IActionResult> GetToxicReviewCount()
+        {
+            var allReviews = await _reviewService.GetAllReviewsAsync();
+            int toxicCount = 0;
+
+            foreach (var review in allReviews)
+            {
+                var score = await AnalyzeToxicityAsync(review.Comment);
+                if (score > 0.2) toxicCount++;
+            }
+
+            return Ok(new { count = toxicCount });
+        }
+
+        private async Task<double> AnalyzeToxicityAsync(string comment)
+        {
+            using var httpClient = new HttpClient();
+
+            var request = new Dictionary<string, object>
+            {
+                ["comment"] = new { text = comment },
+                ["requestedAttributes"] = new Dictionary<string, object>
+                {
+                    ["TOXICITY"] = new { }
+                }
+            };
+
+
+            var response = await httpClient.PostAsJsonAsync(
+                $"https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key={_perspectiveApiKey}",
+                request);
+
+            var raw = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<ToxicityResponse>(raw, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return result?.attributeScores?["TOXICITY"]?.summaryScore?.value ?? 0.0;
+
+        }
+
+
+
+        [HttpPost("analyze-toxicity")]
+        public async Task<IActionResult> AnalyzeToxicity([FromBody] AnalyzeReviewDTO dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Comment))
+                return BadRequest("The comment field is required.");
+
+            var score = await AnalyzeToxicityAsync(dto.Comment);
+            return Ok(new { score });
+        }
+
+        private class ToxicityResponse
+        {
+            public Dictionary<string, AttributeScore>? attributeScores { get; set; }
+        }
+
+        private class AttributeScore
+        {
+            public SummaryScore? summaryScore { get; set; }
+        }
+
+        private class SummaryScore
+        {
+            public double value { get; set; }
+            public string type { get; set; } = string.Empty;
+        }
+
+
     }
 }
-

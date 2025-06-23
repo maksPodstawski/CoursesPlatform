@@ -1,21 +1,18 @@
 import { config } from "../config";
+import { fetchClient } from "./fetchClient.ts";
 
 export const adminService = {
     async fetchDashboard(): Promise<void> {
-        const response = await fetch(`${config.apiBaseUrl}/api/admin/dashboard`, {
-            method: "GET",
-            credentials: "include"
-        });
+        const response = await fetchClient.fetch(`${config.apiBaseUrl}/api/admin/dashboard`);
         if (!response.ok) {
-            throw new Error("Brak dostępu");
+            throw new Error("Error while fetching dashboard data.");
         }
     },
 
     async addCategory(name: string): Promise<void> {
-        const response = await fetch(`${config.apiBaseUrl}/api/admin/categories`, {
+        const response = await fetchClient.fetch(`${config.apiBaseUrl}/api/admin/categories`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            credentials: "include",
             body: JSON.stringify({ name }),
         });
         if (!response.ok) {
@@ -24,10 +21,9 @@ export const adminService = {
     },
 
     async addSubcategory(name: string, categoryId: string): Promise<void> {
-        const response = await fetch(`${config.apiBaseUrl}/api/admin/subcategories`, {
+        const response = await fetchClient.fetch(`${config.apiBaseUrl}/api/admin/subcategories`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            credentials: "include",
             body: JSON.stringify({ name, categoryId }),
         });
         if (!response.ok) {
@@ -36,7 +32,7 @@ export const adminService = {
     },
 
     async deleteCourse(courseId: string): Promise<any> {
-        const response = await fetch(`${config.apiBaseUrl}/api/admin/course/${courseId}`, {
+        const response = await fetchClient.fetch(`${config.apiBaseUrl}/api/admin/course/${courseId}`, {
             method: "DELETE",
             credentials: "include"
         });
@@ -46,20 +42,8 @@ export const adminService = {
         return await response.json();
     },
 
-    async deleteComments(commentIds: string[]): Promise<void> {
-        const response = await fetch(`${config.apiBaseUrl}/api/admin/comments/delete-many`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ commentIds }),
-        });
-        if (!response.ok) {
-            throw new Error("Failed to delete comments");
-        }
-    },
-
     async deleteCategory(categoryId: string): Promise<any> {
-        const response = await fetch(`${config.apiBaseUrl}/api/admin/category/${categoryId}`, {
+        const response = await fetchClient.fetch(`${config.apiBaseUrl}/api/admin/category/${categoryId}`, {
             method: "DELETE",
             credentials: "include"
         });
@@ -70,7 +54,7 @@ export const adminService = {
     },
 
     async deleteSubcategory(subcategoryId: string): Promise<any> {
-        const response = await fetch(`${config.apiBaseUrl}/api/admin/subcategory/${subcategoryId}`, {
+        const response = await fetchClient.fetch(`${config.apiBaseUrl}/api/admin/subcategory/${subcategoryId}`, {
             method: "DELETE",
             credentials: "include"
         });
@@ -78,5 +62,29 @@ export const adminService = {
             throw new Error("Failed to delete subcategory");
         }
         return await response.json();
+    },
+
+    async toggleCourseVisibility(courseId: string): Promise<void> {
+        const response = await fetchClient.fetch(`${config.apiBaseUrl}/api/admin/courses/${courseId}/toggle-visibility`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include"
+        });
+        if (!response.ok) {
+            throw new Error("Failed to toggle course visibility");
+        }
+    },
+    async getAllCourses(): Promise<{ id: string; name: string; isHidden: boolean }[]> {
+        const response = await fetchClient.fetch(`${config.apiBaseUrl}/api/courses/all`, {
+            method: "GET",
+            credentials: "include"
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch all courses");
+        }
+
+        return await response.json();
     }
+
 };
