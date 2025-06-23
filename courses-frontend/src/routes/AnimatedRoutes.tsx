@@ -17,8 +17,6 @@ import MyCoursesPage from "../pages/MyCoursesPage.tsx";
 import { CoursePage } from "../pages/CourseViewPage.tsx";
 import StagePlayerPage from "../pages/StagePlayerPage.tsx";
 import { AddStage } from "../pages/AddStage.tsx";
-import AddReviewForm from "../components/CourseReviewForm.tsx";
-
 
 const AnimatedRoutes = () => {
 	const location = useLocation();
@@ -26,23 +24,150 @@ const AnimatedRoutes = () => {
 	return (
 		<AnimatePresence mode="wait">
 			<Routes location={location} key={location.pathname}>
-				<Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
-				<Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
-				<Route path="/courses" element={<PageWrapper><Courses /></PageWrapper>} />
-				<Route path="/add-course" element={<PageWrapper><ProtectedRoute><AddCourse /></ProtectedRoute></PageWrapper>} />
-				<Route path="/creator-courses" element={<PageWrapper><ProtectedRoute><CreatorCourses /></ProtectedRoute></PageWrapper>} />
-				<Route path="/courses/:id" element={<PageWrapper><CourseDetails /></PageWrapper>} />
-				<Route path="/" element={<PageWrapper><HomeContent /></PageWrapper>} />
-				<Route path="/my-courses" element={<PageWrapper><ProtectedRoute><MyCoursesPage /></ProtectedRoute></PageWrapper>} />
-				<Route path="/my-profile" element={<PageWrapper><ProtectedRoute><MyProfile /></ProtectedRoute></PageWrapper>} />
-				<Route path="/creator-panel" element={<ProtectedRoute><CreatorPanel /></ProtectedRoute>} />
-				<Route path="/creatorpanel/chats" element={<ProtectedRoute><CreatorPanelChats /></ProtectedRoute>} />
-				<Route path="/course/:id" element={<PageWrapper><ProtectedRoute><CoursePage /></ProtectedRoute></PageWrapper>} />
-				<Route path="/course/:id/stage/:stageId" element={<PageWrapper><ProtectedRoute><StagePlayerPage /></ProtectedRoute></PageWrapper>} />
-				<Route path="/admin" element={<PageWrapper><ProtectedRoute><AdminPanel /></ProtectedRoute></PageWrapper>} />
-				<Route path="/add-stage" element={<PageWrapper><ProtectedRoute><AddStage /></ProtectedRoute></PageWrapper>} />
-				<Route path="/course/:id/add-review" element={<AddReviewForm />} />
-				<Route path="*" element={<PageWrapper><h1>404 - Page Not Found</h1></PageWrapper>} />
+				<Route
+					path="/login"
+					element={
+						<PageWrapper>
+							<Login />
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="/register"
+					element={
+						<PageWrapper>
+							<Register />
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="/courses"
+					element={
+						<PageWrapper>
+							<Courses />
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="/add-course"
+					element={
+						<PageWrapper>
+							<ProtectedRoute>
+								<AddCourse />
+							</ProtectedRoute>
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="/creator-courses"
+					element={
+						<PageWrapper>
+							<ProtectedRoute>
+								<CreatorCourses />
+							</ProtectedRoute>
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="/courses/:id"
+					element={
+						<PageWrapper>
+							<CourseDetails />
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="/"
+					element={
+						<PageWrapper>
+							<HomeContent />
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="/my-courses"
+					element={
+						<PageWrapper>
+							<ProtectedRoute>
+								<MyCoursesPage />
+							</ProtectedRoute>
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="/my-profile"
+					element={
+						<PageWrapper>
+							<ProtectedRoute>
+								<MyProfile />
+							</ProtectedRoute>
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="/creator-panel"
+					element={
+						<ProtectedRoute>
+							<CreatorPanel />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/creatorpanel/chats"
+					element={
+						<ProtectedRoute>
+							<CreatorPanelChats />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/course/:id"
+					element={
+						<PageWrapper>
+							<ProtectedRoute>
+								<CoursePage />
+							</ProtectedRoute>
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="/course/:id/stage/:stageId"
+					element={
+						<PageWrapper>
+							<ProtectedRoute>
+								<StagePlayerPage />
+							</ProtectedRoute>
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="/admin"
+					element={
+						<PageWrapper>
+							<ProtectedRoute>
+								<AdminPanel />
+							</ProtectedRoute>
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="/add-stage"
+					element={
+						<PageWrapper>
+							<ProtectedRoute>
+								<AddStage />
+							</ProtectedRoute>
+						</PageWrapper>
+					}
+				/>
+				<Route
+					path="*"
+					element={
+						<PageWrapper>
+							<h1>404 - Page Not Found</h1>
+						</PageWrapper>
+					}
+				/>
 			</Routes>
 		</AnimatePresence>
 	);
