@@ -20,7 +20,7 @@ export const config = {
 		addCourse: "/api/courses",
 		buyCourse: "/api/courses/purchases",
 		addReview: "/api/Reviews",
-		avgRating: "/api/Reviews/course/{courseId}/average-rating",
+		avgRating: "/api/Reviews/course/{courseId}/rating-summary",
 		getUserProfile: "/api/user/me",
 
 		addStage: "/api/stages",

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 import { getCourses } from "../services/courseService";
 import { AnimatedSection } from "../utils/animations";
@@ -8,6 +9,7 @@ import CourseCard from "../components/CourseCard";
 
 const HomeContent = () => {
   const [featuredCourses, setFeaturedCourses] = useState<any[]>([]);
+  const { isLoggedIn } = useAuth();
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -30,7 +32,11 @@ const HomeContent = () => {
               Discover a world of learning designed for real-world success. From coding to creative arts,
               our expert-led courses help you build the skills that matter — at your pace, on your terms.
             </p>
-            <Link to="/register" className="btn primary">Get Started</Link>
+            {isLoggedIn ? (
+              <Link to="/courses" className="btn primary">Go to courses</Link>
+            ) : (
+              <Link to="/register" className="btn primary">Get Started</Link>
+            )}
           </div>
         </header>
 

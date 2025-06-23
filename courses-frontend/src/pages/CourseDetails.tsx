@@ -48,8 +48,9 @@ const CourseDetails = () => {
                 const url = config.apiEndpoints.avgRating.replace("{courseId}", id);
                 const res = await fetch(`${config.apiBaseUrl}${url}`);
                 if (!res.ok) throw new Error();
-                const avg = await res.json();
-                setAverageRating(avg !== null ? Number(avg).toFixed(2) : null);
+                const data = await res.json();
+                // The rating-summary endpoint returns { averageRating: number, reviewCount: number }
+                setAverageRating(data.averageRating !== null ? Number(data.averageRating).toFixed(2) : null);
             } catch {
                 setAverageRating(null);
             }

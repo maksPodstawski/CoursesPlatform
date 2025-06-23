@@ -21,6 +21,8 @@ import AddReviewForm from "../components/CourseReviewForm.tsx";
 import AdminCategoryManagement from "../pages/admin/AdminCategoryManagement.tsx";
 import AdminCoursesManagement from "../pages/admin/AdminCoursesManagement.tsx";
 import AdminReviewsManagement from "../pages/admin/AdminReviewsManagement.tsx";
+import Analytics from "../pages/Analytics.tsx";
+
 
 
 const AnimatedRoutes = () => {
@@ -56,6 +58,7 @@ const AnimatedRoutes = () => {
 				} />
 				<Route path="/add-stage" element={<PageWrapper><ProtectedRoute><AddStage /></ProtectedRoute></PageWrapper>} />
 				<Route path="/course/:id/add-review" element={<AddReviewForm />} />
+				<Route path="/analytics" element={<PageWrapper><ProtectedRoute><Analytics /></ProtectedRoute></PageWrapper>} />
 				<Route path="*" element={<PageWrapper><h1>404 - Page Not Found</h1></PageWrapper>} />
 			</Routes>
 		</AnimatePresence>
