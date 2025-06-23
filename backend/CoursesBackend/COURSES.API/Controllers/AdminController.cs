@@ -1,10 +1,11 @@
-using IBL;
+﻿using IBL;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Model;
 using Model.Constans;
 using Model.DTO;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace COURSES.API.Controllers
 {
@@ -17,17 +18,22 @@ namespace COURSES.API.Controllers
         private readonly ISubcategoryService _subcategoryService;
         private readonly ICourseService _courseService;
         private readonly IReviewService _reviewService;
+        private readonly string _perspectiveApiKey;
+
 
         public AdminController(
             ICategoryService categoryService,
             ISubcategoryService subcategoryService,
             ICourseService courseService,
-            IReviewService reviewService)
+            IReviewService reviewService,
+            IConfiguration configuration)
         {
             _categoryService = categoryService;
             _subcategoryService = subcategoryService;
             _courseService = courseService;
             _reviewService = reviewService;
+            _perspectiveApiKey = configuration["GooglePerspective:ApiKey"] ??
+                                 throw new ArgumentNullException("GooglePerspective:ApiKey is not configured.");
         }
 
         [HttpGet("dashboard")]
@@ -134,6 +140,78 @@ namespace COURSES.API.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("toxic-review-count")]
+        public async Task<IActionResult> GetToxicReviewCount()
+        {
+            var allReviews = await _reviewService.GetAllReviewsAsync();
+            int toxicCount = 0;
+
+            foreach (var review in allReviews)
+            {
+                var score = await AnalyzeToxicityAsync(review.Comment);
+                if (score > 0.2) toxicCount++;
+            }
+
+            return Ok(new { count = toxicCount });
+        }
+
+        private async Task<double> AnalyzeToxicityAsync(string comment)
+        {
+            using var httpClient = new HttpClient();
+
+            var request = new Dictionary<string, object>
+            {
+                ["comment"] = new { text = comment },
+                ["requestedAttributes"] = new Dictionary<string, object>
+                {
+                    ["TOXICITY"] = new { }
+                }
+            };
+
+
+            var response = await httpClient.PostAsJsonAsync(
+                $"https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key={_perspectiveApiKey}",
+                request);
+
+            var raw = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<ToxicityResponse>(raw, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return result?.attributeScores?["TOXICITY"]?.summaryScore?.value ?? 0.0;
+
+        }
+
+
+
+        [HttpPost("analyze-toxicity")]
+        public async Task<IActionResult> AnalyzeToxicity([FromBody] AnalyzeReviewDTO dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Comment))
+                return BadRequest("The comment field is required.");
+
+            var score = await AnalyzeToxicityAsync(dto.Comment);
+            return Ok(new { score });
+        }
+
+        private class ToxicityResponse
+        {
+            public Dictionary<string, AttributeScore>? attributeScores { get; set; }
+        }
+
+        private class AttributeScore
+        {
+            public SummaryScore? summaryScore { get; set; }
+        }
+
+        private class SummaryScore
+        {
+            public double value { get; set; }
+            public string type { get; set; } = string.Empty;
+        }
+
+
     }
 }
-

@@ -52,3 +52,9 @@ namespace Model.DTO
         }
     }
 }
+
+public record AnalyzeReviewDTO
+{
+    [Required]
+    public string Comment { get; init; } = string.Empty;
+}
