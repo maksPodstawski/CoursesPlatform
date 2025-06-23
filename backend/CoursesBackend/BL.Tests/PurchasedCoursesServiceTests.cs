@@ -237,6 +237,33 @@ namespace BL.Tests
             Assert.Equal(id, result?.Id);
             _mockPurchasedCoursesRepository.Verify(r => r.DeletePurchasedCourse(id), Times.Once);
         }
+
+        [Fact]
+        public async Task GetPurchaseCountByCourseIdAsync_ReturnsCorrectCount()
+        {
+            // Arrange
+            var courseId = Guid.NewGuid();
+            var userId1 = Guid.NewGuid();
+            var userId2 = Guid.NewGuid();
+
+            var data = new List<PurchasedCourses>
+            {
+                new PurchasedCourses { CourseId = courseId, UserId = userId1 },
+                new PurchasedCourses { CourseId = courseId, UserId = userId2 },
+                new PurchasedCourses { CourseId = courseId, UserId = userId1 }, // ten sam user, nie powinien być liczony drugi raz
+                new PurchasedCourses { CourseId = Guid.NewGuid(), UserId = userId1 } // inny kurs
+            };
+
+            var mockDbSet = data.AsQueryable().BuildMockDbSet();
+            _mockPurchasedCoursesRepository.Setup(r => r.GetPurchasedCourses()).Returns(mockDbSet.Object);
+
+            // Act
+            var result = await _purchasedCoursesservice.GetPurchaseCountByCourseIdAsync(courseId);
+
+            // Assert
+            Assert.Equal(2, result);
+        }
+
     }
 
     public class PurchasedCoursesRepositoryDummy : IPurchasedCoursesRepository

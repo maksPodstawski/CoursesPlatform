@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-import { getCourses, getCourseInstructor } from "../services/courseService";
+import { getCourses, getCourseInstructor, getCourseParticipantsCount } from "../services/courseService";
 import { getRatingSummary } from "../services/reviewService";
 import { AnimatedSection } from "../utils/animations";
 import StatCard from "../components/StatCard";
@@ -22,11 +22,12 @@ const HomeContent = () => {
         const enhancedData = await Promise.all(
           topCourses.map(async (course: any) => {
             const instructor = await getCourseInstructor(course.id);
+            const studentsCount = await getCourseParticipantsCount(course.id);
             return {
               ...course,
               instructor: instructor.name || "N/A",
               duration: course.duration || "8 hours",
-              studentsCount: course.studentsCount || Math.floor(Math.random() * 1000) + 100,
+              studentsCount: studentsCount,
               level: course.level || ["Beginner", "Intermediate", "Advanced"][Math.floor(Math.random() * 3)],
               category: course.category || "Programming"
             };

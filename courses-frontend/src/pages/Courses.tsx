@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getCourses, getCourseInstructor } from '../services/courseService';
+import { getCourses, getCourseInstructor, getCourseParticipantsCount } from '../services/courseService';
 import { getRatingSummary } from '../services/reviewService';
 import { useNavigate } from "react-router-dom";
 import BuyButton from "../components/BuyButton.tsx";
@@ -37,11 +37,12 @@ const Courses = () => {
 			const enhancedData = await Promise.all(
 				data.map(async (course: any) => {
 					const instructor = await getCourseInstructor(course.id);
+					const studentsCount = await getCourseParticipantsCount(course.id);
 					return {
 						...course,
 						instructor: instructor.name || "N/A",
 						duration: course.duration || "8 hours",
-						studentsCount: course.studentsCount || Math.floor(Math.random() * 1000) + 100,
+						studentsCount: studentsCount,
 						level: course.level || ["Beginner", "Intermediate", "Advanced"][Math.floor(Math.random() * 3)],
 						category: course.category || "Programming"
 					};

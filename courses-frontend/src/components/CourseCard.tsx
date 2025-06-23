@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import type { ReactNode } from "react";
+import type { ReactNode, MouseEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { Star, Clock, Users } from 'lucide-react';
 import '../styles/CourseCard.css';
 
@@ -23,10 +24,21 @@ interface CourseCardProps {
 }
 
 export const CourseCard = ({ course, rating, actions }: CourseCardProps) => {
+  const navigate = useNavigate();
+
+  // Zapobiegaj nawigacji jeśli kliknięto w przycisk w actions
+  const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
+    // Jeśli kliknięto w element z .course-actions lub jego potomka, nie nawiguj
+    if ((e.target as HTMLElement).closest('.course-actions')) return;
+    navigate(`/courses/${course.id}`);
+  };
+
   return (
     <motion.div
       className="course-card"
       whileHover={{ y: -5, transition: { duration: 0.2 } }}
+      onClick={handleCardClick}
+      style={{ cursor: 'pointer' }}
     >
       <div className="course-card-header">
         <div className="course-image-container">
@@ -46,7 +58,6 @@ export const CourseCard = ({ course, rating, actions }: CourseCardProps) => {
       <div className="course-card-content">
         <h3 className="course-title">{course?.name}</h3>
         <span className="course-price">${course?.price}</span>
-        <p className="course-description">{course?.description}</p>
         <div className="course-meta">
           {course?.instructor && (
             <div className="meta-item">

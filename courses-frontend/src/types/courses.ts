@@ -44,6 +44,7 @@ export type Course = {
 	name: string;
 	description: string;
 	imageUrl: string;
+	price?: number;
 };
 
 export type Chat = {
