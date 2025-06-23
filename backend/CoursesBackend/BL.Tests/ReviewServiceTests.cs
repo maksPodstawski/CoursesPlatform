@@ -44,8 +44,9 @@ namespace BL.Tests
         {
             var reviewId = Guid.NewGuid();
             var review = new Review { Id = reviewId, Rating = 3, Comment = "OK" };
-
-            _mockReviewRepository.Setup(r => r.GetReviewById(reviewId)).Returns(review);
+            var reviews = new List<Review> { review }.AsQueryable();
+            var mockDbSet = reviews.BuildMockDbSet();
+            _mockReviewRepository.Setup(r => r.GetReviews()).Returns(mockDbSet.Object);
 
             var result = await _reviewService.GetReviewByIdAsync(reviewId);
 
@@ -57,7 +58,9 @@ namespace BL.Tests
         public async Task GetReviewByIdAsync_NonExistingId_ReturnsNull()
         {
             var reviewId = Guid.NewGuid();
-            _mockReviewRepository.Setup(r => r.GetReviewById(reviewId)).Returns((Review)null);
+            var reviews = new List<Review>().AsQueryable();
+            var mockDbSet = reviews.BuildMockDbSet();
+            _mockReviewRepository.Setup(r => r.GetReviews()).Returns(mockDbSet.Object);
 
             var result = await _reviewService.GetReviewByIdAsync(reviewId);
 
@@ -170,7 +173,11 @@ namespace BL.Tests
         public async Task StubRepository_ReturnsPredefinedReviewById()
         {
             var reviewId = Guid.NewGuid();
-            var service = new ReviewService(new StubReviewRepository(reviewId));
+            var stub = new StubReviewRepository(reviewId)
+            {
+                Reviews = new List<Review> { new Review { Id = reviewId, Comment = "Stub" } }
+            };
+            var service = new ReviewService(stub);
             var result = await service.GetReviewByIdAsync(reviewId);
             Assert.NotNull(result);
             Assert.Equal(reviewId, result.Id);
@@ -209,6 +216,7 @@ namespace BL.Tests
     public class StubReviewRepository : IReviewRepository
     {
         private readonly Guid _reviewId;
+        public List<Review> Reviews { get; set; } = new();
 
         public StubReviewRepository(Guid reviewId)
         {
@@ -224,7 +232,11 @@ namespace BL.Tests
             return null;
         }
 
-        public IQueryable<Review> GetReviews() => new List<Review>().AsQueryable();
+        public IQueryable<Review> GetReviews()
+        {
+            return Reviews.AsQueryable().BuildMockDbSet().Object;
+        }
+
         public Review? UpdateReview(Review review) => review;
     }
 
