@@ -2,11 +2,12 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { HubConnectionBuilder, type HubConnection } from "@microsoft/signalr";
 import { chatService } from "../services/chatService";
-import type { Message, CreateChatResponseDTO } from "../types/courses";
+import type { Message, CreateChatResponseDTO, Course } from "../types/courses";
 import { config } from "../config";
 import "../styles/CreatorPanelChats.css";
 import Sidebar from "../components/Sidebar";
 import { Send } from "lucide-react";
+import { getCourses } from "../services/courseService";
 
 interface SignalRMessage {
     chatId: string;
@@ -63,7 +64,10 @@ const initializeConnection = async (
 
 const CreatorPanelChats = () => {
     const [searchParams] = useSearchParams();
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
     const [chats, setChats] = useState<CreateChatResponseDTO[]>([]);
+    const [filteredChats, setFilteredChats] = useState<CreateChatResponseDTO[]>([]);
     const [selectedChat, setSelectedChat] = useState<CreateChatResponseDTO | null>(null);
     const selectedChatRef = useRef<CreateChatResponseDTO | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -118,6 +122,56 @@ const CreatorPanelChats = () => {
             setIsConnected(false);
         };
     }, []);
+
+    useEffect(() => {
+        const fetchCourses = async () => {
+            try {
+                const response = await fetch(`${config.apiBaseUrl}${config.apiEndpoints.getCreatorCourses}`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                console.log('Available courses in dropdown:', data);
+                setCourses(data);
+            } catch (error) {
+                console.error('Error fetching courses:', error);
+            }
+        };
+        fetchCourses();
+    }, []);
+
+    useEffect(() => {
+        if (!selectedCourse) return;
+        const fetchChats = async () => {
+            setLoading(true);
+            try {
+                try {
+                    await chatService.getChatByCourse(selectedCourse.id || selectedCourse.courseId || '');
+                } catch (err) {
+                    console.log('No existing chat for this course, will be created when needed');
+                }
+                
+                const allChats = await chatService.getMyChats();
+                console.log('All chats:', allChats);
+                console.log('Selected course:', selectedCourse);
+                setChats(allChats);
+                const filtered = allChats.filter(chat => {
+                    const chatCourseId = String(chat.courseId || '').toLowerCase();
+                    const selectedCourseId = String(selectedCourse.id || selectedCourse.courseId || '').toLowerCase();
+                    console.log(`Comparing: "${chatCourseId}" === "${selectedCourseId}"`);
+                    console.log(`Chat courseId: ${chat.courseId}, Selected course id: ${selectedCourse.id}, courseId: ${selectedCourse.courseId}`);
+                    return chatCourseId === selectedCourseId && chatCourseId !== '';
+                });
+                console.log('Filtered chats:', filtered);
+                setFilteredChats(filtered);
+            } catch (err) {
+                console.error('Error fetching chats:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchChats();
+        setSelectedChat(null);
+    }, [selectedCourse]);
 
     useEffect(() => {
         const initializeChat = async () => {
@@ -188,25 +242,45 @@ const CreatorPanelChats = () => {
         return <div className="chats-loading">Loading...</div>;
     }
 
-    const uniqueChats = Array.from(new Map(chats.map((chat) => [chat.id, chat])).values());
-
     return (
         <div className="creator-panel-layout">
             <Sidebar />
             <div className="chats-container">
                 <div className="chats-sidebar">
-                    <h2>Your Chats</h2>
-                    <div className="chats-list">
-                        {uniqueChats.map((chat) => (
-                            <div
-                                key={chat.id}
-                                className={`chat-item ${selectedChat?.id === chat.id ? "selected" : ""}`}
-                                onClick={() => setSelectedChat(chat)}
-                            >
-                                <h3>{chat.name}</h3>
-                            </div>
+                    <h2>Your Courses</h2>
+                    <select
+                        value={String(selectedCourse?.id ?? '')}
+                        onChange={e => {
+                            const value = String(e.target.value);
+                            const course = courses.find(c => (c.id ?? '') === value);
+                            setSelectedCourse(course || null);
+                        }}
+                    >
+                        <option value="">Select a course</option>
+                        {courses.map(course => (
+                            <option key={course.id} value={String(course.id ?? '')}>{course.name}</option>
                         ))}
-                    </div>
+                    </select>
+                    {selectedCourse && (
+                        <>
+                            <h2>Chats for {selectedCourse.name}</h2>
+                            <div className="chats-list">
+                                {filteredChats.length === 0 ? (
+                                    <div>No chats for this course.</div>
+                                ) : (
+                                    filteredChats.map((chat) => (
+                                        <div
+                                            key={chat.id}
+                                            className={`chat-item ${selectedChat?.id === chat.id ? "selected" : ""}`}
+                                            onClick={() => setSelectedChat(chat)}
+                                        >
+                                            <h3>{chat.name}</h3>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </>
+                    )}
                 </div>
                 <div className="chats-main">
                     {selectedChat ? (
@@ -242,7 +316,7 @@ const CreatorPanelChats = () => {
                             </div>
                         </>
                     ) : (
-                        <div className="no-chat-selected">Select a chat to start messaging</div>
+                        <div className="no-chat-selected">{selectedCourse ? "Select a chat to start messaging" : "Select a course to see chats"}</div>
                     )}
                 </div>
             </div>

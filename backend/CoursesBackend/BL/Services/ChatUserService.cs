@@ -69,10 +69,11 @@ namespace BL.Services
         public Task<List<Chat>> GetChatsOfUser(Guid userId)
         {
             return _chatUserRepository.GetChatUsers()
+                .Include(cu => cu.Chat)
                 .Where(cu => cu.UserId == userId)
                 .Select(cu => cu.Chat)
+                .Distinct()
                 .ToListAsync();
-
         }
     }
 }
