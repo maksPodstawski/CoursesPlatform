@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Model.DTO;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -30,6 +31,21 @@ namespace Model
 
         [ForeignKey(nameof(CourseId))]
         public Course Course { get; set; }
-
+        public static Review FromCreateDTO(CreateReviewDTO dto, Guid userId)
+        {
+            return new Review
+            {
+                Rating = dto.Rating,
+                Comment = dto.Comment,
+                CourseId = dto.CourseId,
+                UserId = userId,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
+        public void UpdateFromDTO(UpdateReviewDTO dto)
+        {
+            Rating = dto.Rating;
+            Comment = dto.Comment;
+        }
     }
 }

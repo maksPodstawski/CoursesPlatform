@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Model.DTO;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -29,6 +30,17 @@ namespace Model
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? EditedAt { get; set; } = null;
         public bool IsDeleted { get; set; } = false;
-        
+        public static Message MessageFromDTO(MessageDTO dto)
+        {
+            return new Message
+            {
+                Id = dto.Id != Guid.Empty ? dto.Id : Guid.NewGuid(),
+                ChatId = dto.ChatId,
+                AuthorId = dto.AuthorId,
+                Content = dto.Content,
+                CreatedAt = dto.CreatedAt != default ? dto.CreatedAt : DateTime.UtcNow
+            };
+        }
+
     }
 }

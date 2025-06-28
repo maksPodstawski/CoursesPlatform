@@ -1,20 +1,21 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using IBL;
-using Model;
-using Model.DTO;
-using System.Security.Claims;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace COURSES.API.Controllers
 {
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+    using IBL;
+    using Model;
+    using Model.DTO;
+    using System.Security.Claims;
     [ApiController]
     [Route("api/[controller]")]
-    public class ReviewsController : ControllerBase
+    public class ReviewController : ControllerBase
     {
         private readonly IReviewService _reviewService;
         private readonly ICourseService _courseService;
 
-        public ReviewsController(IReviewService reviewService, ICourseService courseService)
+        public ReviewController(IReviewService reviewService, ICourseService courseService)
         {
             _reviewService = reviewService;
             _courseService = courseService;
@@ -73,15 +74,7 @@ namespace COURSES.API.Controllers
                 return BadRequest("You have already reviewed this course");
             }
 
-            var review = new Review
-            {
-                Rating = createReviewDto.Rating,
-                Comment = createReviewDto.Comment,
-                UserId = Guid.Parse(userId),
-                CourseId = createReviewDto.CourseId,
-                CreatedAt = DateTime.UtcNow
-            };
-
+            var review = Review.FromCreateDTO(createReviewDto, Guid.Parse(userId));
             var createdReview = await _reviewService.AddReviewAsync(review);
             return CreatedAtAction(nameof(GetReviewById), new { id = createdReview.Id }, ReviewResponseDTO.FromReview(createdReview));
         }
@@ -102,8 +95,7 @@ namespace COURSES.API.Controllers
                 return Forbid();
             }
 
-            review.Rating = updateReviewDto.Rating;
-            review.Comment = updateReviewDto.Comment;
+            review.UpdateFromDTO(updateReviewDto);
 
             var updatedReview = await _reviewService.UpdateReviewAsync(review);
             if (updatedReview == null)
@@ -151,10 +143,10 @@ namespace COURSES.API.Controllers
             var averageRating = await _reviewService.GetAverageRatingForCourseAsync(courseId);
             var reviewCount = await _reviewService.GetReviewsByCourseIdAsync(courseId);
 
-         
+
             return Ok(new
             {
-                averageRating = Math.Round(averageRating ?? 0, 1), // zaokr�glone np. 4.3
+                averageRating = Math.Round(averageRating ?? 0, 1), // zaokrąglone np. 4.3
                 reviewCount = reviewCount.Count
             });
         }
@@ -177,4 +169,4 @@ namespace COURSES.API.Controllers
             return Ok(ReviewResponseDTO.FromReview(review));
         }
     }
-} 
+}

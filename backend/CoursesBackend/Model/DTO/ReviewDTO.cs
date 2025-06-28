@@ -50,10 +50,9 @@ namespace Model.DTO
                 CourseName = review.Course.Name
             };
         }
-
-        public record DeleteReviewsDto
-        {
-            public List<Guid> ReviewIds { get; set; }
-        }
+    }
+    public record DeleteReviewsDto
+    {
+        public List<Guid> ReviewIds { get; set; }
     }
 } 

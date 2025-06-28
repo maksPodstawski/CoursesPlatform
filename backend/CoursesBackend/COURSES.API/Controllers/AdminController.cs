@@ -42,7 +42,7 @@ namespace COURSES.API.Controllers
             if (string.IsNullOrWhiteSpace(dto?.Name))
                 return BadRequest("Nazwa kategorii jest wymagana.");
 
-            var category = new Category { Name = dto.Name };
+            var category = Category.FromDTO(dto);
             var created = await _categoryService.AddCategoryAsync(category);
 
             var resultDto = new CategoryDTO
@@ -62,11 +62,7 @@ namespace COURSES.API.Controllers
             if (dto.CategoryId == Guid.Empty)
                 return BadRequest("Error! Category ID is required!");
 
-            var subcategory = new Subcategory
-            {
-                Name = dto.Name,
-                CategoryId = dto.CategoryId
-            };
+            var subcategory = Subcategory.FromDTO(dto);
             var created = await _subcategoryService.AddSubcategoryAsync(subcategory);
 
             var resultDto = new SubcategoryDTO
@@ -86,7 +82,7 @@ namespace COURSES.API.Controllers
             if (deleted == null)
                 return NotFound("Course not found");
 
-            return Ok(new { message = "Course deleted", name = deleted.Name });
+            return Ok(new DeleteResponseDTO { message = "Course deleted", name = deleted.Name });
         }
 
         [HttpPost("reviews/delete-many")]
@@ -96,7 +92,7 @@ namespace COURSES.API.Controllers
                 return BadRequest("Review ID not found");
 
             await _reviewService.DeleteReviewsAsync(dto.ReviewIds);
-            return Ok(new { message = "Review deleted" });
+            return Ok(new DeleteResponseDTO { message = "Review deleted" });
         }
 
         [HttpDelete("category/{categoryId}")]
@@ -106,7 +102,7 @@ namespace COURSES.API.Controllers
             if (deleted == null)
                 return NotFound("Category not found");
 
-            return Ok(new { message = "Category deleted", name = deleted.Name });
+            return Ok(new DeleteResponseDTO { message = "Category deleted", name = deleted.Name });
         }
 
         [HttpDelete("subcategory/{subcategoryId}")]
@@ -116,8 +112,9 @@ namespace COURSES.API.Controllers
             if (deleted == null)
                 return NotFound("Subcategory not found");
 
-            return Ok(new { message = "Subcategory deleted", name = deleted.Name });
+            return Ok(new DeleteResponseDTO { message = "Subcategory deleted", name = deleted.Name });
         }
+
 
     }
 }

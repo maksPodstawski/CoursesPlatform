@@ -73,13 +73,8 @@ namespace COURSES.API.Controllers
                 return Conflict("Chat for this user and course already exists.");
             }
 
-            var chat = new Chat
-            {
-                Id = Guid.NewGuid(),
-                Name = createChatDto.Name,
-                ChatAuthorId = userGuid,
-                CourseId = courseId
-            };
+            var chat = Chat.ChatFromDTO(createChatDto, userGuid, courseId);
+
 
             var creators = await _creatorService.GetCreatorsByCourseAsync(courseId);
 
@@ -140,17 +135,12 @@ namespace COURSES.API.Controllers
             if (!isMember) return Forbid();
 
             var messages = await _messageService.GetMessagesByChatIdAsync(chatId);
-            var lastMessages = messages.OrderByDescending(m => m.CreatedAt).Take(count).OrderBy(m => m.CreatedAt);
+            var lastMessages = messages
+                .OrderByDescending(m => m.CreatedAt)
+                .Take(count)
+                .OrderBy(m => m.CreatedAt);
 
-            var result = lastMessages.Select(m => new MessageDTO
-            {
-                Id = m.Id,
-                ChatId = m.ChatId,
-                AuthorId = m.AuthorId,
-                AuthorName = m.Author?.FirstName ?? "",
-                Content = m.Content,
-                CreatedAt = m.CreatedAt
-            }).ToList();
+            var result = lastMessages.Select(MessageDTO.FromEntity).ToList();
 
             return Ok(result);
         }
@@ -166,13 +156,7 @@ namespace COURSES.API.Controllers
             
             if (chat == null)
             {
-                var newChat = new Chat
-                {
-                    Id = Guid.NewGuid(),
-                    Name = $"Course Chat - {courseId}",
-                    ChatAuthorId = userGuid,
-                    CourseId = courseId
-                };
+                var newChat = Chat.ChatFromDTO($"Course Chat - {courseId}", userGuid, courseId);
 
                 var creators = await _creatorService.GetCreatorsByCourseAsync(courseId);
 
