@@ -65,23 +65,15 @@ namespace COURSES.API.Controllers
             if (!isCreator)
                 return Forbid();
 
-            var stage = new Stage
-            {
-                Name = createStageDto.Name,
-                Description = createStageDto.Description,
-                Duration = createStageDto.Duration,
-                CourseId = createStageDto.CourseId,
-                CreatedAt = DateTime.UtcNow
-            };
+            var stageEntity = CreateStageDTO.ToEntity(createStageDto);
 
-            var createdStage = await _stageService.AddStageAsync(stage);
+            var createdStage = await _stageService.AddStageAsync(stageEntity);
             if (createdStage == null)
                 return BadRequest("Failed to create stage");
-            
-            return CreatedAtAction(
-                nameof(GetStageById), 
-                new { id = createdStage.Id }, 
-                StageResponseDTO.FromStage(createdStage));
+
+            var responseDto = StageResponseDTO.FromStage(createdStage);
+
+            return CreatedAtAction(nameof(GetStageById), new { id = createdStage.Id }, responseDto);
         }
 
         [Authorize(Roles = IdentityRoleConstants.User)]

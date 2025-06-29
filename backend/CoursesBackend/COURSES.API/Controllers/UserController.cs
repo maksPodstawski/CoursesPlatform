@@ -32,7 +32,7 @@ public class UserController : ControllerBase
         if (user == null)
             return NotFound();
 
-        return new UserProfileDTO
+        return Ok(new UserProfileDTO
         {
             FirstName = user.FirstName,
             LastName = user.LastName,
@@ -40,9 +40,9 @@ public class UserController : ControllerBase
             UserName = user.UserName,
             PhoneNumber = user.PhoneNumber,
             ProfilePictureBase64 = user.ProfilePicture != null
-                ? Convert.ToBase64String(user.ProfilePicture)
-                : null
-        };
+        ? Convert.ToBase64String(user.ProfilePicture)
+        : null
+        });
     }
 
     // PUT /api/user/me

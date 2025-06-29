@@ -24,5 +24,14 @@ namespace Model
             if (dto == null) throw new ArgumentNullException(nameof(dto));
             return new Subcategory { Name = dto.Name, CategoryId = dto.CategoryId };
         }
+        public static List<Subcategory> FromDTO(IEnumerable<SubcategoryDTO> dtos)
+        {
+            return dtos.Select(dto => new Subcategory
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                CategoryId = dto.CategoryId
+            }).ToList();
+        }
     }
 }

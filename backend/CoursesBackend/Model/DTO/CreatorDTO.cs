@@ -14,9 +14,19 @@ namespace Model.DTO
             {
                 Id = creator.Id,
                 UserId = creator.UserId,
-                UserName = creator.User.ToString(),
+                UserName = creator.User?.UserName ?? "", 
                 CoursesCount = creator.Courses?.Count ?? 0,
                 CourseNames = creator.Courses?.Select(c => c.Name).ToList() ?? new List<string>()
+            };
+        }
+        public Creator ToCreator()
+        {
+            return new Creator
+            {
+                Id = this.Id,
+                UserId = this.UserId,
+                User = new User { Id = this.UserId, UserName = this.UserName },
+                Courses = this.CourseNames.Select(name => new Course { Name = name }).ToList()
             };
         }
     }

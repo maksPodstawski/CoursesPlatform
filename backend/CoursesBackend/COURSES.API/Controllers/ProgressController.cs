@@ -4,6 +4,7 @@ using IBL;
 using Model;
 using Model.DTOs;
 using System.Security.Claims;
+using Model.DTO;
 
 namespace COURSES.API.Controllers
 {
@@ -56,28 +57,28 @@ namespace COURSES.API.Controllers
         public async Task<ActionResult<Progress>> StartStage(Guid stageId)
         {
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            
 
             var existingProgress = await _progressService.GetProgressByStageIdAsync(stageId);
             var userProgress = existingProgress.FirstOrDefault(p => p.UserId == userId);
-            
+
             if (userProgress != null)
             {
- 
                 userProgress.LastAccessedAt = DateTime.UtcNow;
                 var updatedProgress = await _progressService.UpdateProgressAsync(userProgress);
-                return Ok(updatedProgress);
+                return Ok(ProgressDTO.FromEntity(updatedProgress));
             }
 
-            var progress = new Progress
+            var newProgressDto = new ProgressDTO
             {
                 UserId = userId,
                 StageId = stageId,
                 StartedAt = DateTime.UtcNow,
-                LastAccessedAt = DateTime.UtcNow
+                LastAccessedAt = DateTime.UtcNow,
+                IsCompleted = false
             };
-            var result = await _progressService.AddProgressAsync(progress);
-            return Ok(result);
+
+            var result = await _progressService.AddProgressAsync(newProgressDto.ToEntity());
+            return Ok(ProgressDTO.FromEntity(result));
         }
     }
 } 
