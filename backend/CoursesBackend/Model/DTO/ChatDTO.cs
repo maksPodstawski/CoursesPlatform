@@ -17,6 +17,8 @@ namespace Model.DTO
     {
         public Guid Id { get; init; }
         public string Name { get; init; } = string.Empty;
+        public Guid CourseId { get; init; }
+        public string CourseName { get; init; } = string.Empty;
     }
 
 }

@@ -20,14 +20,16 @@ namespace COURSES.API.Controllers
         private readonly IChatUserService _chatUserService;
         private readonly IMessageService _messageService;
         private readonly ICreatorService _creatorService;
+        private readonly ICourseService _courseService;
 
-        public ChatController(IChatService chatService, IUserService userService, IChatUserService chatUserService, IMessageService messageService, ICreatorService creatorService)
+        public ChatController(IChatService chatService, IUserService userService, IChatUserService chatUserService, IMessageService messageService, ICreatorService creatorService, ICourseService courseService)
         {
             _chatService = chatService;
             _userService = userService;
             _chatUserService = chatUserService;
             _messageService = messageService;
             _creatorService = creatorService;
+            _courseService = courseService;
         }
 
         /* [HttpPost("create")]
@@ -73,10 +75,21 @@ namespace COURSES.API.Controllers
                 return Conflict("Chat for this user and course already exists.");
             }
 
+            Course course = await _courseService.GetCourseByIdAsync(courseId);
+            User user = await _userService.GetUserByIdAsync(userGuid);
+            if (course == null)
+            {
+                return NotFound("Course not found.");
+            }
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
             var chat = new Chat
             {
                 Id = Guid.NewGuid(),
-                Name = createChatDto.Name,
+                Name = $"{course.Name} - {user.ToString()}",
                 ChatAuthorId = userGuid,
                 CourseId = courseId
             };
@@ -121,11 +134,18 @@ namespace COURSES.API.Controllers
 
             var chats = await _chatUserService.GetChatsOfUser(Guid.Parse(userId));
 
-            var result = chats.Select(chat => new CreateChatResponseDTO
+            var result = new List<CreateChatResponseDTO>();
+            foreach (var chat in chats)
             {
-                Id = chat.Id,
-                Name = chat.Name,
-            }).ToList();
+                var course = await _courseService.GetCourseByIdAsync(chat.CourseId);
+                result.Add(new CreateChatResponseDTO
+                {
+                    Id = chat.Id,
+                    Name = chat.Name,
+                    CourseId = chat.CourseId,
+                    CourseName = course?.Name ?? string.Empty
+                });
+            }
 
             return Ok(result);
         }
@@ -163,13 +183,16 @@ namespace COURSES.API.Controllers
 
             var userGuid = Guid.Parse(userId);
             var chat = await _chatService.GetChatByAuthorAndCourseAsync(userGuid, courseId);
+
+            Course course = await _courseService.GetCourseByIdAsync(courseId);
+            User user = await _userService.GetUserByIdAsync(userGuid);
             
             if (chat == null)
             {
                 var newChat = new Chat
                 {
                     Id = Guid.NewGuid(),
-                    Name = $"Course Chat - {courseId}",
+                    Name = $"{course?.Name} - {user?.ToString()}",
                     ChatAuthorId = userGuid,
                     CourseId = courseId
                 };
