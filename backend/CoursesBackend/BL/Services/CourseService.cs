@@ -8,9 +8,13 @@ namespace BL.Services
     public class CourseService : ICourseService
     {
         private readonly ICourseRepository _courseRepository;
-        public CourseService(ICourseRepository courseRepository)
+        private readonly ISubcategoryRepository _subcategoryRepository;
+        private readonly ICourseSubcategoryRepository _courseSubcategoryRepository;
+        public CourseService(ICourseRepository courseRepository, ISubcategoryRepository subcategoryRepository, ICourseSubcategoryRepository courseSubcategoryRepository)
         {
             _courseRepository = courseRepository;
+            _subcategoryRepository = subcategoryRepository;
+            _courseSubcategoryRepository = courseSubcategoryRepository;
         }
 
         public async Task<List<Course>> GetAllCoursesAsync()
@@ -100,6 +104,16 @@ namespace BL.Services
             return await _courseRepository.GetCourses()
                 .Where(c => !c.IsHidden)
                 .ToListAsync();
+        }
+
+        public async Task<Subcategory?> GetSubcategoryByIdAsync(Guid subcategoryId)
+        {
+            return _subcategoryRepository.GetSubcategoryByID(subcategoryId);
+        }
+
+        public async Task AddCourseSubcategoryAsync(CourseSubcategory courseSubcategory)
+        {
+            _courseSubcategoryRepository.AddCourseSubcategory(courseSubcategory);
         }
     }
 }

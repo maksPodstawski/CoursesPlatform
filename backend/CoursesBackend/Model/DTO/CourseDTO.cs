@@ -14,6 +14,7 @@ namespace Model.DTO
         [Required]
         public decimal Price { get; init; }
         public bool IsHidden { get; init; } = false;
+        public List<Guid> SubcategoryIds { get; init; } = new();
     }
 
     public record UpdateCourseDTO

@@ -1002,3 +1002,63 @@ input:-webkit-autofill:focus {
   margin-bottom: 0;
 }
 
+.category-label, .subcategory-label {
+  font-size: 1.05rem;
+  color: #e0e0e0;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.02em;
+}
+
+.category-select, .subcategory-select {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  background: #1e1e1e;
+  border: 2px solid #2a2a2a;
+  border-radius: 8px;
+  color: #e0e0e0;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  transition: border-color 0.2s;
+  appearance: none;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.category-select:focus, .subcategory-select:focus {
+  border-color: #3dc55f;
+  background: #232323;
+}
+
+.category-select option, .subcategory-select option {
+  background: #232323;
+  color: #e0e0e0;
+}
+
+@media (max-width: 600px) {
+  .category-select, .subcategory-select {
+    font-size: 0.95rem;
+    padding: 0.6rem 0.7rem;
+  }
+  .category-label, .subcategory-label {
+    font-size: 0.98rem;
+  }
+}
+
+.category-row {
+  display: flex;
+  gap: 2rem;
+}
+
+.category-row .form-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+@media (max-width: 700px) {
+  .category-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
