@@ -35,7 +35,8 @@ export interface Message {
 export interface CreateChatResponseDTO {
 	id: string;
 	name: string;
-	createdAt: string;
+	courseId: string;
+	courseName: string;
 }
 
 export type Course = {
