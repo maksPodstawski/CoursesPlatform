@@ -104,16 +104,17 @@ namespace BL.Tests
         [Fact]
         public async Task GetSubcategoriesByCategoryIdAsync_CategoryWithSubcategories_ReturnsSubcategories()
         {
+            var categoryId = Guid.NewGuid();
             var subcategories = new List<Subcategory>
             {
-                new Subcategory { Id = Guid.NewGuid(), Name = "React" },
-                new Subcategory { Id = Guid.NewGuid(), Name = "Vue" }
+                new Subcategory { Id = Guid.NewGuid(), Name = "React", CategoryId = categoryId },
+                new Subcategory { Id = Guid.NewGuid(), Name = "Vue", CategoryId = categoryId }
             };
 
-            var categoryId = Guid.NewGuid();
             var category = new Category { Id = categoryId, Name = "Frontend", Subcategories = subcategories };
 
             _mockRepo.Setup(r => r.GetCategoryById(categoryId)).Returns(category);
+            _mockSubcategoryRepo.Setup(r => r.GetSubcategories()).Returns(subcategories.AsQueryable());
 
             var result = await _service.GetSubcategoriesByCategoryIdAsync(categoryId);
 
