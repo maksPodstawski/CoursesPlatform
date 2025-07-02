@@ -104,6 +104,33 @@ namespace COURSES.API.Controllers
 
                 var createdCourse = await _courseService.AddCourseAsync(course);
 
+                if (createCourseDto.SubcategoryIds != null && createCourseDto.SubcategoryIds.Any())
+                {
+                    var validSubcategories = new List<Subcategory>();
+                    foreach (var subId in createCourseDto.SubcategoryIds)
+                    {
+                        var subcategory = await _courseService.GetSubcategoryByIdAsync(subId);
+                        if (subcategory != null)
+                        {
+                            validSubcategories.Add(subcategory);
+                        }
+                    }
+                    if (validSubcategories.Count != createCourseDto.SubcategoryIds.Count)
+                    {
+                        return BadRequest("One or more subcategories do not exist.");
+                    }
+                    foreach (var subcategory in validSubcategories)
+                    {
+                        var courseSubcategory = new CourseSubcategory
+                        {
+                            Id = Guid.NewGuid(),
+                            CourseId = createdCourse.Id,
+                            SubcategoryId = subcategory.Id
+                        };
+                        await _courseService.AddCourseSubcategoryAsync(courseSubcategory);
+                    }
+                }
+
                 var creator = await _creatorService.AddCreatorFromUserAsync(Guid.Parse(userId), createdCourse.Id);
 
                 var purchase = new PurchasedCourses

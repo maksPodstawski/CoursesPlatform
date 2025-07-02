@@ -82,7 +82,7 @@ const StagePlayerPage = () => {
 	const prevStageId = currentStageIndex > 0 ? allStages[currentStageIndex - 1].id : undefined;
 
 	return (
-		<main>
+		<main className="stage-player-main">
 			<StagePlayer
 				stage={stage}
 				courseId={courseId}

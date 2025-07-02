@@ -1,8 +1,10 @@
 import '../styles/AddCourse.css';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { config } from "../config";
 import Sidebar from "../components/Sidebar";
+import { getCategories, getSubcategories } from "../services/categoryService";
+import { Category, Subcategory } from "../types/courses";
 
 type Stage = {
   name: string;
@@ -54,7 +56,25 @@ export const AddCourse = () => {
     error: null,
   });
 
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
+
   const navigate = useNavigate();
+
+  useEffect(() => {
+    getCategories().then(setCategories).catch(() => setCategories([]));
+  }, []);
+
+  useEffect(() => {
+    if (selectedCategory) {
+      getSubcategories(selectedCategory).then(setSubcategories).catch(() => setSubcategories([]));
+    } else {
+      setSubcategories([]);
+      setSelectedSubcategory("");
+    }
+  }, [selectedCategory]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -107,6 +127,15 @@ export const AddCourse = () => {
     }));
   };
 
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCategory(e.target.value);
+    setSelectedSubcategory("");
+  };
+
+  const handleSubcategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedSubcategory(e.target.value);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmissionStatus({
@@ -117,18 +146,24 @@ export const AddCourse = () => {
     });
 
     try {
+      // Przygotuj payload
+      const payload: any = {
+        name: form.name,
+        description: form.description,
+        imageUrl: form.imageUrl,
+        duration: form.duration,
+        price: form.price,
+      };
+      if (selectedSubcategory && selectedSubcategory.trim() !== "") {
+        payload.subcategoryIds = [selectedSubcategory];
+      }
+
       // First create the course
       const courseRes = await fetch(`${config.apiBaseUrl}${config.apiEndpoints.addCourse}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          name: form.name,
-          description: form.description,
-          imageUrl: form.imageUrl,
-          duration: form.duration,
-          price: form.price,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!courseRes.ok) throw new Error("Course creation failed");
@@ -270,6 +305,26 @@ export const AddCourse = () => {
               <div className="duration-price-group">
                 {renderField("Duration", "duration", "number", "Duration in minutes", form.duration, handleChange)}
                 {renderField("Price", "price", "number", "Course price", form.price, handleChange)}
+              </div>
+              <div className="category-row">
+                <div className="form-group">
+                  <label className="category-label">Category</label>
+                  <select className="category-select" value={selectedCategory} onChange={handleCategoryChange} required>
+                    <option value="">Select a category</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="subcategory-label">Subcategory</label>
+                  <select className="subcategory-select" value={selectedSubcategory} onChange={handleSubcategoryChange} required disabled={!selectedCategory}>
+                    <option value="">Select a subcategory</option>
+                    {subcategories.map((sub) => (
+                      <option key={sub.id} value={sub.id}>{sub.name}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
             <div className="course-preview">
@@ -421,6 +476,14 @@ export const AddCourse = () => {
                 <div className="summary-item">
                   <span>Price:</span>
                   <span>${form.price}</span>
+                </div>
+                <div className="summary-item">
+                  <span>Category:</span>
+                  <span>{categories.find(c => c.id === selectedCategory)?.name || 'Not set'}</span>
+                </div>
+                <div className="summary-item">
+                  <span>Subcategory:</span>
+                  <span>{subcategories.find(s => s.id === selectedSubcategory)?.name || 'Not set'}</span>
                 </div>
               </div>
 
