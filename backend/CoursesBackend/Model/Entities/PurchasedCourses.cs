@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Model.DTO;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -26,5 +27,18 @@ namespace Model
         public decimal PurchasedPrice { get; set; }
         public DateTime? ExpirationDate { get; set; } = null;
         public bool IsActive { get; set; } = true;
+        public static PurchasedCourses FromDTO(PurchaseCourseDTO dto, Guid userId)
+        {
+            return new PurchasedCourses
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                CourseId = dto.CourseId,
+                PurchasedPrice = dto.Price,
+                PurchasedAt = DateTime.UtcNow,
+                ExpirationDate = dto.ExpirationDate,
+                IsActive = true
+            };
+        }
     }
 }

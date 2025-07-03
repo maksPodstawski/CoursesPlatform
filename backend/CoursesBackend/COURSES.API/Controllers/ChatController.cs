@@ -86,13 +86,7 @@ namespace COURSES.API.Controllers
                 return NotFound("User not found.");
             }
 
-            var chat = new Chat
-            {
-                Id = Guid.NewGuid(),
-                Name = $"{course.Name} - {user.ToString()}",
-                ChatAuthorId = userGuid,
-                CourseId = courseId
-            };
+            var chat = Chat.ChatFromDTO(createChatDto, userGuid, courseId);
 
             var creators = await _creatorService.GetCreatorsByCourseAsync(courseId);
 
@@ -123,7 +117,7 @@ namespace COURSES.API.Controllers
             }
             var user = _userService.GetUserByIdAsync(Guid.Parse(userId));
             await _chatUserService.AddUserToChatAsync(chatId, Guid.Parse(userId));
-            return Ok(new { Message = "Joined chat successfully." });
+            return Ok(new MessageResponseDTO { Message = "Joined chat successfully." });
         }
 
         [HttpGet("my")]
@@ -185,8 +179,12 @@ namespace COURSES.API.Controllers
             var chat = await _chatService.GetChatByAuthorAndCourseAsync(userGuid, courseId);
 
             Course course = await _courseService.GetCourseByIdAsync(courseId);
+            if (course == null)
+                return NotFound("Course not found.");
             User user = await _userService.GetUserByIdAsync(userGuid);
-            
+            if (user == null)
+                return NotFound("User not found.");
+
             if (chat == null)
             {
                 var newChat = new Chat

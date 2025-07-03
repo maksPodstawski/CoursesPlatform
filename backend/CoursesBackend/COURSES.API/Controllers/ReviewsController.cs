@@ -59,15 +59,7 @@ namespace COURSES.API.Controllers
             var existing = await _reviewService.GetReviewsByUserIdAsync(Guid.Parse(userId));
             if (existing.Any(r => r.CourseId == dto.CourseId)) return BadRequest("Already reviewed");
 
-            var review = new Review
-            {
-                Id = Guid.NewGuid(),
-                Rating = dto.Rating,
-                Comment = dto.Comment,
-                CourseId = dto.CourseId,
-                UserId = Guid.Parse(userId),
-                CreatedAt = DateTime.UtcNow
-            };
+            var review = Review.FromCreateDTO(dto, Guid.Parse(userId));
 
             var created = await _reviewService.AddReviewAsync(review);
             return CreatedAtAction(nameof(GetReviewById), new { id = created.Id }, ReviewResponseDTO.FromReview(created));
@@ -115,6 +107,30 @@ namespace COURSES.API.Controllers
             if (review == null) return NotFound();
 
             return Ok(ReviewResponseDTO.FromReview(review));
+        }
+        [Authorize]
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteReview(Guid id)
+        {
+            var review = await _reviewService.GetReviewByIdAsync(id);
+            if (review == null)
+            {
+                return NotFound();
+            }
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId) || review.UserId != Guid.Parse(userId))
+            {
+                return Forbid();
+            }
+
+            var deletedReview = await _reviewService.DeleteReviewAsync(id);
+            if (deletedReview == null)
+            {
+                return BadRequest("Failed to delete review");
+            }
+
+            return NoContent();
         }
     }
 }

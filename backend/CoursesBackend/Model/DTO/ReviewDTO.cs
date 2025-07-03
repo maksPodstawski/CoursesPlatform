@@ -58,3 +58,7 @@ public record AnalyzeReviewDTO
     [Required]
     public string Comment { get; init; } = string.Empty;
 }
+public record DeleteReviewsDto
+{
+    public List<Guid> ReviewIds { get; set; }
+}

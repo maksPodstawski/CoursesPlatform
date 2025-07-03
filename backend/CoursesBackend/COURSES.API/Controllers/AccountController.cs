@@ -30,7 +30,12 @@ namespace COURSES.API.Controllers
 
             if (!await _recaptchaService.VerifyAsync(registerRequest.RecaptchaToken))
             {
-                return BadRequest("CAPTCHA verification failed");
+                var errors = new SerializableError
+                {
+                    { "Recaptcha", new[] { "CAPTCHA verification failed" } }
+                };
+
+                return BadRequest(errors);
             }
 
             try
@@ -40,21 +45,21 @@ namespace COURSES.API.Controllers
             }
             catch (UserAlreadyExistsException ex)
             {
-                var errors = new Dictionary<string, string[]>
+                var errors = new SerializableError
                 {
                     { "Email", new[] { ex.Message } }
                 };
 
-                return BadRequest(new { errors });
+                return BadRequest(errors);
             }
             catch (RegistrationFailedException ex)
             {
-                var errors = new Dictionary<string, string[]>
+                var errors = new SerializableError
                 {
-                    { "Password", ex.Message.Split(Environment.NewLine) }
+                    { "Password", ex.Errors }
                 };
 
-                return BadRequest(new { errors });
+                return BadRequest(errors);
             }
         }
 
@@ -71,12 +76,12 @@ namespace COURSES.API.Controllers
             }
             catch (LoginFailedException ex)
             {
-                var errors = new Dictionary<string, string[]>
+                var errors = new SerializableError
                 {
                     { "Login", new[] { ex.Message } }
                 };
 
-                return BadRequest(new { errors });
+                return BadRequest(errors);
             }
 
         }

@@ -22,7 +22,10 @@ namespace COURSES.API.Controllers
             Console.WriteLine($" Called with categoryId: {categoryId}");
 
             var subcategories = await _subcategoryService.GetSubcategoriesByCategoryIdAsync(categoryId);
-
+            if (subcategories == null)
+            {
+                return Ok(new List<SubcategoryDTO>());
+            }
             Console.WriteLine($" Subcategories found: {subcategories.Count}");
 
             var result = subcategories.Select(s => new SubcategoryDTO

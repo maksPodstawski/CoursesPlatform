@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Model.DTO;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -33,5 +34,18 @@ namespace Model
         public ICollection<Creator> Creators { get; set; } = new List<Creator>();
         [Required]
         public bool IsHidden { get; set; } = false;
+        public static Course FromCreateDTO(CreateCourseDTO dto)
+        {
+            return new Course
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                ImageUrl = dto.ImageUrl,
+                Duration = dto.Duration,
+                Price = dto.Price,
+                IsHidden = dto.IsHidden,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
     }
 }

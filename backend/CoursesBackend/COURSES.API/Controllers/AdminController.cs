@@ -68,11 +68,7 @@ namespace COURSES.API.Controllers
             if (dto.CategoryId == Guid.Empty)
                 return BadRequest("Error! Category ID is required!");
 
-            var subcategory = new Subcategory
-            {
-                Name = dto.Name,
-                CategoryId = dto.CategoryId
-            };
+            var subcategory = Subcategory.FromDTO(dto);
             var created = await _subcategoryService.AddSubcategoryAsync(subcategory);
 
             var resultDto = new SubcategoryDTO
@@ -92,7 +88,11 @@ namespace COURSES.API.Controllers
             if (deleted == null)
                 return NotFound("Course not found");
 
-            return Ok(new { message = "Course deleted", name = deleted.Name });
+            return Ok(new DeleteResponseDTO
+            {
+                message = "Course deleted",
+                name = deleted.Name
+            });
         }
 
         [HttpDelete("category/{categoryId}")]

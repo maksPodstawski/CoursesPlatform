@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
+using Model.DTO;
 
 namespace Model
 {
@@ -42,6 +43,19 @@ namespace Model
         public override string ToString()
         {
             return FirstName + " " + LastName;
+        }
+        public static User FromDTO(UserDTO dto)
+        {
+            return new User
+            {
+                Id = dto.Id,
+                Email = dto.Email,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                UserName = null,
+                PhoneNumber = null,
+                ProfilePicture = null
+            };
         }
     }
 }
