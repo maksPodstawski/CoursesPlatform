@@ -194,6 +194,7 @@ namespace COURSES.API.Controllers
             existingCourse.Duration = updateCourseDto.Duration;
             existingCourse.Price = updateCourseDto.Price;
             existingCourse.IsHidden = updateCourseDto.IsHidden;
+            existingCourse.Difficulty = updateCourseDto.Difficulty;
             existingCourse.UpdatedAt = DateTime.UtcNow;
 
             var updatedCourse = await _courseService.UpdateCourseAsync(existingCourse);

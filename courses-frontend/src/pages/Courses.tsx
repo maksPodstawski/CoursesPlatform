@@ -6,6 +6,7 @@ import BuyButton from "../components/BuyButton.tsx";
 import { Search, Grid, List, BookOpen } from 'lucide-react';
 import '../styles/Courses.css';
 import { CourseCard, CourseCardSkeleton } from '../components/CourseCard';
+import { getDifficultyLabel } from '../utils/difficulty';
 
 interface Course {
 	id: string;
@@ -16,6 +17,7 @@ interface Course {
 	instructor?: string;
 	duration?: string;
 	studentsCount?: number;
+	difficultyLevel?: number;
 	level?: "Beginner" | "Intermediate" | "Advanced";
 	category?: string;
 }
@@ -38,12 +40,13 @@ const Courses = () => {
 				data.map(async (course: any) => {
 					const instructor = await getCourseInstructor(course.id);
 					const studentsCount = await getCourseParticipantsCount(course.id);
+					const level = getDifficultyLabel(course.difficulty);
 					return {
 						...course,
 						instructor: instructor.name || "N/A",
 						duration: course.duration || "8 hours",
 						studentsCount: studentsCount,
-						level: course.level || ["Beginner", "Intermediate", "Advanced"][Math.floor(Math.random() * 3)],
+						level: level,
 						category: course.category || "Programming"
 					};
 				})
@@ -227,6 +230,7 @@ const Courses = () => {
 			</div>
 		</div>
 	);
+
 };
 
 export default Courses;

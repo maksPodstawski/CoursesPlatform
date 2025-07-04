@@ -44,6 +44,7 @@ namespace DAL
             existing.ImageUrl = course.ImageUrl;
             existing.Duration = course.Duration;
             existing.Price = course.Price;
+            existing.Difficulty = course.Difficulty;
             existing.UpdatedAt = DateTime.UtcNow;
 
             _context.SaveChanges();
