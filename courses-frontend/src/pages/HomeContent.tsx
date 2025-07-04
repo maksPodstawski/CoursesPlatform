@@ -7,7 +7,8 @@ import { getRatingSummary } from "../services/reviewService";
 import { AnimatedSection } from "../utils/animations";
 import StatCard from "../components/StatCard";
 import { CourseCard } from "../components/CourseCard";
-//import { getCourseImageUrl } from "../utils/getCourseImageUrl";
+import { getDifficultyLabel } from "../utils/difficulty";
+
 
 const HomeContent = () => {
   const [featuredCourses, setFeaturedCourses] = useState<any[]>([]);
@@ -24,12 +25,13 @@ const HomeContent = () => {
           topCourses.map(async (course: any) => {
             const instructor = await getCourseInstructor(course.id);
             const studentsCount = await getCourseParticipantsCount(course.id);
+            const level = await getDifficultyLabel(course.difficulty);
             return {
               ...course,
               instructor: instructor.name || "N/A",
               duration: course.duration || "8 hours",
               studentsCount: studentsCount,
-              level: course.level || ["Beginner", "Intermediate", "Advanced"][Math.floor(Math.random() * 3)],
+              level: level,
               category: course.category || "Programming"
             };
           })

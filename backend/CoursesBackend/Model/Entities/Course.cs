@@ -9,6 +9,13 @@ using System.Threading.Tasks;
 
 namespace Model
 {
+    public enum Difficulty
+    {
+        Beginner = 1,
+        Intermediate = 2,
+        Advanced = 3
+    }
+
     [Table("Courses")]
     public class Course
     {
@@ -30,10 +37,12 @@ namespace Model
         public DateTime? UpdatedAt { get; set; } = null;
         public ICollection<Review>? Reviews { get; set; } = new List<Review>();
         public ICollection<Stage>? Stages { get; set; } = new List<Stage>();
-        public ICollection<CourseSubcategory>? CourseSubcategories { get; set; } = new List<CourseSubcategory>();
+        public ICollection<CourseSubcategory> CourseSubcategories { get; set; } = new List<CourseSubcategory>();
         public ICollection<Creator> Creators { get; set; } = new List<Creator>();
         [Required]
         public bool IsHidden { get; set; } = false;
+        [Required]
+        public Difficulty Difficulty { get; set; } = Difficulty.Beginner;
         public static Course FromCreateDTO(CreateCourseDTO dto)
         {
             return new Course
@@ -44,6 +53,7 @@ namespace Model
                 Duration = dto.Duration,
                 Price = dto.Price,
                 IsHidden = dto.IsHidden,
+                Difficulty = dto.Difficulty,
                 CreatedAt = DateTime.UtcNow
             };
         }
@@ -57,6 +67,7 @@ namespace Model
                 Duration = dto.Duration,
                 Price = dto.Price,
                 IsHidden = dto.IsHidden,
+                Difficulty = dto.Difficulty,
                 CreatedAt = DateTime.UtcNow
             };
         }

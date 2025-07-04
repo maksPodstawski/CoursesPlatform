@@ -1002,7 +1002,7 @@ input:-webkit-autofill:focus {
   margin-bottom: 0;
 }
 
-.category-label, .subcategory-label {
+.category-label, .subcategory-label, .difficulty-label {
   font-size: 1.05rem;
   color: #e0e0e0;
   font-weight: 500;
@@ -1010,7 +1010,7 @@ input:-webkit-autofill:focus {
   letter-spacing: 0.02em;
 }
 
-.category-select, .subcategory-select {
+.category-select, .subcategory-select, .difficulty-select {
   width: 100%;
   padding: 0.7rem 1rem;
   background: #1e1e1e;
@@ -1025,22 +1025,22 @@ input:-webkit-autofill:focus {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.category-select:focus, .subcategory-select:focus {
+.category-select:focus, .subcategory-select:focus, .difficulty-select:focus {
   border-color: #3dc55f;
   background: #232323;
 }
 
-.category-select option, .subcategory-select option {
+.category-select option, .subcategory-select option, .difficulty-select option {
   background: #232323;
   color: #e0e0e0;
 }
 
 @media (max-width: 600px) {
-  .category-select, .subcategory-select {
+  .category-select, .subcategory-select, .difficulty-select {
     font-size: 0.95rem;
     padding: 0.6rem 0.7rem;
   }
-  .category-label, .subcategory-label {
+  .category-label, .subcategory-label, .difficulty-label {
     font-size: 0.98rem;
   }
 }
