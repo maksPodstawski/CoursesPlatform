@@ -18,6 +18,7 @@ type CourseForm = {
   description: string;
   duration: string;
   price: string;
+  difficulty: number;
   stages: Stage[];
   imageFile: File | null;
 };
@@ -37,6 +38,7 @@ export const AddCourse = () => {
     description: "",
     duration: "1",
     price: "1",
+    difficulty: 1,
     stages: [],
     imageFile: null,
   });
@@ -162,6 +164,13 @@ export const AddCourse = () => {
     setSelectedSubcategory(e.target.value);
   };
 
+  const handleDifficultyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setForm((prev) => ({
+      ...prev,
+      difficulty: parseInt(e.target.value),
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -224,6 +233,7 @@ export const AddCourse = () => {
       formData.append("description", form.description);
       formData.append("duration", String(parseFloat(form.duration.replace(',', '.'))));
       formData.append("price", form.price.replace('.', ',').replace(/,/g, ',').trim());
+      formData.append("difficulty", String(form.difficulty));
       if (form.imageFile) {
         formData.append("image", form.imageFile);
       }
@@ -399,6 +409,14 @@ export const AddCourse = () => {
                     ))}
                   </select>
                 </div>
+                <div className="form-group">
+                  <label className="difficulty-label">Difficulty Level</label>
+                  <select className="difficulty-select" value={form.difficulty} onChange={handleDifficultyChange} required>
+                    <option value={1}>Beginner</option>
+                    <option value={2}>Intermediate</option>
+                    <option value={3}>Advanced</option>
+                  </select>
+                </div>
               </div>
             </div>
             <div className="course-preview">
@@ -429,6 +447,10 @@ export const AddCourse = () => {
                     <div className="stat">
                       <span>Price:</span>
                       <span>${form.price}</span>
+                    </div>
+                    <div className="stat">
+                      <span>Difficulty:</span>
+                      <span>{form.difficulty === 1 ? 'Beginner' : form.difficulty === 2 ? 'Intermediate' : 'Advanced'}</span>
                     </div>
                     <div className="stat">
                       <span>Stages:</span>
@@ -550,6 +572,10 @@ export const AddCourse = () => {
                 <div className="summary-item">
                   <span>Price:</span>
                   <span>${form.price}</span>
+                </div>
+                <div className="summary-item">
+                  <span>Difficulty:</span>
+                  <span>{form.difficulty === 1 ? 'Beginner' : form.difficulty === 2 ? 'Intermediate' : 'Advanced'}</span>
                 </div>
                 <div className="summary-item">
                   <span>Category:</span>

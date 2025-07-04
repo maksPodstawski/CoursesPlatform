@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getCourses, getCourseInstructor, getCourseParticipantsCount } from '../services/courseService';
+import { getCategories } from '../services/categoryService';
+import { getSubcategoriesByCategoryId, Subcategory } from '../services/subcategoryService';
 import { getRatingSummary } from '../services/reviewService';
 import { useNavigate } from "react-router-dom";
 import BuyButton from "../components/BuyButton.tsx";
@@ -19,7 +21,14 @@ interface Course {
 	studentsCount?: number;
 	difficultyLevel?: number;
 	level?: "Beginner" | "Intermediate" | "Advanced";
+	categoryId?: string;
 	category?: string;
+	subcategories?: string[];
+}
+
+interface Category {
+	id: string;
+	name: string;
 }
 
 const Courses = () => {
@@ -28,9 +37,12 @@ const Courses = () => {
 	const [loading, setLoading] = useState(true);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState("all");
+	const [selectedSubcategory, setSelectedSubcategory] = useState("all");
 	const [selectedLevel, setSelectedLevel] = useState("all");
 	const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 	const [ratings, setRatings] = useState<Record<string, string>>({});
+	const [categories, setCategories] = useState<Category[]>([]);
+	const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
 	const navigate = useNavigate();
 
 	const fetchCourses = async () => {
@@ -47,7 +59,8 @@ const Courses = () => {
 						duration: course.duration || "8 hours",
 						studentsCount: studentsCount,
 						level: level,
-						category: course.category || "Programming"
+						categoryId: course.categoryId,
+						subcategories: course.subcategories || [],
 					};
 				})
 			);
@@ -57,6 +70,29 @@ const Courses = () => {
 			console.error('Error:', error);
 		} finally {
 			setLoading(false);
+		}
+	};
+
+	const fetchCategories = async () => {
+		try {
+			const data = await getCategories();
+			setCategories(data);
+		} catch (error) {
+			console.error('Error fetching categories:', error);
+		}
+	};
+
+	const fetchSubcategories = async (categoryId: string) => {
+		try {
+			if (categoryId === "all") {
+				setSubcategories([]);
+				return;
+			}
+			const data = await getSubcategoriesByCategoryId(categoryId);
+			setSubcategories(data);
+		} catch (error) {
+			console.error('Error fetching subcategories:', error);
+			setSubcategories([]);
 		}
 	};
 
@@ -73,6 +109,8 @@ const Courses = () => {
 
 	useEffect(() => {
 		fetchCourses();
+		fetchCategories();
+		fetchSubcategories("all");
 	}, []);
 
 	useEffect(() => {
@@ -80,6 +118,11 @@ const Courses = () => {
 			fetchRating(course.id);
 		});
 	}, [courses]);
+
+	useEffect(() => {
+		fetchSubcategories(selectedCategory);
+		setSelectedSubcategory("all"); // Reset subcategory when category changes
+	}, [selectedCategory]);
 
 	useEffect(() => {
 		let filtered = courses;
@@ -96,7 +139,16 @@ const Courses = () => {
 
 		// Filter by category
 		if (selectedCategory !== "all") {
-			filtered = filtered.filter((course) => course.category === selectedCategory);
+			filtered = filtered.filter((course) => course.categoryId === selectedCategory);
+		}
+
+		// Filter by subcategory
+		if (selectedSubcategory !== "all") {
+			filtered = filtered.filter((course) => 
+				course.subcategories?.some(subcategory => 
+					subcategories.find(sub => sub.id === selectedSubcategory)?.name === subcategory
+				)
+			);
 		}
 
 		// Filter by level
@@ -105,9 +157,8 @@ const Courses = () => {
 		}
 
 		setFilteredCourses(filtered);
-	}, [courses, searchTerm, selectedCategory, selectedLevel]);
+	}, [courses, searchTerm, selectedCategory, selectedSubcategory, selectedLevel]);
 
-	const categories = Array.from(new Set(courses.map((course) => course.category).filter(Boolean)));
 	const levels = ["Beginner", "Intermediate", "Advanced"];
 
 	const handleViewDetails = (courseId: string) => {
@@ -146,8 +197,21 @@ const Courses = () => {
 						>
 							<option value="all">All Categories</option>
 							{categories.map((category) => (
-								<option key={category} value={category}>
-									{category}
+								<option key={category.id} value={category.id}>
+									{category.name}
+								</option>
+							))}
+						</select>
+
+						<select
+							value={selectedSubcategory}
+							onChange={(e) => setSelectedSubcategory(e.target.value)}
+							className="filter-select"
+						>
+							<option value="all">All Subcategories</option>
+							{subcategories.map((subcategory) => (
+								<option key={subcategory.id} value={subcategory.id}>
+									{subcategory.name}
 								</option>
 							))}
 						</select>

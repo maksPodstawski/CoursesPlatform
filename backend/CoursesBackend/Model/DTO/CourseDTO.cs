@@ -54,6 +54,8 @@ namespace Model.DTO
         public List<string> Creators { get; init; } = new();
         public bool IsHidden { get; init; }
         public Difficulty Difficulty { get; init; }
+        public string? CategoryId { get; init; }
+        public string? CategoryName { get; init; }
 
 
         public static CourseResponseDTO FromCourse(Course course)
@@ -74,7 +76,10 @@ namespace Model.DTO
                 Subcategories = course.CourseSubcategories?.Select(cs => cs.Subcategory.Name).ToList() ?? new List<string>(),
                 Creators = course.Creators.Select(c => c.User.ToString()).ToList(),
                 IsHidden = course.IsHidden,
-                Difficulty = course.Difficulty
+                Difficulty = course.Difficulty,
+                CategoryId = course.CourseSubcategories?.FirstOrDefault()?.Subcategory?.CategoryId.ToString(),
+                CategoryName = course.CourseSubcategories?.FirstOrDefault()?.Subcategory?.Category?.Name
+
             };
         }
     }

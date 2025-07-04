@@ -60,3 +60,29 @@ export async function getCourseParticipantsCount(courseId: string) {
 	}
 	return await response.json();
 }
+
+export interface UpdateCourseData {
+	name: string;
+	description?: string;
+	imageUrl: string;
+	duration: number;
+	price: number;
+	isHidden: boolean;
+	difficulty: number;
+}
+
+export async function updateCourse(courseId: string, courseData: UpdateCourseData) {
+	const response = await fetchClient.fetch(`/api/courses/${courseId}`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify(courseData),
+	});
+	
+	if (!response.ok) {
+		throw new Error('Failed to update course');
+	}
+	
+	return await response.json();
+}

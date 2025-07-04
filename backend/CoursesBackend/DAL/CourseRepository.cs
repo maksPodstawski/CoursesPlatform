@@ -19,12 +19,21 @@ namespace DAL
         {
             return _context.Courses
                 .Include(c => c.Creators)
-                .ThenInclude(creator => creator.User);
+                    .ThenInclude(creator => creator.User)
+                .Include(c => c.CourseSubcategories)
+                    .ThenInclude(cs => cs.Subcategory)
+                        .ThenInclude(s => s.Category);
         }
 
         public Course? GetCourseById(Guid courseId)
         {
-            return _context.Courses.FirstOrDefault(c => c.Id == courseId);
+            return _context.Courses
+                .Include(c => c.Creators)
+                    .ThenInclude(creator => creator.User)
+                .Include(c => c.CourseSubcategories)
+                    .ThenInclude(cs => cs.Subcategory)
+                .ThenInclude(s => s.Category)
+                .FirstOrDefault(c => c.Id == courseId);
         }
 
         public Course AddCourse(Course course)
