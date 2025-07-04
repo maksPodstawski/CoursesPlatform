@@ -257,7 +257,7 @@ export default function CourseView() {
             <div className="instructor-card">
               <div className="instructor-content">
                 <div className="instructor-avatar">
-                  <img src={course.instructor.avatar || "/placeholder.svg"} alt={course.instructor.name} />
+                  <img src={course.instructor.avatar || "/placeholder.svg"} />
                   <div className="avatar-fallback">
                     <User size={32} />
                   </div>
