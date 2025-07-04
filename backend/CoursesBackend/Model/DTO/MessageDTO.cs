@@ -14,5 +14,17 @@ namespace Model.DTO
         public string AuthorName { get; init; } = "";
         public string Content { get; init; } = "";
         public DateTime CreatedAt { get; init; }
+        public static MessageDTO FromEntity(Message message)
+        {
+            return new MessageDTO
+            {
+                Id = message.Id,
+                ChatId = message.ChatId,
+                AuthorId = message.AuthorId,
+                AuthorName = message.Author?.FirstName ?? "",
+                Content = message.Content,
+                CreatedAt = message.CreatedAt
+            };
+        }
     }
 }

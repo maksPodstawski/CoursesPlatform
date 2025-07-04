@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Model.DTO;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -19,5 +20,18 @@ namespace Model
         [Required]
         public string Name { get; set; } = string.Empty;
         public List<Subcategory>? Subcategories { get; set; } = new List<Subcategory>();
+        public static Category FromDTO(CategoryNameDto dto)
+        {
+            if (dto == null) throw new ArgumentNullException(nameof(dto));
+            return new Category { Name = dto.Name };
+        }
+        public CategoryDTO ToDTO()
+        {
+            return new CategoryDTO
+            {
+                Id = this.Id,
+                Name = this.Name
+            };
+        }
     }
 }

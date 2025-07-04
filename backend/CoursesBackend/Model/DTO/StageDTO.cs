@@ -20,6 +20,17 @@ namespace Model.DTO
 
         [Required]
         public Guid CourseId { get; set; }
+        public static Stage ToEntity(CreateStageDTO dto)
+        {
+            return new Stage
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                Duration = dto.Duration,
+                CourseId = dto.CourseId,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
     }
 
     public class UpdateStageDTO
