@@ -47,5 +47,18 @@ namespace Model
                 CreatedAt = DateTime.UtcNow
             };
         }
+        public static Course FromCreateDTO(Model.DTO.CreateCourseWithImageDTO dto)
+        {
+            return new Course
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                ImageUrl = string.Empty,
+                Duration = dto.Duration,
+                Price = dto.Price,
+                IsHidden = dto.IsHidden,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
     }
 }

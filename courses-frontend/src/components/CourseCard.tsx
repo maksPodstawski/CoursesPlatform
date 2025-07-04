@@ -3,6 +3,7 @@ import type { ReactNode, MouseEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Star, Clock, Users } from 'lucide-react';
 import '../styles/CourseCard.css';
+import { getCourseImageUrl } from "../utils/getCourseImageUrl";
 
 interface Course {
 	id: string;
@@ -43,7 +44,7 @@ export const CourseCard = ({ course, rating, actions }: CourseCardProps) => {
       <div className="course-card-header">
         <div className="course-image-container">
           <img
-            src={course?.imageUrl || "/placeholder.svg"}
+            src={getCourseImageUrl(course?.imageUrl || "")}
             alt={course?.name}
             className="course-image"
           />

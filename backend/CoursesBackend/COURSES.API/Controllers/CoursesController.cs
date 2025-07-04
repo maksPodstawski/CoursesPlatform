@@ -4,6 +4,8 @@ using IBL;
 using Model;
 using Model.DTO;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace COURSES.API.Controllers
 {
@@ -81,7 +83,7 @@ namespace COURSES.API.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<CourseResponseDTO>> CreateCourse([FromBody] CreateCourseDTO createCourseDto)
+        public async Task<ActionResult<CourseResponseDTO>> CreateCourse([FromForm] CreateCourseWithImageDTO createCourseDto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
@@ -91,9 +93,27 @@ namespace COURSES.API.Controllers
 
             try
             {
+
                 var course = Course.FromCreateDTO(createCourseDto);
 
+
                 var createdCourse = await _courseService.AddCourseAsync(course);
+
+                if (createCourseDto.Image != null && createCourseDto.Image.Length > 0)
+                {
+                    var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "UploadedImages", createdCourse.Id.ToString());
+                    if (!Directory.Exists(uploadsRoot))
+                        Directory.CreateDirectory(uploadsRoot);
+
+                    var fileName = Path.GetFileName(createCourseDto.Image.FileName);
+                    var filePath = Path.Combine(uploadsRoot, fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await createCourseDto.Image.CopyToAsync(stream);
+                    }
+                    createdCourse.ImageUrl = $"/UploadedImages/{createdCourse.Id}/{fileName}";
+                    await _courseService.UpdateCourseAsync(createdCourse);
+                }
 
                 if (createCourseDto.SubcategoryIds != null && createCourseDto.SubcategoryIds.Any())
                 {
@@ -183,6 +203,27 @@ namespace COURSES.API.Controllers
             }
 
             return Ok(CourseResponseDTO.FromCourse(updatedCourse));
+        }
+
+        [HttpGet("{courseId}/image/{fileName}")]
+        [AllowAnonymous]
+        public IActionResult GetCourseImage(Guid courseId, string fileName)
+        {
+            var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "UploadedImages", courseId.ToString(), fileName);
+            if (!System.IO.File.Exists(imagePath))
+                return NotFound();
+
+            var ext = Path.GetExtension(fileName).ToLowerInvariant();
+            var contentType = ext switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".bmp" => "image/bmp",
+                ".webp" => "image/webp",
+                _ => "application/octet-stream"
+            };
+            return PhysicalFile(imagePath, contentType);
         }
     }
 }

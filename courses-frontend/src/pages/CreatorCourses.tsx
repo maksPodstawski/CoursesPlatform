@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import {config} from "../config.ts";
+import { getCourseImageUrl } from "../utils/getCourseImageUrl";
 
 interface CreatorCourse {
     id: string;
@@ -47,7 +48,7 @@ const CreatorCourses = () => {
                     {courses.map(course => (
                         <li key={course.id}>
                             <h2>{course.name}</h2>
-                            <img src={course.imageUrl} style={{width: "200px", height: "200px", objectFit: "cover"}}
+                            <img src={getCourseImageUrl(course.imageUrl || "")} style={{width: "200px", height: "200px", objectFit: "cover"}}
                                  alt={course.name}/>
                             <p>{course.description}</p>
                             <p><strong>Price:</strong> {course.price} $</p>

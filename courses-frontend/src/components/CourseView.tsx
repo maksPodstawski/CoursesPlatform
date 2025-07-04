@@ -6,6 +6,7 @@ import { getCourseById, getCourseInstructor } from "../services/courseService";
 import { getCourseStagesWithProgress } from "../services/progressService";
 import { createReview, getRatingSummary, getUserReviewForCourse, updateReview, deleteOwnReview } from "../services/reviewService";
 import type { StageWithProgress as ApiStageWithProgress } from "../types/courses";
+import { getCourseImageUrl } from "../utils/getCourseImageUrl";
 
 type Course = {
   id?: string;
@@ -220,7 +221,7 @@ export default function CourseView() {
           {/* Course Thumbnail */}
           <div className="thumbnail-card">
             <div className="thumbnail-wrapper">
-              <img src={course.thumbnail || "/placeholder.svg"} alt="Course thumbnail" className="thumbnail-image" />
+              <img src={getCourseImageUrl(course.thumbnail || "")} alt="Course thumbnail" className="thumbnail-image" />
             </div>
           </div>
 
@@ -256,7 +257,7 @@ export default function CourseView() {
             <div className="instructor-card">
               <div className="instructor-content">
                 <div className="instructor-avatar">
-                  <img src={course.instructor.avatar || "/placeholder.svg"} alt={course.instructor.name} />
+                  <img src={course.instructor.avatar || "/placeholder.svg"} />
                   <div className="avatar-fallback">
                     <User size={32} />
                   </div>

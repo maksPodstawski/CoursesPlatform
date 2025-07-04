@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getPurchasedCourses } from "../services/courseService.ts";
 import type { Course } from "../types/courses.ts";
 import "../styles/MyCourses.css";
+import { getCourseImageUrl } from "../utils/getCourseImageUrl";
 
 export function MyCourses() {
 	const [courses, setCourses] = useState<Course[]>([]);
@@ -57,7 +58,7 @@ export function MyCourses() {
 						className="course-card"
 						onClick={() => navigate(`/course/${course.id ?? course.courseId}`)}
 					>
-						<img src={course.imageUrl} alt={course.name} />
+						<img src={getCourseImageUrl(course.imageUrl || "")} alt={course.name} />
 						<h2>{course.name}</h2>
 						<p>{course.description}</p>
 					</div>

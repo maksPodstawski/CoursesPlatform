@@ -148,10 +148,12 @@ namespace CONTROLLERS.Tests
             var userId = Guid.NewGuid().ToString();
             SetUser(userId);
 
-            var createDto = new CreateCourseDTO
+            var mockFile = new Mock<IFormFile>();
+            var createDto = new CreateCourseWithImageDTO
             {
                 Name = "Course 1",
-                ImageUrl = "http://example.com/image.jpg",
+                Description = "desc",
+                Image = mockFile.Object,
                 Duration = 120,
                 Price = 100m
             };
