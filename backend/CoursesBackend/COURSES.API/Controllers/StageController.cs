@@ -65,14 +65,7 @@ namespace COURSES.API.Controllers
             if (!isCreator)
                 return Forbid();
 
-            var stage = new Stage
-            {
-                Name = createStageDto.Name,
-                Description = createStageDto.Description,
-                Duration = createStageDto.Duration,
-                CourseId = createStageDto.CourseId,
-                CreatedAt = DateTime.UtcNow
-            };
+            var stage = CreateStageDTO.ToEntity(createStageDto);
 
             var createdStage = await _stageService.AddStageAsync(stage);
             if (createdStage == null)

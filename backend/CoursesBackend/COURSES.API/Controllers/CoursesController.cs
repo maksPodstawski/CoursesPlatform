@@ -93,16 +93,9 @@ namespace COURSES.API.Controllers
 
             try
             {
-                var course = new Course
-                {
-                    Name = createCourseDto.Name,
-                    Description = createCourseDto.Description,
-                    ImageUrl = "", 
-                    Duration = createCourseDto.Duration,
-                    Price = createCourseDto.Price,
-                    IsHidden = createCourseDto.IsHidden,
-                    CreatedAt = DateTime.UtcNow
-                };
+
+                var course = Course.FromCreateDTO(createCourseDto);
+
 
                 var createdCourse = await _courseService.AddCourseAsync(course);
 
@@ -151,14 +144,14 @@ namespace COURSES.API.Controllers
 
                 var creator = await _creatorService.AddCreatorFromUserAsync(Guid.Parse(userId), createdCourse.Id);
 
-                var purchase = new PurchasedCourses
+                var purchaseDto = new PurchaseCourseDTO
                 {
-                    UserId = Guid.Parse(userId),
                     CourseId = createdCourse.Id,
-                    PurchasedPrice = createdCourse.Price,
-                    PurchasedAt = DateTime.UtcNow,
-                    IsActive = true
+                    Price = createdCourse.Price,
+                    ExpirationDate = null  
                 };
+
+                var purchase = PurchasedCourses.FromDTO(purchaseDto, Guid.Parse(userId));
                 await _purchasedCoursesService.AddPurchasedCourseAsync(purchase);
 
                 return CreatedAtAction(

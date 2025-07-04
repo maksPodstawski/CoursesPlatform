@@ -4,7 +4,7 @@ import { ArrowLeft, Play, BookOpen, Clock, Star, Check, Lock, Pencil, User } fro
 import "../styles/CourseView.css";
 import { getCourseById, getCourseInstructor } from "../services/courseService";
 import { getCourseStagesWithProgress } from "../services/progressService";
-import { createReview, getRatingSummary, getUserReviewForCourse, updateReview, deleteReview } from "../services/reviewService";
+import { createReview, getRatingSummary, getUserReviewForCourse, updateReview, deleteOwnReview } from "../services/reviewService";
 import type { StageWithProgress as ApiStageWithProgress } from "../types/courses";
 import { getCourseImageUrl } from "../utils/getCourseImageUrl";
 
@@ -170,7 +170,7 @@ export default function CourseView() {
     if (!confirmed) return;
 
     try {
-      await deleteReview(userReview.id);
+      await deleteOwnReview(userReview.id);
       alert("Review deleted successfully!");
       setUserReview(null);
       setRating(5);

@@ -45,15 +45,7 @@ namespace COURSES.API.Controllers
             if (hasPurchased)
                 return BadRequest("You have already purchased this course");
 
-            var purchase = new PurchasedCourses
-            {
-                UserId = Guid.Parse(userId),
-                CourseId = purchaseDto.CourseId,
-                PurchasedPrice = purchaseDto.Price,
-                PurchasedAt = DateTime.UtcNow,
-                ExpirationDate = purchaseDto.ExpirationDate,
-                IsActive = true
-            };
+            var purchase = PurchasedCourses.FromDTO(purchaseDto, Guid.Parse(userId));
 
             var createdPurchase = await _purchasedCoursesService.AddPurchasedCourseAsync(purchase);
             if (createdPurchase == null)
