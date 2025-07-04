@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace Model.DTO
 {
@@ -69,5 +70,20 @@ namespace Model.DTO
                 IsHidden = course.IsHidden
             };
         }
+    }
+
+    public class CreateCourseWithImageDTO
+    {
+        [Required]
+        public required string Name { get; set; }
+        public string? Description { get; set; }
+        [Required]
+        public IFormFile Image { get; set; } = null!;
+        [Required]
+        public int Duration { get; set; }
+        [Required]
+        public decimal Price { get; set; }
+        public bool IsHidden { get; set; } = false;
+        public List<Guid> SubcategoryIds { get; set; } = new();
     }
 } 

@@ -16,6 +16,7 @@ import {
 import type { Course, Stage, ReviewResponseDTO } from "../types/courses";
 import "../styles/CourseDetails.css";
 import BuyButton from "../components/BuyButton";
+import { getCourseImageUrl } from "../utils/getCourseImageUrl";
 
 const ICONS = [BookOpen, Code, FileText, Video, Database, Rocket];
 
@@ -87,7 +88,7 @@ const CourseDetails = () => {
           <div className="course-details-photo-purchase">
             <div className="course-details-cover-card">
               <img
-                src={course.imageUrl || "/placeholder.svg?height=200&width=300"}
+                src={getCourseImageUrl(course.imageUrl || "")}
                 alt="Course cover"
                 className="course-details-cover-img"
               />

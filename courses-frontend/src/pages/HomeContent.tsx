@@ -7,6 +7,7 @@ import { getRatingSummary } from "../services/reviewService";
 import { AnimatedSection } from "../utils/animations";
 import StatCard from "../components/StatCard";
 import { CourseCard } from "../components/CourseCard";
+//import { getCourseImageUrl } from "../utils/getCourseImageUrl";
 
 const HomeContent = () => {
   const [featuredCourses, setFeaturedCourses] = useState<any[]>([]);
