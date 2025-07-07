@@ -42,7 +42,7 @@ namespace COURSES.API.Controllers
             return Ok(StageResponseDTO.FromStage(stage));
         }
 
-        [Authorize]
+        [AllowAnonymous]
         [HttpGet("course/{courseId}")]
         public async Task<ActionResult<IEnumerable<StageResponseDTO>>> GetStagesByCourseId(Guid courseId)
         {
