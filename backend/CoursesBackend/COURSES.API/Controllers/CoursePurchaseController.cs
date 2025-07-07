@@ -77,23 +77,25 @@ namespace COURSES.API.Controllers
 
         [Authorize]
         [HttpGet("user")]
-        public async Task<ActionResult<IEnumerable<PurchaseCourseResponseDTO>>> GetUserPurchases()
+        public async Task<ActionResult<IEnumerable<Model.DTO.CourseResponseDTO>>> GetUserPurchases()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var purchases = await _purchasedCoursesService.GetPurchasedCoursesByUserIdAsync(Guid.Parse(userId));
+            if (!Guid.TryParse(userId, out var userGuid))
+                return Unauthorized();
 
+            var purchases = await _purchasedCoursesService.GetPurchasedCoursesByUserIdAsync(userGuid);
             var courseIds = purchases.Select(p => p.CourseId).ToList();
 
-            var courses = new List<Course>();
+            var courses = new List<Model.DTO.CourseResponseDTO>();
             foreach (var courseId in courseIds)
             {
                 var course = await _courseService.GetCourseByIdAsync(courseId);
                 if (course != null)
                 {
-                    courses.Add(course);
+                    courses.Add(Model.DTO.CourseResponseDTO.FromCourse(course));
                 }
             }
 
