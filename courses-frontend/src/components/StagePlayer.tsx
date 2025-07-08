@@ -142,7 +142,7 @@ export function StagePlayer({
 
 				<div className="stage-player__info">
 					<h1 className="stage-player__title">{stage.name}</h1>
-					<p className="stage-player__description">{stage.description}</p>
+					<p className="stage-player__description" dangerouslySetInnerHTML={{ __html: stage.description }} />
 
 					<div className="stage-player__meta">
 						<div className="stage-player__meta-item">

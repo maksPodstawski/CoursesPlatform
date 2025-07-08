@@ -228,7 +228,7 @@ export default function CourseView() {
           {/* Course Info */}
           <div className="course-info">
             <h1 className="course-title">{course.title}</h1>
-            <p className="course-description">{course.description}</p>
+            <p className="course-description" dangerouslySetInnerHTML={{ __html: course.description }} />
           </div>
 
           {/* Course Meta */}
@@ -327,7 +327,7 @@ export default function CourseView() {
                       <h4 className="stage-title">{stage.name}</h4>
                       {stage.current && <span className="current-badge">Current</span>}
                     </div>
-                    <p className="stage-description">{stage.description}</p>
+                    <p className="stage-description" dangerouslySetInnerHTML={{ __html: stage.description }} />
                   </div>
                   <div className="stage-duration">
                     <Clock size={12} />

@@ -220,7 +220,7 @@ const MyCourses = () => {
 								<div className="purchased-courses-main-header">
 									<div>
 										<h1 className="purchased-courses-main-title">{selectedStage.name}</h1>
-										<div className="purchased-courses-main-desc">{selectedStage.description}</div>
+										<div className="purchased-courses-main-desc" dangerouslySetInnerHTML={{ __html: selectedStage.description }} />
 									</div>
 									<div className="purchased-courses-main-progress-label">
 										{completedCount}/{stages.length} completed
