@@ -62,15 +62,23 @@ namespace COURSES.API.Controllers
 
             var creators = await _creatorService.GetCreatorsByCourseAsync(courseId);
             var creator = creators.FirstOrDefault();
-            if (creator == null)
+
+            if (creator == null || creator.User == null)
             {
                 return NotFound("Course instructor not found");
             }
 
+            string avatarBase64 = null;
+            if (creator.User.ProfilePicture != null)
+            {
+                avatarBase64 = $"data:image/png;base64,{Convert.ToBase64String(creator.User.ProfilePicture)}";
+            }
+
             return Ok(new InstructorResponseDTO
             {
-                Name = creator.User.ToString(),
-                Title = creator.Title
+                Name = $"{creator.User.FirstName} {creator.User.LastName}",
+                Title = creator.Title ?? "Instructor",
+                Avatar = avatarBase64
             });
         }
 
