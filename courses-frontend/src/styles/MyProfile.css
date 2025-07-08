@@ -1,0 +1,88 @@
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background-color: #1e1e1e;
+  padding: 2rem;
+  border-radius: 16px;
+  max-width: 600px;
+  margin: 2rem auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.profile-container h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  color: #ffffff;
+  align-self: flex-start;
+}
+
+.profile-field {
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.profile-field label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.profile-field input[type="text"],
+.profile-field input[type="email"],
+.profile-field input[type="tel"] {
+  width: 100%;
+  padding: 0.75rem 0;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid #2a2a2a;
+  color: #ffffff;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.profile-field input:focus {
+  border-bottom-color: #3dc55f;
+}
+
+input[type="file"] {
+  margin-top: 0.5rem;
+  color: #cfd8dc;
+  background-color: transparent;
+  font-size: 0.9rem;
+  border: none;
+}
+
+.profile-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.btn {
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #3dc55f;
+  color: #121212;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #49e670;
+  box-shadow: 0 0 10px #49e670;
+}
+
+.btn:disabled {
+  background-color: #2f2f2f;
+  cursor: not-allowed;
+  color: #888;
+}
