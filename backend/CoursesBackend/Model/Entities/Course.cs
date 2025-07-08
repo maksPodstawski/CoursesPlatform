@@ -24,7 +24,7 @@ namespace Model
         [MaxLength(50)]
         [Required]
         public string Name { get; set; } = string.Empty;
-        [MaxLength(250)]
+        [MaxLength(2500)]
         public string? Description { get; set; }
         [Required]
         public string ImageUrl { get; set; } = string.Empty;

@@ -23,7 +23,7 @@ namespace Model
 
         [ForeignKey(nameof(AuthorId))]
         public User Author { get; set; }
-        [MaxLength(500)]
+        [MaxLength(2500)]
         [Required]
         public string Content { get; set; } = string.Empty;
         [Required]

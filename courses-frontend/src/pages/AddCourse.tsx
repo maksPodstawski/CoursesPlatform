@@ -5,6 +5,7 @@ import { config } from "../config";
 import Sidebar from "../components/Sidebar";
 import { getCategories, getSubcategories } from "../services/categoryService";
 import { Category, Subcategory } from "../types/courses";
+import TextEditor from '../components/TextEditor';
 
 type Stage = {
   name: string;
@@ -169,6 +170,10 @@ export const AddCourse = () => {
       ...prev,
       difficulty: parseInt(e.target.value),
     }));
+  };
+
+  const handleDescriptionChange = (val: string) => {
+    setForm((prev) => ({ ...prev, description: val }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -359,13 +364,6 @@ export const AddCourse = () => {
     return form.stages.reduce((total, stage) => total + (parseFloat(stage.duration.replace(',', '.')) || 0), 0).toFixed(2);
   };
 
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length > maxLength) {
-      return text.substring(0, maxLength) + '...';
-    }
-    return text;
-  };
-
   const renderTabContent = () => {
     switch (activeTab) {
       case 'details':
@@ -374,7 +372,14 @@ export const AddCourse = () => {
             <div className="course-section">
               <h3>Course Details</h3>
               {renderField("Course Name", "name", "text", "Enter course name", form.name, handleChange)}
-              {renderField("Description", "description", "textarea", "Enter course description", form.description, handleChange)}
+              <div className="form-group">
+                <label htmlFor="description">Description</label>
+                <TextEditor
+                  value={form.description}
+                  onChange={handleDescriptionChange}
+                  placeholder="Enter course description"
+                />
+              </div>
               <div className="form-group">
                 <label htmlFor="imageFile">Course Image</label>
                 <input
@@ -438,7 +443,7 @@ export const AddCourse = () => {
                 </div>
                 <div className="preview-details">
                   <h4>{form.name || 'Untitled Course'}</h4>
-                  <p className="preview-description">{truncateText(form.description || 'No description provided', 150)}</p>
+                  <div className="preview-description" dangerouslySetInnerHTML={{ __html: form.description || 'No description provided' }} />
                   <div className="preview-stats">
                     <div className="stat">
                       <span>Duration:</span>
@@ -469,7 +474,14 @@ export const AddCourse = () => {
               <h3>Course Stages</h3>
               <div className="stage-form">
                 {renderField("Stage Name", "name", "text", "Enter stage name", currentStage.name, handleStageChange)}
-                {renderField("Description", "description", "textarea", "Enter stage description", currentStage.description, handleStageChange)}
+                <div className="form-group">
+                  <label htmlFor="stage-description">Description</label>
+                  <TextEditor
+                    value={currentStage.description || ''}
+                    onChange={val => handleStageChange({ target: { name: 'description', value: val } } as any)}
+                    placeholder="Enter stage description"
+                  />
+                </div>
                 {renderField("Duration", "duration", "number", "Duration in minutes", currentStage.duration, handleStageChange)}
                 
                 <div className="form-group">
@@ -529,7 +541,7 @@ export const AddCourse = () => {
                           <span className="timeline-duration">{stage.duration} min</span>
                           <span className="timeline-videos">{stage.videoFile ? 1 : 0} videos</span>
                           {stage.description && (
-                            <p className="timeline-description">{stage.description}</p>
+                            <p className="timeline-description" dangerouslySetInnerHTML={{ __html: stage.description }} />
                           )}
                         </div>
                       </div>
@@ -563,7 +575,7 @@ export const AddCourse = () => {
                 </div>
                 <div className="summary-item">
                   <span>Description:</span>
-                  <span>{form.description || 'Not set'}</span>
+                  <span dangerouslySetInnerHTML={{ __html: form.description || 'Not set' }} />
                 </div>
                 <div className="summary-item">
                   <span>Duration:</span>

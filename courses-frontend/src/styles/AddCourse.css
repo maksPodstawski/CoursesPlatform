@@ -607,6 +607,10 @@ input:-webkit-autofill:focus {
   backdrop-filter: blur(4px);
 }
 
+.preview-description {
+  margin-bottom: 1rem;
+}
+
 .timeline-description {
   width: 100%;
   margin: 1rem 0 0 0;

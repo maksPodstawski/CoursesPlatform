@@ -17,7 +17,7 @@ namespace Model
         [Key]
         public Guid Id { get; set; }
 
-        [MaxLength(50)]
+        [MaxLength(150)]
         [Required]
         public string Name { get; set; } = string.Empty;
 
