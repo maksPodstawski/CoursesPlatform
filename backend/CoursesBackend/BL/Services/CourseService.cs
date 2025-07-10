@@ -115,5 +115,10 @@ namespace BL.Services
         {
             _courseSubcategoryRepository.AddCourseSubcategory(courseSubcategory);
         }
+        public async Task RemoveCourseSubcategoryAsync(Guid courseSubcategoryId)
+        {
+            _courseSubcategoryRepository.DeleteCourseSubcategory(courseSubcategoryId);
+            await Task.CompletedTask;
+        }
     }
 }

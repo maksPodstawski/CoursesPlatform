@@ -16,5 +16,6 @@ namespace IBL
         Task<List<Course>> GetVisibleCoursesAsync();
         Task<Subcategory?> GetSubcategoryByIdAsync(Guid subcategoryId);
         Task AddCourseSubcategoryAsync(CourseSubcategory courseSubcategory);
+        Task RemoveCourseSubcategoryAsync(Guid courseSubcategoryId);
     }
 }

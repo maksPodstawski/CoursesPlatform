@@ -9,12 +9,10 @@ interface TextEditorProps {
 
 const TextEditor: React.FC<TextEditorProps> = ({ value, onChange, placeholder }) => {
   const editorRef = useRef<HTMLDivElement>(null);
-  const initialValue = useRef(false);
 
   useEffect(() => {
-    if (editorRef.current && !initialValue.current) {
+    if (editorRef.current && editorRef.current.innerHTML !== value) {
       editorRef.current.innerHTML = value || '';
-      initialValue.current = true;
     }
   }, [value]);
 
