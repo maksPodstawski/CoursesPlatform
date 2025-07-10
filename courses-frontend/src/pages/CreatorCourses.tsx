@@ -46,7 +46,6 @@ const CreatorCourses = () => {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [localStages, setLocalStages] = useState<Stage[]>([]);
     const [stageEdit, setStageEdit] = useState<Stage | null>(null);
-    const [stageLoading, setStageLoading] = useState(false);
     const [statusMsg, setStatusMsg] = useState<string | null>(null);
     const [progress, setProgress] = useState<number>(0);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -55,7 +54,6 @@ const CreatorCourses = () => {
     const [selectedCategory, setSelectedCategory] = useState<string>("");
     const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
     const [newStage, setNewStage] = useState<{ name: string; description: string; duration: number; videoFile: File | null }>({ name: '', description: '', duration: 1, videoFile: null });
-    const [addingStage, setAddingStage] = useState(false);
     const [coursesListOpen, setCoursesListOpen] = useState(true);
 
     useEffect(() => {
@@ -127,17 +125,6 @@ const CreatorCourses = () => {
             }));
         }
     }, [localStages, selectedCourse]);
-
-    const fetchStages = async (courseId: string) => {
-        setStageLoading(true);
-        try {
-            const res = await fetch(`${config.apiBaseUrl}/api/courses/${courseId}/stages`, { credentials: 'include' });
-            const data = await res.json();
-        } catch (e) {
-        } finally {
-            setStageLoading(false);
-        }
-    };
 
     const handleCourseFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
@@ -508,8 +495,8 @@ const CreatorCourses = () => {
                         <label>Upload Video (optional)</label>
                         <input className="form-input" name="video" type="file" accept="video/*" onChange={handleStageFileChange} />
                     </div>
-                    <button className="btn btn-secondary" type="button" onClick={handleAddStage} disabled={addingStage}>
-                        {addingStage ? 'Adding...' : 'Add Stage'}
+                    <button className="btn btn-secondary" type="button" onClick={handleAddStage}>
+                        Add Stage
                     </button>
                 </div>
             )}
