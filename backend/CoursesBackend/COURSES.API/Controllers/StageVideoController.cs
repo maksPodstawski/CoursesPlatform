@@ -55,6 +55,11 @@ namespace COURSES.API.Controllers
             var uploadPath = Path.Combine(_environment.ContentRootPath, UPLOAD_DIRECTORY, stageId.ToString());
             Directory.CreateDirectory(uploadPath);
 
+            foreach (var existingFile in Directory.GetFiles(uploadPath))
+            {
+                try { System.IO.File.Delete(existingFile); } catch {  }
+            }
+
             var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
             var filePath = Path.Combine(uploadPath, fileName);
 
@@ -96,6 +101,10 @@ namespace COURSES.API.Controllers
             var filePath = Path.Combine(_environment.ContentRootPath, stage.VideoPath);
             if (!System.IO.File.Exists(filePath))
                 return NotFound("Video file not found");
+
+            Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate, proxy-revalidate";
+            Response.Headers["Pragma"] = "no-cache";
+            Response.Headers["Expires"] = "0";
 
             return PhysicalFile(filePath, "video/mp4", enableRangeProcessing: true);
         }

@@ -205,6 +205,30 @@ namespace COURSES.API.Controllers
             existingCourse.Difficulty = updateCourseDto.Difficulty;
             existingCourse.UpdatedAt = DateTime.UtcNow;
 
+            if (updateCourseDto.SubcategoryIds != null)
+            {
+                var oldSubcategories = existingCourse.CourseSubcategories?.ToList() ?? new List<CourseSubcategory>();
+                foreach (var cs in oldSubcategories)
+                {
+                    await _courseService.RemoveCourseSubcategoryAsync(cs.Id);
+                }
+
+                foreach (var subId in updateCourseDto.SubcategoryIds)
+                {
+                    var subcategory = await _courseService.GetSubcategoryByIdAsync(subId);
+                    if (subcategory != null)
+                    {
+                        var courseSubcategory = new CourseSubcategory
+                        {
+                            Id = Guid.NewGuid(),
+                            CourseId = existingCourse.Id,
+                            SubcategoryId = subcategory.Id
+                        };
+                        await _courseService.AddCourseSubcategoryAsync(courseSubcategory);
+                    }
+                }
+            }
+
             var updatedCourse = await _courseService.UpdateCourseAsync(existingCourse);
             if (updatedCourse == null)
             {
@@ -233,6 +257,46 @@ namespace COURSES.API.Controllers
                 _ => "application/octet-stream"
             };
             return PhysicalFile(imagePath, contentType);
+        }
+
+        [Authorize]
+        [HttpPost("{id}/image")]
+        public async Task<IActionResult> UploadCourseImage(Guid id, IFormFile file)
+        {
+            var course = await _courseService.GetCourseByIdAsync(id);
+            if (course == null)
+                return NotFound();
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var isCreator = await _creatorService.IsUserCreatorOfCourseAsync(Guid.Parse(userId), id);
+            if (!isCreator)
+                return Forbid();
+
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
+
+            var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "UploadedImages", id.ToString());
+            if (!Directory.Exists(uploadsRoot))
+                Directory.CreateDirectory(uploadsRoot);
+
+            foreach (var existingFile in Directory.GetFiles(uploadsRoot))
+            {
+                try { System.IO.File.Delete(existingFile); } catch { }
+            }
+
+            var fileName = Path.GetFileName(file.FileName);
+            var filePath = Path.Combine(uploadsRoot, fileName);
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+            course.ImageUrl = $"/UploadedImages/{id}/{fileName}";
+            await _courseService.UpdateCourseAsync(course);
+
+            return Ok(new { imageUrl = course.ImageUrl });
         }
     }
 }

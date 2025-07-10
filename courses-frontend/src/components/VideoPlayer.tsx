@@ -20,6 +20,19 @@ export function VideoPlayer({ stageId, stageName, onComplete, autoplay = false }
 	const [duration, setDuration] = useState(0);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [error, setError] = useState<string | null>(null);
+	const [cacheBuster, setCacheBuster] = useState(Date.now());
+
+	useEffect(() => {
+		setCacheBuster(Date.now());
+	}, [stageId]);
+
+	let videoPath = undefined;
+	if (window && (window as any).currentStageVideoPath) {
+		videoPath = (window as any).currentStageVideoPath;
+	}
+	const videoSrc = videoPath
+		? getStageVideoStreamUrl(stageId) + '?v=' + encodeURIComponent(videoPath) + `&cb=${cacheBuster}`
+		: getStageVideoStreamUrl(stageId) + `?cb=${cacheBuster}`;
 
 	useEffect(() => {
 		const video = videoRef.current;
@@ -141,7 +154,8 @@ export function VideoPlayer({ stageId, stageName, onComplete, autoplay = false }
 			<video
 				ref={videoRef}
 				className="video-player__video"
-				src={getStageVideoStreamUrl(stageId)}
+				src={videoSrc}
+				key={videoSrc}
 				poster={`/api/stages/${stageId}/thumbnail`}
 				onClick={togglePlay}
 				controlsList="nodownload"
