@@ -15,5 +15,6 @@ namespace IBL
         Task<Subcategory> AddSubcategoryAsync(Subcategory subcategory);
         Task<Subcategory?> UpdateSubcategoryAsync(Subcategory subcategory);
         Task<Subcategory?> DeleteSubcategoryAsync(Guid subcategoryId);
+        Task<Subcategory?> GetSubcategoryByNameAsync(string name, Guid categoryId);
     }
 }

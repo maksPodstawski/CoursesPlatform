@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Model;
 using Model.Constans;
 using Model.DTO;
-using System.Security.Claims;
 using System.Text.Json;
 
 namespace COURSES.API.Controllers
@@ -19,7 +18,6 @@ namespace COURSES.API.Controllers
         private readonly ICourseService _courseService;
         private readonly IReviewService _reviewService;
         private readonly string _perspectiveApiKey;
-
 
         public AdminController(
             ICategoryService categoryService,
@@ -46,9 +44,13 @@ namespace COURSES.API.Controllers
         public async Task<IActionResult> AddCategory([FromBody] CategoryNameDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto?.Name))
-                return BadRequest("Nazwa kategorii jest wymagana.");
+                return BadRequest(new { message = "Category name is required." });
 
-            var category = new Category { Name = dto.Name };
+            var exists = await _categoryService.GetCategoryByNameAsync(dto.Name.Trim());
+            if (exists != null)
+                return BadRequest(new { message = "A category with this name already exists." });
+
+            var category = new Category { Name = dto.Name.Trim() };
             var created = await _categoryService.AddCategoryAsync(category);
 
             var resultDto = new CategoryDTO
@@ -64,13 +66,17 @@ namespace COURSES.API.Controllers
         public async Task<IActionResult> AddSubcategory([FromBody] SubcategoryNameDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto?.Name))
-                return BadRequest("Error! Subcategory name is required!");
+                return BadRequest(new { message = "Subcategory name is required." });
             if (dto.CategoryId == Guid.Empty)
-                return BadRequest("Error! Category ID is required!");
+                return BadRequest(new { message = "Category ID is required." });
+
+            var exists = await _subcategoryService.GetSubcategoryByNameAsync(dto.Name.Trim(), dto.CategoryId);
+            if (exists != null)
+                return BadRequest(new { message = "A subcategory with this name already exists in this category." });
 
             var subcategory = new Subcategory
             {
-                Name = dto.Name,
+                Name = dto.Name.Trim(),
                 CategoryId = dto.CategoryId
             };
             var created = await _subcategoryService.AddSubcategoryAsync(subcategory);
@@ -85,12 +91,65 @@ namespace COURSES.API.Controllers
             return CreatedAtAction(nameof(AddSubcategory), new { id = resultDto.Id }, resultDto);
         }
 
+        [HttpPut("category/{id}")]
+        public async Task<IActionResult> UpdateCategory(Guid id, [FromBody] CategoryNameDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto?.Name))
+                return BadRequest(new { message = "Category name is required." });
+
+            var exists = await _categoryService.GetCategoryByNameAsync(dto.Name.Trim());
+            if (exists != null && exists.Id != id)
+                return BadRequest(new { message = "A category with this name already exists." });
+
+            var category = await _categoryService.GetCategoryByIdAsync(id);
+            if (category == null)
+                return NotFound(new { message = "Category not found." });
+
+            category.Name = dto.Name.Trim();
+            var updated = await _categoryService.UpdateCategoryAsync(category);
+
+            var resultDto = new CategoryDTO
+            {
+                Id = updated.Id,
+                Name = updated.Name
+            };
+
+            return Ok(resultDto);
+        }
+
+        [HttpPut("subcategory/{id}")]
+        public async Task<IActionResult> UpdateSubcategory(Guid id, [FromBody] SubcategoryNameDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto?.Name))
+                return BadRequest(new { message = "Subcategory name is required." });
+
+            var subcategory = await _subcategoryService.GetSubcategoryByIdAsync(id);
+            if (subcategory == null)
+                return NotFound(new { message = "Subcategory not found." });
+
+            var exists = await _subcategoryService.GetSubcategoryByNameAsync(dto.Name.Trim(), subcategory.CategoryId);
+            if (exists != null && exists.Id != id)
+                return BadRequest(new { message = "A subcategory with this name already exists in this category." });
+
+            subcategory.Name = dto.Name.Trim();
+            var updated = await _subcategoryService.UpdateSubcategoryAsync(subcategory);
+
+            var resultDto = new SubcategoryDTO
+            {
+                Id = updated.Id,
+                Name = updated.Name,
+                CategoryId = updated.CategoryId
+            };
+
+            return Ok(resultDto);
+        }
+
         [HttpDelete("course/{courseId}")]
         public async Task<IActionResult> DeleteCourse(Guid courseId)
         {
             var deleted = await _courseService.DeleteCourseAsync(courseId);
             if (deleted == null)
-                return NotFound("Course not found");
+                return NotFound(new { message = "Course not found." });
 
             return Ok(new { message = "Course deleted", name = deleted.Name });
         }
@@ -100,7 +159,7 @@ namespace COURSES.API.Controllers
         {
             var deleted = await _categoryService.DeleteCategoryAsync(categoryId);
             if (deleted == null)
-                return NotFound("Category not found");
+                return NotFound(new { message = "Category not found." });
 
             return Ok(new { message = "Category deleted", name = deleted.Name });
         }
@@ -110,7 +169,7 @@ namespace COURSES.API.Controllers
         {
             var deleted = await _subcategoryService.DeleteSubcategoryAsync(subcategoryId);
             if (deleted == null)
-                return NotFound("Subcategory not found");
+                return NotFound(new { message = "Subcategory not found." });
 
             return Ok(new { message = "Subcategory deleted", name = deleted.Name });
         }
@@ -120,7 +179,7 @@ namespace COURSES.API.Controllers
         {
             var course = await _courseService.GetCourseByIdAsync(id);
             if (course == null)
-                return NotFound();
+                return NotFound(new { message = "Course not found." });
 
             course.IsHidden = !course.IsHidden;
             var updated = await _courseService.UpdateCourseAsync(course);
@@ -132,11 +191,11 @@ namespace COURSES.API.Controllers
         {
             var review = await _reviewService.GetReviewByIdAsync(id);
             if (review == null)
-                return NotFound();
+                return NotFound(new { message = "Review not found." });
 
             var deleted = await _reviewService.DeleteReviewAsync(id);
             if (deleted == null)
-                return BadRequest("Failed to delete review");
+                return BadRequest(new { message = "Failed to delete review." });
 
             return NoContent();
         }
@@ -169,7 +228,6 @@ namespace COURSES.API.Controllers
                 }
             };
 
-
             var response = await httpClient.PostAsJsonAsync(
                 $"https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key={_perspectiveApiKey}",
                 request);
@@ -181,21 +239,19 @@ namespace COURSES.API.Controllers
             });
 
             return result?.attributeScores?["TOXICITY"]?.summaryScore?.value ?? 0.0;
-
         }
-
-
 
         [HttpPost("analyze-toxicity")]
         public async Task<IActionResult> AnalyzeToxicity([FromBody] AnalyzeReviewDTO dto)
         {
             if (string.IsNullOrWhiteSpace(dto.Comment))
-                return BadRequest("The comment field is required.");
+                return BadRequest(new { message = "The comment field is required." });
 
             var score = await AnalyzeToxicityAsync(dto.Comment);
             return Ok(new { score });
         }
 
+        // Classes for deserialization of Perspective API response
         private class ToxicityResponse
         {
             public Dictionary<string, AttributeScore>? attributeScores { get; set; }
@@ -211,7 +267,5 @@ namespace COURSES.API.Controllers
             public double value { get; set; }
             public string type { get; set; } = string.Empty;
         }
-
-
     }
 }

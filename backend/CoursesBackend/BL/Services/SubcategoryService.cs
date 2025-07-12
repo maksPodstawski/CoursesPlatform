@@ -51,5 +51,15 @@ namespace BL.Services
         {
             return await Task.FromResult(_subcategoryRepository.DeleteSubcategory(subcategoryId));
         }
+
+        public async Task<Subcategory?> GetSubcategoryByNameAsync(string name, Guid categoryId)
+        {
+            return await _subcategoryRepository.GetSubcategories()
+                .FirstOrDefaultAsync(s =>
+                    s.Name.ToLower() == name.ToLower() &&
+                    s.CategoryId == categoryId
+                );
+        }
+
     }
 }

@@ -26,9 +26,8 @@ namespace BL.Services
         public async Task<Category?> GetCategoryByNameAsync(string name)
         {
             return await _categoryRepository.GetCategories()
-                .FirstOrDefaultAsync(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower());
         }
-
         public async Task<IEnumerable<Subcategory>> GetSubcategoriesByCategoryIdAsync(Guid categoryId)
         {
             var category = _categoryRepository.GetCategoryById(categoryId);
