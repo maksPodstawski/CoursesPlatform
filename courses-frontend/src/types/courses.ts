@@ -40,12 +40,17 @@ export interface CreateChatResponseDTO {
 }
 
 export type Course = {
+	instructor?: {
+    name: string;
+	}
 	courseId?: string;
 	id?: string;
 	name: string;
 	description: string;
 	imageUrl: string;
 	price?: number;
+	rating: number;
+	isCompleted?: boolean;
 };
 
 export type Chat = {

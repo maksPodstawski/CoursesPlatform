@@ -36,7 +36,7 @@ namespace Model.DTO
         [Required]
         public Difficulty Difficulty { get; init; } = Difficulty.Beginner;
     }
-
+   
     public record CourseResponseDTO
     {
         public Guid Id { get; init; }
@@ -56,8 +56,7 @@ namespace Model.DTO
         public Difficulty Difficulty { get; init; }
         public string? CategoryId { get; init; }
         public string? CategoryName { get; init; }
-
-
+        public bool IsCompleted { get; set; }
         public static CourseResponseDTO FromCourse(Course course)
         {
             return new CourseResponseDTO
@@ -79,7 +78,7 @@ namespace Model.DTO
                 Difficulty = course.Difficulty,
                 CategoryId = course.CourseSubcategories?.FirstOrDefault()?.Subcategory?.CategoryId.ToString(),
                 CategoryName = course.CourseSubcategories?.FirstOrDefault()?.Subcategory?.Category?.Name
-
+                
             };
         }
     }

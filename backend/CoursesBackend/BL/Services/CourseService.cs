@@ -2,6 +2,7 @@
 using IDAL;
 using Microsoft.EntityFrameworkCore;
 using Model;
+using Model.DTO;
 
 namespace BL.Services
 {
@@ -10,11 +11,13 @@ namespace BL.Services
         private readonly ICourseRepository _courseRepository;
         private readonly ISubcategoryRepository _subcategoryRepository;
         private readonly ICourseSubcategoryRepository _courseSubcategoryRepository;
-        public CourseService(ICourseRepository courseRepository, ISubcategoryRepository subcategoryRepository, ICourseSubcategoryRepository courseSubcategoryRepository)
+        private readonly IProgressRepository _progressRepository;
+        public CourseService(ICourseRepository courseRepository, ISubcategoryRepository subcategoryRepository, ICourseSubcategoryRepository courseSubcategoryRepository, IProgressRepository progressRepository)
         {
             _courseRepository = courseRepository;
             _subcategoryRepository = subcategoryRepository;
             _courseSubcategoryRepository = courseSubcategoryRepository;
+            _progressRepository = progressRepository;
         }
 
         public async Task<List<Course>> GetAllCoursesAsync()
@@ -114,6 +117,17 @@ namespace BL.Services
         public async Task AddCourseSubcategoryAsync(CourseSubcategory courseSubcategory)
         {
             _courseSubcategoryRepository.AddCourseSubcategory(courseSubcategory);
+        }
+        public async Task<bool> IsCourseCompletedAsync(Guid courseId, Guid userId)
+        {
+            var progresses = await _progressRepository.GetProgresses()
+                .Where(p => p.UserId == userId && p.Stage.CourseId == courseId)
+                .ToListAsync();
+
+            var totalStages = progresses.Select(p => p.StageId).Distinct().Count();
+            var completedStages = progresses.Count(p => p.IsCompleted);
+
+            return totalStages > 0 && totalStages == completedStages;
         }
     }
 }
