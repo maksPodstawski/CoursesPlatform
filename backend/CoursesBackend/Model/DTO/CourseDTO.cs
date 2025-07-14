@@ -35,6 +35,7 @@ namespace Model.DTO
         public bool IsHidden { get; init; } = false;
         [Required]
         public Difficulty Difficulty { get; init; } = Difficulty.Beginner;
+        public List<Guid> SubcategoryIds { get; init; } = new();
     }
    
     public record CourseResponseDTO

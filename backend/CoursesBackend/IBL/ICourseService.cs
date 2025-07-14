@@ -18,5 +18,6 @@ namespace IBL
         Task<Subcategory?> GetSubcategoryByIdAsync(Guid subcategoryId);
         Task AddCourseSubcategoryAsync(CourseSubcategory courseSubcategory);
         Task<bool> IsCourseCompletedAsync(Guid courseId, Guid userId);
+        Task RemoveCourseSubcategoryAsync(Guid courseSubcategoryId);
     }
 }
