@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { Users, GraduationCap, Star } from "lucide-react";
 
 import { getCourses, getCourseInstructor, getCourseParticipantsCount } from "../services/courseService";
 import { getRatingSummary } from "../services/reviewService";
+import { getStatistics } from "../services/statisticsService";
 import { AnimatedSection } from "../utils/animations";
 import StatCard from "../components/StatCard";
 import { CourseCard } from "../components/CourseCard";
@@ -14,6 +16,9 @@ const HomeContent = () => {
   const [featuredCourses, setFeaturedCourses] = useState<any[]>([]);
   const [ratings, setRatings] = useState<Record<string, string>>({});
   const { isLoggedIn } = useAuth();
+  const [stats, setStats] = useState<{ usersCount: number; coursesCount: number; reviewsCount: number } | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -65,6 +70,16 @@ const HomeContent = () => {
       fetchAllRatings();
     }
   }, [featuredCourses]);
+
+  useEffect(() => {
+    getStatistics()
+      .then(setStats)
+      .catch((err) => {
+        setStatsError("Failed to load statistics");
+        console.error("Statistics fetch error:", err);
+      })
+      .finally(() => setStatsLoading(false));
+  }, []);
 
   return (
       <>
@@ -139,10 +154,15 @@ const HomeContent = () => {
           <section className="stats-section">
             <h2 className="stats-heading">Our Achievements</h2>
             <div className="stats-grid">
-              <StatCard label="Users" value={4521} icon="👥" />
-              <StatCard label="Courses" value={128} icon="🎓" />
-              <StatCard label="Reviews" value={312} icon="🌟" />
-              <StatCard label="Avg. Session (min)" value={35} icon="⏳" />
+              {statsLoading && <div>Loading...</div>}
+              {statsError && <div style={{ color: 'red' }}>{statsError}</div>}
+              {stats && (
+                <>
+                  <StatCard label="Users" value={stats.usersCount} icon={<Users className="icon-users" />} />
+                  <StatCard label="Courses" value={stats.coursesCount} icon={<GraduationCap className="icon-courses" />} />
+                  <StatCard label="Reviews" value={stats.reviewsCount} icon={<Star className="icon-reviews" />} />
+                </>
+              )}
             </div>
           </section>
         </AnimatedSection>

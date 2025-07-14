@@ -344,10 +344,8 @@ main {
   color: #cfd8dc;
 }
 
-.about-features li::before {
-  content: "✅";
-  position: absolute;
-  left: 0;
+.about-features li svg {
+  color: #22c55e;
 }
 
 .subscribe-form {
@@ -417,6 +415,10 @@ main {
   margin-bottom: 15px;
 }
 
+.stat-icon svg {
+  color: #3dc55f;
+}
+
 .stat-value {
   font-size: 2rem;
   font-weight: bold;
@@ -428,6 +430,17 @@ main {
   color: whi  ;
 }
 
+.icon-reviews {
+  color: #ffd700 !important;
+}
+
+.icon-courses {
+  color: #a78bfa !important;
+}
+
+.icon-users {
+  color: #3b82f6 !important;
+}
 
 /* Footer */
 .footer {

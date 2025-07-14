@@ -1,8 +1,9 @@
+import { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { useAnimatedCounter } from "../utils/counters"; 
 
-const StatCard = ({ label, value, icon }: { label: string; value: number; icon: string }) => {
+const StatCard = ({ label, value, icon }: { label: string; value: number; icon: ReactNode }) => {
   const { ref, inView } = useInView({ triggerOnce: true });
   const count = useAnimatedCounter(inView ? value : 0);
 
