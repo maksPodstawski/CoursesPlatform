@@ -128,6 +128,7 @@ namespace BL.Services
             var completedStages = progresses.Count(p => p.IsCompleted);
 
             return totalStages > 0 && totalStages == completedStages;
+        }
         public async Task RemoveCourseSubcategoryAsync(Guid courseSubcategoryId)
         {
             _courseSubcategoryRepository.DeleteCourseSubcategory(courseSubcategoryId);
