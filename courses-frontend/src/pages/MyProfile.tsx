@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { config } from "../config";
 import { fetchClient } from "../services/fetchClient";
 import type { UserProfile } from "../types/user";
+import "../styles/MyProfile.css"; 
 
 export default function MyProfile() {
 	const [profile, setProfile] = useState<UserProfile>({

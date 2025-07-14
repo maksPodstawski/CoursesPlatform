@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Model.DTO;
 
 namespace Model
 {
@@ -16,7 +17,7 @@ namespace Model
         [Key]
         public Guid Id { get; set; }
 
-        [MaxLength(50)]
+        [MaxLength(150)]
         [Required]
         public string Name { get; set; } = string.Empty;
 
@@ -30,5 +31,15 @@ namespace Model
 
         public ICollection<ChatUser>? Users { get; set; } = new List<ChatUser>();
         public ICollection<Message>? Messages { get; set; } = new List<Message>();
+        public static Chat ChatFromDTO(CreateChatDTO dto, Guid authorId, Guid courseId)
+        {
+            return new Chat
+            {
+                Id = Guid.NewGuid(),
+                Name = dto.Name,
+                ChatAuthorId = authorId,
+                CourseId = courseId
+            };
+        }
     }
 }

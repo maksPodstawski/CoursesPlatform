@@ -1,23 +1,27 @@
 import '../styles/AddCourse.css';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { config } from "../config";
 import Sidebar from "../components/Sidebar";
+import { getCategories, getSubcategories } from "../services/categoryService";
+import { Category, Subcategory } from "../types/courses";
+import TextEditor from '../components/TextEditor';
 
 type Stage = {
   name: string;
   description: string;
-  duration: number;
+  duration: string;
   videoFile?: File | null;
 };
 
 type CourseForm = {
   name: string;
   description: string;
-  imageUrl: string;
-  duration: number;
-  price: number;
+  duration: string;
+  price: string;
+  difficulty: number;
   stages: Stage[];
+  imageFile: File | null;
 };
 
 type Tab = 'details' | 'stages' | 'summary';
@@ -33,16 +37,17 @@ export const AddCourse = () => {
   const [form, setForm] = useState<CourseForm>({
     name: "",
     description: "",
-    imageUrl: "",
-    duration: 1,
-    price: 1,
+    duration: "1",
+    price: "1",
+    difficulty: 1,
     stages: [],
+    imageFile: null,
   });
 
   const [currentStage, setCurrentStage] = useState<Stage>({
     name: "",
     description: "",
-    duration: 1,
+    duration: "1",
     videoFile: null,
   });
 
@@ -54,25 +59,69 @@ export const AddCourse = () => {
     error: null,
   });
 
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
+
   const navigate = useNavigate();
+
+  useEffect(() => {
+    getCategories().then(setCategories).catch(() => setCategories([]));
+  }, []);
+
+  useEffect(() => {
+    if (selectedCategory) {
+      getSubcategories(selectedCategory).then(setSubcategories).catch(() => setSubcategories([]));
+    } else {
+      setSubcategories([]);
+      setSelectedSubcategory("");
+    }
+  }, [selectedCategory]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: name === "duration" || name === "price" ? parseFloat(value.replace(',', '.')) : value,
-    }));
+    const { name, value, type } = e.target;
+    if (type === "file" && name === "imageFile") {
+      const fileInput = e.target as HTMLInputElement;
+      setForm((prev) => ({
+        ...prev,
+        imageFile: fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null,
+      }));
+    } else {
+      let newValue = value;
+      if ((name === "price" || name === "duration")) {
+        const parts = newValue.replace(',', '.').split('.');
+        if (parts.length === 2) {
+          parts[1] = parts[1].slice(0, 2);
+          newValue = parts[0] + '.' + parts[1];
+          if (value.includes(',')) newValue = newValue.replace('.', ',');
+        }
+      }
+      setForm((prev) => ({
+        ...prev,
+        [name]: newValue,
+      }));
+    }
   };
 
   const handleStageChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+    let newValue = value;
+    if (name === "duration") {
+      const parts = newValue.replace(',', '.').split('.');
+      if (parts.length === 2) {
+        parts[1] = parts[1].slice(0, 2);
+        newValue = parts[0] + '.' + parts[1];
+        if (value.includes(',')) newValue = newValue.replace('.', ',');
+      }
+    }
     setCurrentStage((prev) => ({
       ...prev,
-      [name]: name === "duration" ? parseFloat(value.replace(',', '.')) : value,
+      [name]: newValue,
     }));
   };
 
@@ -94,7 +143,7 @@ export const AddCourse = () => {
       setCurrentStage({
         name: "",
         description: "",
-        duration: 1,
+        duration: "1",
         videoFile: null,
       });
     }
@@ -107,8 +156,74 @@ export const AddCourse = () => {
     }));
   };
 
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCategory(e.target.value);
+    setSelectedSubcategory("");
+  };
+
+  const handleSubcategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedSubcategory(e.target.value);
+  };
+
+  const handleDifficultyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setForm((prev) => ({
+      ...prev,
+      difficulty: parseInt(e.target.value),
+    }));
+  };
+
+  const handleDescriptionChange = (val: string) => {
+    setForm((prev) => ({ ...prev, description: val }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Walidacja duration - tylko liczby całkowite
+    if (!/^[0-9]+$/.test(form.duration.trim())) {
+      setSubmissionStatus({
+        isSubmitting: false,
+        currentStep: '',
+        progress: 0,
+        error: "Duration must be an integer (whole number)."
+      });
+      return;
+    }
+
+    // Ograniczenie do 2 miejsc po przecinku w duration
+    if (/\.[0-9]{3,}/.test(form.duration.replace(',', '.'))) {
+      setSubmissionStatus({
+        isSubmitting: false,
+        currentStep: '',
+        progress: 0,
+        error: "Duration can have at most 2 decimal places."
+      });
+      return;
+    }
+
+    // Walidacja price - liczba dziesiętna większa od zera
+    const parsedPrice = parseFloat(form.price.replace(',', '.'));
+    if (isNaN(parsedPrice) || parsedPrice <= 0) {
+      setSubmissionStatus({
+        isSubmitting: false,
+        currentStep: '',
+        progress: 0,
+        error: "Price must be a valid number greater than 0."
+      });
+      return;
+    }
+
+    // Ograniczenie do 2 miejsc po przecinku w price
+    if (/\.[0-9]{3,}/.test(form.price.replace(',', '.'))) {
+      setSubmissionStatus({
+        isSubmitting: false,
+        currentStep: '',
+        progress: 0,
+        error: "Price can have at most 2 decimal places."
+      });
+      return;
+    }
+
     setSubmissionStatus({
       isSubmitting: true,
       currentStep: 'Creating course...',
@@ -117,22 +232,29 @@ export const AddCourse = () => {
     });
 
     try {
-      // First create the course
+      // Przygotuj FormData
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("description", form.description);
+      formData.append("duration", String(parseFloat(form.duration.replace(',', '.'))));
+      formData.append("price", form.price.replace('.', ',').replace(/,/g, ',').trim());
+      formData.append("difficulty", String(form.difficulty));
+      if (form.imageFile) {
+        formData.append("image", form.imageFile);
+      }
+      if (selectedSubcategory && selectedSubcategory.trim() !== "") {
+        formData.append("SubcategoryIds", selectedSubcategory);
+      }
+      formData.append("isHidden", "false");
+
+      // Wyślij kurs jako multipart/form-data
       const courseRes = await fetch(`${config.apiBaseUrl}${config.apiEndpoints.addCourse}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          name: form.name,
-          description: form.description,
-          imageUrl: form.imageUrl,
-          duration: form.duration,
-          price: form.price,
-        }),
+        body: formData,
       });
 
       if (!courseRes.ok) throw new Error("Course creation failed");
-      
       const courseData = await courseRes.json();
       const courseId = courseData.id;
 
@@ -159,16 +281,13 @@ export const AddCourse = () => {
           body: JSON.stringify({
             name: stage.name,
             description: stage.description,
-            duration: stage.duration,
+            duration: parseFloat(stage.duration.replace(',', '.')),
             courseId: courseId,
           }),
         });
-
         if (!stageRes.ok) throw new Error("Stage creation failed");
-
         const stageData = await stageRes.json();
         const stageId = stageData.id;
-
         // Upload video if exists
         if (stage.videoFile) {
           setSubmissionStatus(prev => ({
@@ -176,31 +295,24 @@ export const AddCourse = () => {
             currentStep: `Uploading video for stage ${i + 1}...`,
             progress: 60 + (i / totalStages) * 30,
           }));
-
           const formData = new FormData();
           formData.append("file", stage.videoFile);
-
           const videoRes = await fetch(`${config.apiBaseUrl}/api/stages/${stageId}/video`, {
             method: "POST",
             credentials: "include",
             body: formData,
           });
-
           if (!videoRes.ok) throw new Error("Video upload failed");
         }
       }
-
       setSubmissionStatus(prev => ({
         ...prev,
         currentStep: 'Course created successfully!',
         progress: 100,
       }));
-
-      // Wait a moment to show the success message
       setTimeout(() => {
         navigate("/courses");
       }, 1500);
-
     } catch (err) {
       console.error("Error submitting course:", err);
       setSubmissionStatus(prev => ({
@@ -240,21 +352,16 @@ export const AddCourse = () => {
           className="form-input"
           placeholder={placeholder}
           min={type === "number" ? 1 : undefined}
-          step={type === "number" ? "0.01" : undefined}
+          step={type === "number" && name === "duration" ? "1" : type === "number" ? "0.01" : undefined}
+          inputMode={type === "number" ? "decimal" : undefined}
+          pattern={type === "number" && name === "duration" ? "[0-9]*" : type === "number" ? "[0-9]*[.,]?[0-9]*" : undefined}
         />
       )}
     </div>
   );
 
   const calculateTotalDuration = () => {
-    return form.stages.reduce((total, stage) => total + stage.duration, 0).toFixed(2);
-  };
-
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length > maxLength) {
-      return text.substring(0, maxLength) + '...';
-    }
-    return text;
+    return form.stages.reduce((total, stage) => total + (parseFloat(stage.duration.replace(',', '.')) || 0), 0).toFixed(2);
   };
 
   const renderTabContent = () => {
@@ -265,19 +372,64 @@ export const AddCourse = () => {
             <div className="course-section">
               <h3>Course Details</h3>
               {renderField("Course Name", "name", "text", "Enter course name", form.name, handleChange)}
-              {renderField("Description", "description", "textarea", "Enter course description", form.description, handleChange)}
-              {renderField("Image URL", "imageUrl", "text", "https://example.com/image.jpg", form.imageUrl, handleChange)}
+              <div className="form-group">
+                <label htmlFor="description">Description</label>
+                <TextEditor
+                  value={form.description}
+                  onChange={handleDescriptionChange}
+                  placeholder="Enter course description"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="imageFile">Course Image</label>
+                <input
+                  id="imageFile"
+                  name="imageFile"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleChange}
+                  className="form-input"
+                />
+              </div>
               <div className="duration-price-group">
                 {renderField("Duration", "duration", "number", "Duration in minutes", form.duration, handleChange)}
-                {renderField("Price", "price", "number", "Course price", form.price, handleChange)}
+                {renderField("Price", "price", "text", "Course price", form.price, handleChange)}
+              </div>
+              <div className="category-row">
+                <div className="form-group">
+                  <label className="category-label">Category</label>
+                  <select className="category-select" value={selectedCategory} onChange={handleCategoryChange} required>
+                    <option value="">Select a category</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="subcategory-label">Subcategory</label>
+                  <select className="subcategory-select" value={selectedSubcategory} onChange={handleSubcategoryChange} required disabled={!selectedCategory}>
+                    <option value="">Select a subcategory</option>
+                    {subcategories.map((sub) => (
+                      <option key={sub.id} value={sub.id}>{sub.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="difficulty-label">Difficulty Level</label>
+                  <select className="difficulty-select" value={form.difficulty} onChange={handleDifficultyChange} required>
+                    <option value={1}>Beginner</option>
+                    <option value={2}>Intermediate</option>
+                    <option value={3}>Advanced</option>
+                  </select>
+                </div>
               </div>
             </div>
             <div className="course-preview">
               <h3>Course Preview</h3>
               <div className="preview-content">
                 <div className="preview-image">
-                  {form.imageUrl ? (
-                    <img src={form.imageUrl} alt="Course preview" />
+                  {form.imageFile ? (
+                    <img src={URL.createObjectURL(form.imageFile)} alt="Course preview" />
                   ) : (
                     <div className="preview-image-placeholder">
                       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -291,7 +443,7 @@ export const AddCourse = () => {
                 </div>
                 <div className="preview-details">
                   <h4>{form.name || 'Untitled Course'}</h4>
-                  <p className="preview-description">{truncateText(form.description || 'No description provided', 150)}</p>
+                  <div className="preview-description" dangerouslySetInnerHTML={{ __html: form.description || 'No description provided' }} />
                   <div className="preview-stats">
                     <div className="stat">
                       <span>Duration:</span>
@@ -300,6 +452,10 @@ export const AddCourse = () => {
                     <div className="stat">
                       <span>Price:</span>
                       <span>${form.price}</span>
+                    </div>
+                    <div className="stat">
+                      <span>Difficulty:</span>
+                      <span>{form.difficulty === 1 ? 'Beginner' : form.difficulty === 2 ? 'Intermediate' : 'Advanced'}</span>
                     </div>
                     <div className="stat">
                       <span>Stages:</span>
@@ -318,7 +474,14 @@ export const AddCourse = () => {
               <h3>Course Stages</h3>
               <div className="stage-form">
                 {renderField("Stage Name", "name", "text", "Enter stage name", currentStage.name, handleStageChange)}
-                {renderField("Description", "description", "textarea", "Enter stage description", currentStage.description, handleStageChange)}
+                <div className="form-group">
+                  <label htmlFor="stage-description">Description</label>
+                  <TextEditor
+                    value={currentStage.description || ''}
+                    onChange={val => handleStageChange({ target: { name: 'description', value: val } } as any)}
+                    placeholder="Enter stage description"
+                  />
+                </div>
                 {renderField("Duration", "duration", "number", "Duration in minutes", currentStage.duration, handleStageChange)}
                 
                 <div className="form-group">
@@ -378,7 +541,7 @@ export const AddCourse = () => {
                           <span className="timeline-duration">{stage.duration} min</span>
                           <span className="timeline-videos">{stage.videoFile ? 1 : 0} videos</span>
                           {stage.description && (
-                            <p className="timeline-description">{stage.description}</p>
+                            <p className="timeline-description" dangerouslySetInnerHTML={{ __html: stage.description }} />
                           )}
                         </div>
                       </div>
@@ -412,7 +575,7 @@ export const AddCourse = () => {
                 </div>
                 <div className="summary-item">
                   <span>Description:</span>
-                  <span>{form.description || 'Not set'}</span>
+                  <span dangerouslySetInnerHTML={{ __html: form.description || 'Not set' }} />
                 </div>
                 <div className="summary-item">
                   <span>Duration:</span>
@@ -421,6 +584,18 @@ export const AddCourse = () => {
                 <div className="summary-item">
                   <span>Price:</span>
                   <span>${form.price}</span>
+                </div>
+                <div className="summary-item">
+                  <span>Difficulty:</span>
+                  <span>{form.difficulty === 1 ? 'Beginner' : form.difficulty === 2 ? 'Intermediate' : 'Advanced'}</span>
+                </div>
+                <div className="summary-item">
+                  <span>Category:</span>
+                  <span>{categories.find(c => c.id === selectedCategory)?.name || 'Not set'}</span>
+                </div>
+                <div className="summary-item">
+                  <span>Subcategory:</span>
+                  <span>{subcategories.find(s => s.id === selectedSubcategory)?.name || 'Not set'}</span>
                 </div>
               </div>
 

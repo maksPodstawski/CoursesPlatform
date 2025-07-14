@@ -82,3 +82,13 @@ export async function deleteReview(id: string): Promise<void> {
 		credentials: "include"
 	});
 }
+export async function deleteOwnReview(id: string): Promise<void> {
+	const response = await fetchClient.fetch(`/api/reviews/${id}`, {
+		method: "DELETE",
+		credentials: "include"
+	});
+
+	if (!response.ok) {
+		throw new Error("Nie udało się usunąć recenzji użytkownika.");
+	}
+}

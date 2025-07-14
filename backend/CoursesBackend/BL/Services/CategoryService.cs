@@ -8,9 +8,11 @@ namespace BL.Services
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _categoryRepository;
-        public CategoryService(ICategoryRepository categoryRepository)
+        private readonly ISubcategoryRepository _subcategoryRepository;
+        public CategoryService(ICategoryRepository categoryRepository, ISubcategoryRepository subcategoryRepository)
         {
             _categoryRepository = categoryRepository;
+            _subcategoryRepository = subcategoryRepository;
         }
 
         public async Task<List<Category>> GetAllCategoriesAsync()
@@ -30,11 +32,7 @@ namespace BL.Services
         }
         public async Task<IEnumerable<Subcategory>> GetSubcategoriesByCategoryIdAsync(Guid categoryId)
         {
-            var category = _categoryRepository.GetCategoryById(categoryId);
-            if (category == null || category.Subcategories == null)
-                return Enumerable.Empty<Subcategory>();
-
-            return await Task.FromResult(category.Subcategories);
+            return await Task.FromResult(_subcategoryRepository.GetSubcategories().Where(s => s.CategoryId == categoryId).ToList());
         }
 
         public async Task<Category> AddCategoryAsync(Category category)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Model.DTO;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,6 +9,13 @@ using System.Threading.Tasks;
 
 namespace Model
 {
+    public enum Difficulty
+    {
+        Beginner = 1,
+        Intermediate = 2,
+        Advanced = 3
+    }
+
     [Table("Courses")]
     public class Course
     {
@@ -16,7 +24,7 @@ namespace Model
         [MaxLength(50)]
         [Required]
         public string Name { get; set; } = string.Empty;
-        [MaxLength(250)]
+        [MaxLength(2500)]
         public string? Description { get; set; }
         [Required]
         public string ImageUrl { get; set; } = string.Empty;
@@ -29,9 +37,39 @@ namespace Model
         public DateTime? UpdatedAt { get; set; } = null;
         public ICollection<Review>? Reviews { get; set; } = new List<Review>();
         public ICollection<Stage>? Stages { get; set; } = new List<Stage>();
-        public ICollection<CourseSubcategory>? CourseSubcategories { get; set; } = new List<CourseSubcategory>();
+        public ICollection<CourseSubcategory> CourseSubcategories { get; set; } = new List<CourseSubcategory>();
         public ICollection<Creator> Creators { get; set; } = new List<Creator>();
         [Required]
         public bool IsHidden { get; set; } = false;
+        [Required]
+        public Difficulty Difficulty { get; set; } = Difficulty.Beginner;
+        public static Course FromCreateDTO(CreateCourseDTO dto)
+        {
+            return new Course
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                ImageUrl = dto.ImageUrl,
+                Duration = dto.Duration,
+                Price = dto.Price,
+                IsHidden = dto.IsHidden,
+                Difficulty = dto.Difficulty,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
+        public static Course FromCreateDTO(Model.DTO.CreateCourseWithImageDTO dto)
+        {
+            return new Course
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                ImageUrl = string.Empty,
+                Duration = dto.Duration,
+                Price = dto.Price,
+                IsHidden = dto.IsHidden,
+                Difficulty = dto.Difficulty,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
     }
 }

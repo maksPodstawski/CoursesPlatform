@@ -139,7 +139,7 @@ export function StagesSidebar({
 
 							{expandedStages.includes(stage.id) && !stage.locked && (
 								<div className="stages-sidebar__stage-details">
-									<p className="stages-sidebar__stage-description">{stage.description}</p>
+									<p className="stages-sidebar__stage-description" dangerouslySetInnerHTML={{ __html: stage.description }} />
 
 									<div className="stages-sidebar__stage-actions">
 										<div className="stages-sidebar__stage-features">

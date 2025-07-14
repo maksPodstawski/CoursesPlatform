@@ -35,16 +35,22 @@ export interface Message {
 export interface CreateChatResponseDTO {
 	id: string;
 	name: string;
-	createdAt: string;
+	courseId: string;
+	courseName: string;
 }
 
 export type Course = {
+	instructor?: {
+    name: string;
+	}
 	courseId?: string;
 	id?: string;
 	name: string;
 	description: string;
 	imageUrl: string;
 	price?: number;
+	rating: number;
+	isCompleted?: boolean;
 };
 
 export type Chat = {
@@ -77,3 +83,14 @@ export interface ReviewResponseDTO {
 	courseId: string;
 	courseName: string;
 }
+
+export type Category = {
+	id: string;
+	name: string;
+};
+
+export type Subcategory = {
+	id: string;
+	name: string;
+	categoryId: string;
+};

@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Http;
 
 namespace Model.DTO
 {
@@ -14,6 +16,9 @@ namespace Model.DTO
         [Required]
         public decimal Price { get; init; }
         public bool IsHidden { get; init; } = false;
+        [Required]
+        public Difficulty Difficulty { get; init; } = Difficulty.Beginner;
+        public List<Guid> SubcategoryIds { get; init; } = new();
     }
 
     public record UpdateCourseDTO
@@ -28,8 +33,11 @@ namespace Model.DTO
         [Required]
         public decimal Price { get; init; }
         public bool IsHidden { get; init; } = false;
+        [Required]
+        public Difficulty Difficulty { get; init; } = Difficulty.Beginner;
+        public List<Guid> SubcategoryIds { get; init; } = new();
     }
-
+   
     public record CourseResponseDTO
     {
         public Guid Id { get; init; }
@@ -46,8 +54,10 @@ namespace Model.DTO
         public List<string> Subcategories { get; init; } = new();
         public List<string> Creators { get; init; } = new();
         public bool IsHidden { get; init; }
-
-
+        public Difficulty Difficulty { get; init; }
+        public string? CategoryId { get; init; }
+        public string? CategoryName { get; init; }
+        public bool IsCompleted { get; set; }
         public static CourseResponseDTO FromCourse(Course course)
         {
             return new CourseResponseDTO
@@ -65,8 +75,29 @@ namespace Model.DTO
                 StagesCount = course.Stages?.Count ?? 0,
                 Subcategories = course.CourseSubcategories?.Select(cs => cs.Subcategory.Name).ToList() ?? new List<string>(),
                 Creators = course.Creators.Select(c => c.User.ToString()).ToList(),
-                IsHidden = course.IsHidden
+                IsHidden = course.IsHidden,
+                Difficulty = course.Difficulty,
+                CategoryId = course.CourseSubcategories?.FirstOrDefault()?.Subcategory?.CategoryId.ToString(),
+                CategoryName = course.CourseSubcategories?.FirstOrDefault()?.Subcategory?.Category?.Name
+                
             };
         }
+    }
+
+    public class CreateCourseWithImageDTO
+    {
+        [Required]
+        public required string Name { get; set; }
+        public string? Description { get; set; }
+        [Required]
+        public IFormFile Image { get; set; } = null!;
+        [Required]
+        public int Duration { get; set; }
+        [Required]
+        public decimal Price { get; set; }
+        public bool IsHidden { get; set; } = false;
+        public List<Guid> SubcategoryIds { get; set; } = new();
+        [Required]
+        public Difficulty Difficulty { get; set; } = Difficulty.Beginner;
     }
 } 

@@ -1,4 +1,5 @@
 ﻿using Model;
+using Model.DTO;
 
 namespace IBL
 {
@@ -14,5 +15,9 @@ namespace IBL
         Task<Course?> UpdateCourseAsync(Course course);
         Task<Course?> DeleteCourseAsync(Guid id);
         Task<List<Course>> GetVisibleCoursesAsync();
+        Task<Subcategory?> GetSubcategoryByIdAsync(Guid subcategoryId);
+        Task AddCourseSubcategoryAsync(CourseSubcategory courseSubcategory);
+        Task<bool> IsCourseCompletedAsync(Guid courseId, Guid userId);
+        Task RemoveCourseSubcategoryAsync(Guid courseSubcategoryId);
     }
 }

@@ -65,7 +65,8 @@
 }
 
 .course-section h3,
-.stages-section h3 {
+.stages-section h3,
+.course-preview h3 {
   color: #ffffff;
   margin-top: 0;
   margin-bottom: 1.5rem;
@@ -76,7 +77,8 @@
 }
 
 .course-section h3::before,
-.stages-section h3::before {
+.stages-section h3::before,
+.course-preview h3::before {
   content: "";
   display: inline-block;
   width: 4px;
@@ -197,13 +199,14 @@ textarea.form-input {
 }
 
 .btn-secondary {
-  background-color: #2a2a2a;
-  color: #ffffff;
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+  font-weight: 100 !important;
 }
 
 .btn-secondary:hover {
-  background-color: #3a3a3a;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  background-color: #3a3a3a !important;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1) !important;
 }
 
 .btn-danger {
@@ -607,6 +610,10 @@ input:-webkit-autofill:focus {
   backdrop-filter: blur(4px);
 }
 
+.preview-description {
+  margin-bottom: 1rem;
+}
+
 .timeline-description {
   width: 100%;
   margin: 1rem 0 0 0;
@@ -1000,5 +1007,65 @@ input:-webkit-autofill:focus {
 .duration-price-group .form-group {
   flex: 1;
   margin-bottom: 0;
+}
+
+.category-label, .subcategory-label, .difficulty-label {
+  font-size: 1.05rem;
+  color: #e0e0e0;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.02em;
+}
+
+.category-select, .subcategory-select, .difficulty-select {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  background: #1e1e1e;
+  border: 2px solid #2a2a2a;
+  border-radius: 8px;
+  color: #e0e0e0;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  transition: border-color 0.2s;
+  appearance: none;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.category-select:focus, .subcategory-select:focus, .difficulty-select:focus {
+  border-color: #3dc55f;
+  background: #232323;
+}
+
+.category-select option, .subcategory-select option, .difficulty-select option {
+  background: #232323;
+  color: #e0e0e0;
+}
+
+@media (max-width: 600px) {
+  .category-select, .subcategory-select, .difficulty-select {
+    font-size: 0.95rem;
+    padding: 0.6rem 0.7rem;
+  }
+  .category-label, .subcategory-label, .difficulty-label {
+    font-size: 0.98rem;
+  }
+}
+
+.category-row {
+  display: flex;
+  gap: 2rem;
+}
+
+.category-row .form-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+@media (max-width: 700px) {
+  .category-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 }
 

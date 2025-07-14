@@ -369,5 +369,6 @@ FodyWeavers.xsd
 db-data/
 
 UploadedVideos/
+UploadedImages/
 
 .env

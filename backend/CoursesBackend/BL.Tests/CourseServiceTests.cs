@@ -14,12 +14,18 @@ namespace BL.Tests
     public class CourseServiceTests
     {
         private readonly Mock<ICourseRepository> _mockCourseRepo;
+        private readonly Mock<ISubcategoryRepository> _mockSubcategoryRepo;
+        private readonly Mock<ICourseSubcategoryRepository> _mockCourseSubcategoryRepo;
+        private readonly Mock<IProgressRepository> _mockProgressRepo;
         private readonly CourseService _service;
 
         public CourseServiceTests()
         {
             _mockCourseRepo = new Mock<ICourseRepository>();
-            _service = new CourseService(_mockCourseRepo.Object);
+            _mockSubcategoryRepo = new Mock<ISubcategoryRepository>();
+            _mockCourseSubcategoryRepo = new Mock<ICourseSubcategoryRepository>();
+            _mockProgressRepo = new Mock<IProgressRepository>();
+            _service = new CourseService(_mockCourseRepo.Object, _mockSubcategoryRepo.Object, _mockCourseSubcategoryRepo.Object, _mockProgressRepo.Object);
         }
 
         [Fact]
@@ -235,7 +241,10 @@ namespace BL.Tests
         {
             var expectedCourse = new Course { Id = Guid.NewGuid(), Name = "Stubbed Course" };
             var stubRepo = new StubCourseRepository(expectedCourse);
-            var service = new CourseService(stubRepo);
+            var subcategoryRepo = new Mock<ISubcategoryRepository>();
+            var courseSubcategoryRepo = new Mock<ICourseSubcategoryRepository>();
+            var progressRepo = new Mock<IProgressRepository>();
+            var service = new CourseService(stubRepo, subcategoryRepo.Object, courseSubcategoryRepo.Object, progressRepo.Object);
 
             var result = await service.GetCourseByIdAsync(expectedCourse.Id);
 
@@ -247,7 +256,10 @@ namespace BL.Tests
         public async Task AddCourseAsync_UsingSpy_VerifiesAddWasCalled()
         {
             var spyRepo = new SpyCourseRepository();
-            var service = new CourseService(spyRepo);
+            var subcategoryRepo = new Mock<ISubcategoryRepository>();
+            var courseSubcategoryRepo = new Mock<ICourseSubcategoryRepository>();
+            var progressRepo = new Mock<IProgressRepository>();
+            var service = new CourseService(spyRepo, subcategoryRepo.Object, courseSubcategoryRepo.Object, progressRepo.Object);
             var newCourse = new Course { Id = Guid.NewGuid(), Name = "Spy Course" };
 
             await service.AddCourseAsync(newCourse);
@@ -261,7 +273,10 @@ namespace BL.Tests
         {
             var courseId = Guid.NewGuid();
             var mockRepo = new ManualMockCourseRepository(courseId);
-            var service = new CourseService(mockRepo);
+            var subcategoryRepo = new Mock<ISubcategoryRepository>();
+            var courseSubcategoryRepo = new Mock<ICourseSubcategoryRepository>();
+            var progressRepo = new Mock<IProgressRepository>();
+            var service = new CourseService(mockRepo, subcategoryRepo.Object, courseSubcategoryRepo.Object, progressRepo.Object);
 
             var result = await service.DeleteCourseAsync(courseId);
 

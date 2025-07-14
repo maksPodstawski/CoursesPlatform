@@ -15,12 +15,14 @@ namespace BL.Tests
     public class CategoryServiceTests
     {
         private readonly Moq.Mock<ICategoryRepository> _mockRepo;
+        private readonly Moq.Mock<ISubcategoryRepository> _mockSubcategoryRepo;
         private readonly CategoryService _service;
 
         public CategoryServiceTests()
         {
             _mockRepo = new Moq.Mock<ICategoryRepository>();
-            _service = new CategoryService(_mockRepo.Object);
+            _mockSubcategoryRepo = new Moq.Mock<ISubcategoryRepository>();
+            _service = new CategoryService(_mockRepo.Object, _mockSubcategoryRepo.Object);
         }
 
         [Fact]
@@ -102,16 +104,17 @@ namespace BL.Tests
         [Fact]
         public async Task GetSubcategoriesByCategoryIdAsync_CategoryWithSubcategories_ReturnsSubcategories()
         {
+            var categoryId = Guid.NewGuid();
             var subcategories = new List<Subcategory>
             {
-                new Subcategory { Id = Guid.NewGuid(), Name = "React" },
-                new Subcategory { Id = Guid.NewGuid(), Name = "Vue" }
+                new Subcategory { Id = Guid.NewGuid(), Name = "React", CategoryId = categoryId },
+                new Subcategory { Id = Guid.NewGuid(), Name = "Vue", CategoryId = categoryId }
             };
 
-            var categoryId = Guid.NewGuid();
             var category = new Category { Id = categoryId, Name = "Frontend", Subcategories = subcategories };
 
             _mockRepo.Setup(r => r.GetCategoryById(categoryId)).Returns(category);
+            _mockSubcategoryRepo.Setup(r => r.GetSubcategories()).Returns(subcategories.AsQueryable());
 
             var result = await _service.GetSubcategoriesByCategoryIdAsync(categoryId);
 
@@ -253,7 +256,8 @@ namespace BL.Tests
         [Fact]
         public void Dummy_IsAcceptedByConstructor()
         {
-            var service = new CategoryService(new DummyCategoryRepository());
+            var subcategoryRepo = new Mock<ISubcategoryRepository>();
+            var service = new CategoryService(new DummyCategoryRepository(), subcategoryRepo.Object);
             Assert.NotNull(service);
         }
 
@@ -269,7 +273,8 @@ namespace BL.Tests
         [Fact]
         public async Task Stub_ReturnsStubbedCategory()
         {
-            var service = new CategoryService(new StubCategoryRepository());
+            var subcategoryRepo = new Mock<ISubcategoryRepository>();
+            var service = new CategoryService(new StubCategoryRepository(), subcategoryRepo.Object);
             var result = await service.GetCategoryByIdAsync(Guid.NewGuid());
             Assert.Equal("Stubbed", result!.Name);
         }
@@ -287,8 +292,9 @@ namespace BL.Tests
         [Fact]
         public async Task Fake_AddsAndGetsCategory()
         {
+            var subcategoryRepo = new Mock<ISubcategoryRepository>();
             var repo = new FakeCategoryRepository();
-            var service = new CategoryService(repo);
+            var service = new CategoryService(repo, subcategoryRepo.Object);
             var cat = new Category { Id = Guid.NewGuid(), Name = "FakeCat" };
 
             await service.AddCategoryAsync(cat);
@@ -311,8 +317,9 @@ namespace BL.Tests
         [Fact]
         public async Task Spy_TracksAddCall()
         {
+            var subcategoryRepo = new Mock<ISubcategoryRepository>();
             var spy = new SpyCategoryRepository();
-            var service = new CategoryService(spy);
+            var service = new CategoryService(spy, subcategoryRepo.Object);
             var cat = new Category { Id = Guid.NewGuid(), Name = "SpyCat" };
 
             await service.AddCategoryAsync(cat);
@@ -334,12 +341,13 @@ namespace BL.Tests
         [Fact]
         public async Task ManualMock_ReturnsConfiguredCategory()
         {
+            var subcategoryRepo = new Mock<ISubcategoryRepository>();
             var mock = new ManualMockCategoryRepository
             {
                 GetByIdFunc = id => new Category { Id = id, Name = "ManualMock" }
             };
 
-            var service = new CategoryService(mock);
+            var service = new CategoryService(mock, subcategoryRepo.Object);
             var result = await service.GetCategoryByIdAsync(Guid.NewGuid());
 
             Assert.Equal("ManualMock", result!.Name);

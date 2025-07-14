@@ -42,7 +42,7 @@ namespace COURSES.API.Controllers
             return Ok(StageResponseDTO.FromStage(stage));
         }
 
-        [Authorize]
+        [AllowAnonymous]
         [HttpGet("course/{courseId}")]
         public async Task<ActionResult<IEnumerable<StageResponseDTO>>> GetStagesByCourseId(Guid courseId)
         {
@@ -65,14 +65,7 @@ namespace COURSES.API.Controllers
             if (!isCreator)
                 return Forbid();
 
-            var stage = new Stage
-            {
-                Name = createStageDto.Name,
-                Description = createStageDto.Description,
-                Duration = createStageDto.Duration,
-                CourseId = createStageDto.CourseId,
-                CreatedAt = DateTime.UtcNow
-            };
+            var stage = CreateStageDTO.ToEntity(createStageDto);
 
             var createdStage = await _stageService.AddStageAsync(stage);
             if (createdStage == null)

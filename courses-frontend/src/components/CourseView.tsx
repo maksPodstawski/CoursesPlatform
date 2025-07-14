@@ -4,8 +4,9 @@ import { ArrowLeft, Play, BookOpen, Clock, Star, Check, Lock, Pencil, User } fro
 import "../styles/CourseView.css";
 import { getCourseById, getCourseInstructor } from "../services/courseService";
 import { getCourseStagesWithProgress } from "../services/progressService";
-import { createReview, getRatingSummary, getUserReviewForCourse, updateReview, deleteReview } from "../services/reviewService";
+import { createReview, getRatingSummary, getUserReviewForCourse, updateReview, deleteOwnReview } from "../services/reviewService";
 import type { StageWithProgress as ApiStageWithProgress } from "../types/courses";
+import { getCourseImageUrl } from "../utils/getCourseImageUrl";
 
 type Course = {
   id?: string;
@@ -169,7 +170,7 @@ export default function CourseView() {
     if (!confirmed) return;
 
     try {
-      await deleteReview(userReview.id);
+      await deleteOwnReview(userReview.id);
       alert("Review deleted successfully!");
       setUserReview(null);
       setRating(5);
@@ -220,14 +221,14 @@ export default function CourseView() {
           {/* Course Thumbnail */}
           <div className="thumbnail-card">
             <div className="thumbnail-wrapper">
-              <img src={course.thumbnail || "/placeholder.svg"} alt="Course thumbnail" className="thumbnail-image" />
+              <img src={getCourseImageUrl(course.thumbnail || "")} alt="Course thumbnail" className="thumbnail-image" />
             </div>
           </div>
 
           {/* Course Info */}
           <div className="course-info">
             <h1 className="course-title">{course.title}</h1>
-            <p className="course-description">{course.description}</p>
+            <p className="course-description" dangerouslySetInnerHTML={{ __html: course.description }} />
           </div>
 
           {/* Course Meta */}
@@ -256,7 +257,7 @@ export default function CourseView() {
             <div className="instructor-card">
               <div className="instructor-content">
                 <div className="instructor-avatar">
-                  <img src={course.instructor.avatar || "/placeholder.svg"} alt={course.instructor.name} />
+                  <img src={course.instructor.avatar || "/placeholder.svg"} />
                   <div className="avatar-fallback">
                     <User size={32} />
                   </div>
@@ -326,7 +327,7 @@ export default function CourseView() {
                       <h4 className="stage-title">{stage.name}</h4>
                       {stage.current && <span className="current-badge">Current</span>}
                     </div>
-                    <p className="stage-description">{stage.description}</p>
+                    <p className="stage-description" dangerouslySetInnerHTML={{ __html: stage.description }} />
                   </div>
                   <div className="stage-duration">
                     <Clock size={12} />

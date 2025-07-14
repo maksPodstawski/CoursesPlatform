@@ -79,6 +79,7 @@ namespace COURSES.API.Controllers
                 Name = dto.Name.Trim(),
                 CategoryId = dto.CategoryId
             };
+
             var created = await _subcategoryService.AddSubcategoryAsync(subcategory);
 
             var resultDto = new SubcategoryDTO
@@ -151,7 +152,11 @@ namespace COURSES.API.Controllers
             if (deleted == null)
                 return NotFound(new { message = "Course not found." });
 
-            return Ok(new { message = "Course deleted", name = deleted.Name });
+            return Ok(new DeleteResponseDTO
+            {
+                message = "Course deleted",
+                name = deleted.Name
+            });
         }
 
         [HttpDelete("category/{categoryId}")]

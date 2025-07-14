@@ -45,15 +45,7 @@ namespace COURSES.API.Controllers
             if (hasPurchased)
                 return BadRequest("You have already purchased this course");
 
-            var purchase = new PurchasedCourses
-            {
-                UserId = Guid.Parse(userId),
-                CourseId = purchaseDto.CourseId,
-                PurchasedPrice = purchaseDto.Price,
-                PurchasedAt = DateTime.UtcNow,
-                ExpirationDate = purchaseDto.ExpirationDate,
-                IsActive = true
-            };
+            var purchase = PurchasedCourses.FromDTO(purchaseDto, Guid.Parse(userId));
 
             var createdPurchase = await _purchasedCoursesService.AddPurchasedCourseAsync(purchase);
             if (createdPurchase == null)
@@ -85,23 +77,27 @@ namespace COURSES.API.Controllers
 
         [Authorize]
         [HttpGet("user")]
-        public async Task<ActionResult<IEnumerable<PurchaseCourseResponseDTO>>> GetUserPurchases()
+        public async Task<ActionResult<IEnumerable<Model.DTO.CourseResponseDTO>>> GetUserPurchases()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            var purchases = await _purchasedCoursesService.GetPurchasedCoursesByUserIdAsync(Guid.Parse(userId));
+            if (!Guid.TryParse(userId, out var userGuid))
+                return Unauthorized();
 
+            var purchases = await _purchasedCoursesService.GetPurchasedCoursesByUserIdAsync(userGuid);
             var courseIds = purchases.Select(p => p.CourseId).ToList();
 
-            var courses = new List<Course>();
+            var courses = new List<Model.DTO.CourseResponseDTO>();
             foreach (var courseId in courseIds)
             {
                 var course = await _courseService.GetCourseByIdAsync(courseId);
                 if (course != null)
                 {
-                    courses.Add(course);
+                    var dto = CourseResponseDTO.FromCourse(course);
+                    dto.IsCompleted = await _courseService.IsCourseCompletedAsync(course.Id, userGuid);
+                    courses.Add(dto);
                 }
             }
 

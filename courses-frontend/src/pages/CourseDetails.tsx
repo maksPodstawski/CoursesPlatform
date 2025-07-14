@@ -15,6 +15,8 @@ import {
 } from "../services/reviewService";
 import type { Course, Stage, ReviewResponseDTO } from "../types/courses";
 import "../styles/CourseDetails.css";
+import BuyButton from "../components/BuyButton";
+import { getCourseImageUrl } from "../utils/getCourseImageUrl";
 
 const ICONS = [BookOpen, Code, FileText, Video, Database, Rocket];
 
@@ -86,21 +88,19 @@ const CourseDetails = () => {
           <div className="course-details-photo-purchase">
             <div className="course-details-cover-card">
               <img
-                src={course.imageUrl || "/placeholder.svg?height=200&width=300"}
+                src={getCourseImageUrl(course.imageUrl || "")}
                 alt="Course cover"
                 className="course-details-cover-img"
               />
             </div>
-            <button className="course-details-buy-btn">
-              Buy for {course.price ? `$${course.price}` : "Free"}
-            </button>
+            <BuyButton courseId={course.id!} price={course.price!} redirectAfterLogin={`/courses/${course.id}`} />
           </div>
 
           {/* Right: Info */}
           <div className="course-details-info">
             <div>
               <h1 className="course-details-title">{course.name}</h1>
-              <p className="course-details-desc">{course.description}</p>
+              <p className="course-details-desc" dangerouslySetInnerHTML={{ __html: course.description }} />
             </div>
             <div>
               <div className="course-details-stats">
@@ -163,7 +163,7 @@ const CourseDetails = () => {
                       </span>
                       <div className="course-details-stage-info">
                         <div className="course-details-stage-title">{stage.name}</div>
-                        <div className="course-details-stage-desc">{stage.description}</div>
+                        <div className="course-details-stage-desc" dangerouslySetInnerHTML={{ __html: stage.description }} />
                       </div>
                       <div className="course-details-stage-duration">
                         <Clock size={13} />

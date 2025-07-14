@@ -4,6 +4,8 @@ using IBL;
 using Model;
 using Model.DTO;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace COURSES.API.Controllers
 {
@@ -60,15 +62,23 @@ namespace COURSES.API.Controllers
 
             var creators = await _creatorService.GetCreatorsByCourseAsync(courseId);
             var creator = creators.FirstOrDefault();
-            if (creator == null)
+
+            if (creator == null || creator.User == null)
             {
                 return NotFound("Course instructor not found");
             }
 
+            string avatarBase64 = null;
+            if (creator.User.ProfilePicture != null)
+            {
+                avatarBase64 = $"data:image/png;base64,{Convert.ToBase64String(creator.User.ProfilePicture)}";
+            }
+
             return Ok(new InstructorResponseDTO
             {
-                Name = creator.User.ToString(),
-                Title = creator.Title
+                Name = $"{creator.User.FirstName} {creator.User.LastName}",
+                Title = creator.Title ?? "Instructor",
+                Avatar = avatarBase64
             });
         }
 
@@ -81,7 +91,7 @@ namespace COURSES.API.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<CourseResponseDTO>> CreateCourse([FromBody] CreateCourseDTO createCourseDto)
+        public async Task<ActionResult<CourseResponseDTO>> CreateCourse([FromForm] CreateCourseWithImageDTO createCourseDto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
@@ -91,29 +101,65 @@ namespace COURSES.API.Controllers
 
             try
             {
-                var course = new Course
-                {
-                    Name = createCourseDto.Name,
-                    Description = createCourseDto.Description,
-                    ImageUrl = createCourseDto.ImageUrl,
-                    Duration = createCourseDto.Duration,
-                    Price = createCourseDto.Price,
-                    IsHidden = createCourseDto.IsHidden,
-                    CreatedAt = DateTime.UtcNow
-                };
+
+                var course = Course.FromCreateDTO(createCourseDto);
+
 
                 var createdCourse = await _courseService.AddCourseAsync(course);
 
+                if (createCourseDto.Image != null && createCourseDto.Image.Length > 0)
+                {
+                    var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "UploadedImages", createdCourse.Id.ToString());
+                    if (!Directory.Exists(uploadsRoot))
+                        Directory.CreateDirectory(uploadsRoot);
+
+                    var fileName = Path.GetFileName(createCourseDto.Image.FileName);
+                    var filePath = Path.Combine(uploadsRoot, fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await createCourseDto.Image.CopyToAsync(stream);
+                    }
+                    createdCourse.ImageUrl = $"/UploadedImages/{createdCourse.Id}/{fileName}";
+                    await _courseService.UpdateCourseAsync(createdCourse);
+                }
+
+                if (createCourseDto.SubcategoryIds != null && createCourseDto.SubcategoryIds.Any())
+                {
+                    var validSubcategories = new List<Subcategory>();
+                    foreach (var subId in createCourseDto.SubcategoryIds)
+                    {
+                        var subcategory = await _courseService.GetSubcategoryByIdAsync(subId);
+                        if (subcategory != null)
+                        {
+                            validSubcategories.Add(subcategory);
+                        }
+                    }
+                    if (validSubcategories.Count != createCourseDto.SubcategoryIds.Count)
+                    {
+                        return BadRequest("One or more subcategories do not exist.");
+                    }
+                    foreach (var subcategory in validSubcategories)
+                    {
+                        var courseSubcategory = new CourseSubcategory
+                        {
+                            Id = Guid.NewGuid(),
+                            CourseId = createdCourse.Id,
+                            SubcategoryId = subcategory.Id
+                        };
+                        await _courseService.AddCourseSubcategoryAsync(courseSubcategory);
+                    }
+                }
+
                 var creator = await _creatorService.AddCreatorFromUserAsync(Guid.Parse(userId), createdCourse.Id);
 
-                var purchase = new PurchasedCourses
+                var purchaseDto = new PurchaseCourseDTO
                 {
-                    UserId = Guid.Parse(userId),
                     CourseId = createdCourse.Id,
-                    PurchasedPrice = createdCourse.Price,
-                    PurchasedAt = DateTime.UtcNow,
-                    IsActive = true
+                    Price = createdCourse.Price,
+                    ExpirationDate = null  
                 };
+
+                var purchase = PurchasedCourses.FromDTO(purchaseDto, Guid.Parse(userId));
                 await _purchasedCoursesService.AddPurchasedCourseAsync(purchase);
 
                 return CreatedAtAction(
@@ -156,7 +202,32 @@ namespace COURSES.API.Controllers
             existingCourse.Duration = updateCourseDto.Duration;
             existingCourse.Price = updateCourseDto.Price;
             existingCourse.IsHidden = updateCourseDto.IsHidden;
+            existingCourse.Difficulty = updateCourseDto.Difficulty;
             existingCourse.UpdatedAt = DateTime.UtcNow;
+
+            if (updateCourseDto.SubcategoryIds != null)
+            {
+                var oldSubcategories = existingCourse.CourseSubcategories?.ToList() ?? new List<CourseSubcategory>();
+                foreach (var cs in oldSubcategories)
+                {
+                    await _courseService.RemoveCourseSubcategoryAsync(cs.Id);
+                }
+
+                foreach (var subId in updateCourseDto.SubcategoryIds)
+                {
+                    var subcategory = await _courseService.GetSubcategoryByIdAsync(subId);
+                    if (subcategory != null)
+                    {
+                        var courseSubcategory = new CourseSubcategory
+                        {
+                            Id = Guid.NewGuid(),
+                            CourseId = existingCourse.Id,
+                            SubcategoryId = subcategory.Id
+                        };
+                        await _courseService.AddCourseSubcategoryAsync(courseSubcategory);
+                    }
+                }
+            }
 
             var updatedCourse = await _courseService.UpdateCourseAsync(existingCourse);
             if (updatedCourse == null)
@@ -165,6 +236,67 @@ namespace COURSES.API.Controllers
             }
 
             return Ok(CourseResponseDTO.FromCourse(updatedCourse));
+        }
+
+        [HttpGet("{courseId}/image/{fileName}")]
+        [AllowAnonymous]
+        public IActionResult GetCourseImage(Guid courseId, string fileName)
+        {
+            var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "UploadedImages", courseId.ToString(), fileName);
+            if (!System.IO.File.Exists(imagePath))
+                return NotFound();
+
+            var ext = Path.GetExtension(fileName).ToLowerInvariant();
+            var contentType = ext switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".bmp" => "image/bmp",
+                ".webp" => "image/webp",
+                _ => "application/octet-stream"
+            };
+            return PhysicalFile(imagePath, contentType);
+        }
+
+        [Authorize]
+        [HttpPost("{id}/image")]
+        public async Task<IActionResult> UploadCourseImage(Guid id, IFormFile file)
+        {
+            var course = await _courseService.GetCourseByIdAsync(id);
+            if (course == null)
+                return NotFound();
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var isCreator = await _creatorService.IsUserCreatorOfCourseAsync(Guid.Parse(userId), id);
+            if (!isCreator)
+                return Forbid();
+
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
+
+            var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "UploadedImages", id.ToString());
+            if (!Directory.Exists(uploadsRoot))
+                Directory.CreateDirectory(uploadsRoot);
+
+            foreach (var existingFile in Directory.GetFiles(uploadsRoot))
+            {
+                try { System.IO.File.Delete(existingFile); } catch { }
+            }
+
+            var fileName = Path.GetFileName(file.FileName);
+            var filePath = Path.Combine(uploadsRoot, fileName);
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+            course.ImageUrl = $"/UploadedImages/{id}/{fileName}";
+            await _courseService.UpdateCourseAsync(course);
+
+            return Ok(new { imageUrl = course.ImageUrl });
         }
     }
 }
