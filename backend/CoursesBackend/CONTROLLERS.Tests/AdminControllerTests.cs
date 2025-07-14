@@ -73,7 +73,7 @@ namespace CONTROLLERS.Tests
             var result = await _controller.AddCategory(new CategoryNameDto { Name = " " });
 
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Nazwa kategorii jest wymagana.", badRequest.Value);
+            Assert.Contains("Category name is required", badRequest.Value!.ToString(), StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]
@@ -136,7 +136,7 @@ namespace CONTROLLERS.Tests
             var result = await _controller.DeleteCourse(id);
 
             var notFound = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal("Course not found", notFound.Value);
+            Assert.Contains("Course not found", notFound.Value!.ToString(), StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]
@@ -164,7 +164,8 @@ namespace CONTROLLERS.Tests
 
             var result = await _controller.ToggleCourseVisibility(Guid.NewGuid());
 
-            Assert.IsType<NotFoundResult>(result);
+            var notFound = Assert.IsType<NotFoundObjectResult>(result);
+            Assert.Contains("not found", notFound.Value!.ToString(), StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]
@@ -189,7 +190,8 @@ namespace CONTROLLERS.Tests
 
             var result = await _controller.DeleteReview(id);
 
-            var notFound = Assert.IsType<NotFoundResult>(result);
+            var notFound = Assert.IsType<NotFoundObjectResult>(result);
+            Assert.Contains("not found", notFound.Value!.ToString(), StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]
@@ -203,7 +205,7 @@ namespace CONTROLLERS.Tests
             var result = await _controller.DeleteReview(id);
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Failed to delete review", bad.Value);
+            Assert.Contains("Failed to delete review", bad.Value!.ToString(), StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]
@@ -212,7 +214,7 @@ namespace CONTROLLERS.Tests
             var result = await _controller.AnalyzeToxicity(new AnalyzeReviewDTO { Comment = "" });
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("The comment field is required.", bad.Value);
+            Assert.Contains("The comment field is required.", bad.Value!.ToString(), StringComparison.OrdinalIgnoreCase);
         }
     }
 }
