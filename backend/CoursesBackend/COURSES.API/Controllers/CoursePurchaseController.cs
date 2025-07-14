@@ -95,7 +95,9 @@ namespace COURSES.API.Controllers
                 var course = await _courseService.GetCourseByIdAsync(courseId);
                 if (course != null)
                 {
-                    courses.Add(Model.DTO.CourseResponseDTO.FromCourse(course));
+                    var dto = CourseResponseDTO.FromCourse(course);
+                    dto.IsCompleted = await _courseService.IsCourseCompletedAsync(course.Id, userGuid);
+                    courses.Add(dto);
                 }
             }
 
