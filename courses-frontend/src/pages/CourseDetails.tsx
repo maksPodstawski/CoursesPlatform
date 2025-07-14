@@ -100,7 +100,6 @@ const CourseDetails = () => {
           <div className="course-details-info">
             <div>
               <h1 className="course-details-title">{course.name}</h1>
-              <p className="course-details-desc" dangerouslySetInnerHTML={{ __html: course.description }} />
             </div>
             <div>
               <div className="course-details-stats">
@@ -163,7 +162,7 @@ const CourseDetails = () => {
                       </span>
                       <div className="course-details-stage-info">
                         <div className="course-details-stage-title">{stage.name}</div>
-                        <div className="course-details-stage-desc" dangerouslySetInnerHTML={{ __html: stage.description }} />
+                        
                       </div>
                       <div className="course-details-stage-duration">
                         <Clock size={13} />
