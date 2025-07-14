@@ -1,35 +1,68 @@
-import { Link, useLocation } from "react-router-dom";
-import { FolderCog, LayoutDashboard, User, GraduationCap, MessageSquareMore } from "lucide-react";
-import "../styles/Sidebar.css";
+import { Link, useLocation } from "react-router-dom"
+import { LayoutDashboard, FolderCog, GraduationCap, MessageSquareMore, User, Settings } from "lucide-react"
 
 const adminNavItems = [
-    { label: "Dashboard", icon: <LayoutDashboard size={22} />, path: "/admin" },
-    { label: "Category", icon: <FolderCog size={22} />, path: "/admin/categories" },
-    { label: "Courses", icon: <GraduationCap size={22} />, path: "/admin/courses" },
-    { label: "Reviews", icon: <MessageSquareMore size={22} />, path: "/admin/reviews" },
-];
+    {
+        label: "Dashboard",
+        icon: LayoutDashboard,
+        path: "/admin",
+    },
+    {
+        label: "Categories",
+        icon: FolderCog,
+        path: "/admin/categories",
+    },
+    {
+        label: "Courses",
+        icon: GraduationCap,
+        path: "/admin/courses",
+    },
+    {
+        label: "Reviews",
+        icon: MessageSquareMore,
+        path: "/admin/reviews",
+    },
+]
 
 export default function AdminSidebar() {
-    const location = useLocation();
+    const location = useLocation()
 
     return (
-        <aside className="sidemenu">
-            <div className="sidemenu__top">
-                <nav className="sidemenu__nav">
-                    {adminNavItems.map(({ label, icon, path }) => (
-                        <Link key={label} to={path} className={`sidemenu__link ${location.pathname === path ? "active" : ""}`}>
-                            <span className="sidemenu__icon">{icon}</span>
-                            {label}
-                        </Link>
-                    ))}
-                </nav>
+        <aside className="admin-sidebar">
+            <div className="admin-sidebar-header">
+                <div className="admin-sidebar-logo">
+                    <Settings size={24} />
+                    <h2>Admin Panel</h2>
+                </div>
             </div>
-            <div className="sidemenu__bottom">
-                <Link to="/my-profile" className="sidemenu__profile-link">
-                    <User className="sidemenu__icon" size={22} />
-                    Profil
+
+            <nav className="admin-sidebar-nav">
+                <div className="admin-nav-section">
+                    <h3 className="admin-nav-title">Management</h3>
+                    <ul className="admin-nav-list">
+                        {adminNavItems.map((item) => {
+                            const Icon = item.icon
+                            const isActive = location.pathname === item.path
+
+                            return (
+                                <li key={item.label}>
+                                    <Link to={item.path} className={`admin-nav-link ${isActive ? "active" : ""}`}>
+                                        <Icon size={18} />
+                                        <span>{item.label}</span>
+                                    </Link>
+                                </li>
+                            )
+                        })}
+                    </ul>
+                </div>
+            </nav>
+
+            <div className="admin-sidebar-footer">
+                <Link to="/my-profile" className="admin-profile-link">
+                    <User size={18} />
+                    <span>Profile</span>
                 </Link>
             </div>
         </aside>
-    );
+    )
 }

@@ -1,12 +1,24 @@
 import { config } from "../config";
 import { fetchClient } from "./fetchClient.ts";
 
+async function handleResponse<T = any>(response: Response, defaultMsg: string): Promise<T> {
+    if (response.ok) {
+        try { return await response.json(); } catch { return undefined as any; }
+    }
+    let msg = defaultMsg;
+    try {
+        const data = await response.json();
+        msg = data.message || msg;
+    } catch {
+        msg = await response.text() || msg;
+    }
+    throw new Error(msg);
+}
+
 export const adminService = {
     async fetchDashboard(): Promise<void> {
         const response = await fetchClient.fetch(`${config.apiBaseUrl}/api/admin/dashboard`);
-        if (!response.ok) {
-            throw new Error("Error while fetching dashboard data.");
-        }
+        await handleResponse(response, "Error while fetching dashboard data.");
     },
 
     async addCategory(name: string): Promise<void> {
@@ -15,9 +27,7 @@ export const adminService = {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name }),
         });
-        if (!response.ok) {
-            throw new Error("Error while adding category.");
-        }
+        await handleResponse(response, "Error while adding category.");
     },
 
     async addSubcategory(name: string, categoryId: string): Promise<void> {
@@ -26,9 +36,25 @@ export const adminService = {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name, categoryId }),
         });
-        if (!response.ok) {
-            throw new Error("Error while adding subcategory.");
-        }
+        await handleResponse(response, "Error while adding subcategory.");
+    },
+
+    async updateCategory(categoryId: string, name: string): Promise<void> {
+        const response = await fetchClient.fetch(`${config.apiBaseUrl}/api/admin/category/${categoryId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name }),
+        });
+        await handleResponse(response, "Error while updating category.");
+    },
+
+    async updateSubcategory(subcategoryId: string, name: string): Promise<void> {
+        const response = await fetchClient.fetch(`${config.apiBaseUrl}/api/admin/subcategory/${subcategoryId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name }),
+        });
+        await handleResponse(response, "Error while updating subcategory.");
     },
 
     async deleteCourse(courseId: string): Promise<any> {
@@ -36,10 +62,7 @@ export const adminService = {
             method: "DELETE",
             credentials: "include"
         });
-        if (!response.ok) {
-            throw new Error("Failed to delete course");
-        }
-        return await response.json();
+        return await handleResponse(response, "Failed to delete course");
     },
 
     async deleteCategory(categoryId: string): Promise<any> {
@@ -47,10 +70,7 @@ export const adminService = {
             method: "DELETE",
             credentials: "include"
         });
-        if (!response.ok) {
-            throw new Error("Failed to delete category");
-        }
-        return await response.json();
+        return await handleResponse(response, "Failed to delete category");
     },
 
     async deleteSubcategory(subcategoryId: string): Promise<any> {
@@ -58,10 +78,7 @@ export const adminService = {
             method: "DELETE",
             credentials: "include"
         });
-        if (!response.ok) {
-            throw new Error("Failed to delete subcategory");
-        }
-        return await response.json();
+        return await handleResponse(response, "Failed to delete subcategory");
     },
 
     async toggleCourseVisibility(courseId: string): Promise<void> {
@@ -70,21 +87,14 @@ export const adminService = {
             headers: { "Content-Type": "application/json" },
             credentials: "include"
         });
-        if (!response.ok) {
-            throw new Error("Failed to toggle course visibility");
-        }
+        await handleResponse(response, "Failed to toggle course visibility");
     },
+
     async getAllCourses(): Promise<{ id: string; name: string; isHidden: boolean }[]> {
         const response = await fetchClient.fetch(`${config.apiBaseUrl}/api/courses/all`, {
             method: "GET",
             credentials: "include"
         });
-
-        if (!response.ok) {
-            throw new Error("Failed to fetch all courses");
-        }
-
-        return await response.json();
+        return await handleResponse(response, "Failed to fetch all courses");
     }
-
 };
