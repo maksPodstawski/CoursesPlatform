@@ -181,13 +181,19 @@ namespace CONTROLLERS.Tests
 
             var courseId = Guid.NewGuid();
             var course = new Course { Id = courseId };
-            var updateDto = new UpdateCourseDTO
+
+            var mockFile = new Mock<IFormFile>();
+            var updateDto = new UpdateCourseWithImageDTO
             {
+                Id = courseId,
                 Name = "Updated",
                 Description = "Updated",
-                ImageUrl = "url",
                 Duration = 10,
-                Price = 200
+                Price = 200,
+                IsHidden = false,
+                Difficulty = Difficulty.Beginner,
+                SubcategoryIds = new List<Guid>(),
+                Image = mockFile.Object 
             };
 
             _mockCourseService.Setup(s => s.GetCourseByIdAsync(courseId)).ReturnsAsync(course);
@@ -212,18 +218,52 @@ namespace CONTROLLERS.Tests
 
             _mockCourseService.Setup(s => s.GetCourseByIdAsync(courseId)).ReturnsAsync(course);
             _mockCreatorService.Setup(s => s.IsUserCreatorOfCourseAsync(Guid.Parse(userId), courseId)).ReturnsAsync(false);
-            var updateDto = new UpdateCourseDTO
+
+            var updateDto = new UpdateCourseWithImageDTO
             {
+                Id = courseId,
                 Name = "Updated Course Name",
-                ImageUrl = "https://example.com/image.png",
+                Description = "Optional description",
                 Duration = 120,
                 Price = 199.99m,
-                Description = "Optional description"
+                IsHidden = false,
+                Difficulty = Difficulty.Beginner,
+                SubcategoryIds = new List<Guid>(),
+                Image = null
             };
 
             var result = await _controller.UpdateCourse(courseId, updateDto);
 
             Assert.IsType<ForbidResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task CreateCourse_DuplicateTitle_ReturnsBadRequestWithValidationError()
+        {
+            var userId = Guid.NewGuid().ToString();
+            SetUser(userId);
+
+            var mockFile = new Mock<IFormFile>();
+            var createDto = new CreateCourseWithImageDTO
+            {
+                Name = "Duplicate Title",
+                Description = "desc",
+                Image = mockFile.Object,
+                Duration = 120,
+                Price = 100m
+            };
+
+            _mockCourseService
+                .Setup(s => s.AddCourseAsync(It.IsAny<Course>()))
+                .ThrowsAsync(new BL.Exceptions.CourseAlreadyExistsException("Duplicate Title"));
+
+            var result = await _controller.CreateCourse(createDto);
+
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
+            var errors = Assert.IsType<SerializableError>(badRequest.Value);
+            Assert.True(errors.ContainsKey("Name"));
+            var errorMessages = errors["Name"] as string[];
+            Assert.Contains("Duplicate Title", errorMessages.First());
         }
     }
 }

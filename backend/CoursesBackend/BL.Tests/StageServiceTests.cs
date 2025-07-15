@@ -1,4 +1,5 @@
-﻿using BL.Services;
+﻿using BL.Exceptions;
+using BL.Services;
 using IDAL;
 using MockQueryable.Moq;
 using Model;
@@ -78,9 +79,14 @@ namespace BL.Tests
             var stage = new Stage
             {
                 Id = Guid.NewGuid(),
+                CourseId = Guid.NewGuid(),
                 Name = "New Stage",
                 Description = "New Description"
             };
+
+            var stages = new List<Stage>().AsQueryable();
+            var mockDbSet = stages.BuildMockDbSet();
+            _mockStageRepository.Setup(r => r.GetStages()).Returns(mockDbSet.Object);
 
             _mockStageRepository.Setup(r => r.AddStage(It.IsAny<Stage>())).Returns(stage);
 
@@ -97,9 +103,14 @@ namespace BL.Tests
             var stage = new Stage
             {
                 Id = Guid.NewGuid(),
+                CourseId = Guid.NewGuid(),
                 Name = "Updated Stage",
                 Description = "Updated Description"
             };
+
+            var stages = new List<Stage>().AsQueryable();
+            var mockDbSet = stages.BuildMockDbSet();
+            _mockStageRepository.Setup(r => r.GetStages()).Returns(mockDbSet.Object);
 
             _mockStageRepository.Setup(r => r.UpdateStage(It.IsAny<Stage>())).Returns(stage);
 
@@ -135,6 +146,29 @@ namespace BL.Tests
 
             Assert.Null(result);
             _mockStageRepository.Verify(r => r.DeleteStage(stageId), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddStageAsync_StageAlreadyExists_ThrowsStageAlreadyExistsInCourseException()
+        {
+            var stage = new Stage
+            {
+                Id = Guid.NewGuid(),
+                CourseId = Guid.NewGuid(),
+                Name = "Duplicate Stage",
+                Description = "Desc"
+            };
+
+            var stages = new List<Stage>
+            {
+                new Stage { Id = Guid.NewGuid(), CourseId = stage.CourseId, Name = "Duplicate Stage", Description = "Other" }
+            };
+
+            var mockDbSet = stages.AsQueryable().BuildMockDbSet();
+            _mockStageRepository.Setup(r => r.GetStages()).Returns(mockDbSet.Object);
+
+            var ex = await Assert.ThrowsAsync<StageAlreadyExistsInCourseException>(() => _stageService.AddStageAsync(stage));
+            Assert.Contains("Duplicate Stage", ex.Message);
         }
     }
 }

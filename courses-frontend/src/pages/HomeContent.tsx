@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Users, GraduationCap, Star } from "lucide-react";
+import { Users, GraduationCap, Star, Check } from "lucide-react";
 
 import { getCourses, getCourseInstructor, getCourseParticipantsCount } from "../services/courseService";
 import { getRatingSummary } from "../services/reviewService";
@@ -132,10 +132,10 @@ const HomeContent = () => {
                 accessible, and deeply practical. We blend theory with real-world application so you can learn effectively.
               </p>
               <ul className="about-features">
-                <li>Modern platform with intuitive interface</li>
-                <li>Track your progress</li>
-                <li>Certified instructors</li>
-                <li>24/7 support</li>
+                <li><Check size={18} style={{marginRight: 8}} />Modern platform with intuitive interface</li>
+                <li><Check size={18} style={{marginRight: 8}} />Track your progress</li>
+                <li><Check size={18} style={{marginRight: 8}} />Certified instructors</li>
+                <li><Check size={18} style={{marginRight: 8}} />24/7 support</li>
               </ul>
             </div>
 

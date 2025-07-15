@@ -165,6 +165,10 @@ namespace BL.Tests
         public async Task AddCourseAsync_ValidCourse_ReturnsCourse()
         {
             var course = new Course { Id = Guid.NewGuid(), Name = "New Course" };
+
+            var mockDbSet = new List<Course>().AsQueryable().BuildMockDbSet();
+            _mockCourseRepo.Setup(r => r.GetCourses()).Returns(mockDbSet.Object);
+
             _mockCourseRepo.Setup(r => r.AddCourse(course)).Returns(course);
 
             var result = await _service.AddCourseAsync(course);
@@ -190,6 +194,9 @@ namespace BL.Tests
                 Reviews = new List<Review>()
             };
 
+            var mockDbSet = new List<Course>().AsQueryable().BuildMockDbSet();
+            _mockCourseRepo.Setup(r => r.GetCourses()).Returns(mockDbSet.Object);
+
             _mockCourseRepo.Setup(repo => repo.AddCourse(It.IsAny<Course>())).Returns((Course)null);
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -202,6 +209,11 @@ namespace BL.Tests
         public async Task UpdateCourseAsync_ValidCourse_ReturnsUpdatedCourse()
         {
             var course = new Course { Id = Guid.NewGuid(), Name = "Updated Course" };
+
+            var courses = new List<Course>().AsQueryable();
+            var mockDbSet = courses.BuildMockDbSet();
+            _mockCourseRepo.Setup(r => r.GetCourses()).Returns(mockDbSet.Object);
+
             _mockCourseRepo.Setup(r => r.UpdateCourse(course)).Returns(course);
 
             var result = await _service.UpdateCourseAsync(course);
@@ -210,6 +222,7 @@ namespace BL.Tests
             Assert.Equal(course.Name, result.Name);
             _mockCourseRepo.Verify(r => r.UpdateCourse(course), Times.Once);
         }
+
 
         [Fact]
         public async Task UpdateCourseAsync_NullCourse_ThrowsArgumentNullException()
@@ -262,6 +275,9 @@ namespace BL.Tests
             var service = new CourseService(spyRepo, subcategoryRepo.Object, courseSubcategoryRepo.Object, progressRepo.Object);
             var newCourse = new Course { Id = Guid.NewGuid(), Name = "Spy Course" };
 
+            var mockDbSet = new List<Course>().AsQueryable().BuildMockDbSet();
+            spyRepo.GetCoursesMock = mockDbSet.Object;
+
             await service.AddCourseAsync(newCourse);
 
             Assert.True(spyRepo.WasAddCalled);
@@ -283,6 +299,49 @@ namespace BL.Tests
             Assert.True(mockRepo.DeleteCalled);
             Assert.Equal(courseId, result!.Id);
         }
+
+        [Fact]
+        public async Task AddCourseAsync_DuplicateTitle_ThrowsCourseAlreadyExistsException()
+        {
+            var existingCourse = new Course { Id = Guid.NewGuid(), Name = "Test Title" };
+            var newCourse = new Course { Id = Guid.NewGuid(), Name = "Test Title" };
+            var courses = new List<Course> { existingCourse };
+            var mockDbSet = courses.AsQueryable().BuildMockDbSet();
+            _mockCourseRepo.Setup(r => r.GetCourses()).Returns(mockDbSet.Object);
+
+            await Assert.ThrowsAsync<BL.Exceptions.CourseAlreadyExistsException>(() => _service.AddCourseAsync(newCourse));
+        }
+
+        [Fact]
+        public async Task CourseTitleExistsAsync_ReturnsTrue_WhenTitleExists()
+        {
+            var courses = new List<Course>
+            {
+                new Course { Id = Guid.NewGuid(), Name = "Unique Title" }
+            };
+            var mockDbSet = courses.AsQueryable().BuildMockDbSet();
+            _mockCourseRepo.Setup(r => r.GetCourses()).Returns(mockDbSet.Object);
+
+            var exists = await _service.CourseTitleExistsAsync("Unique Title");
+
+            Assert.True(exists);
+        }
+
+        [Fact]
+        public async Task CourseTitleExistsAsync_ReturnsFalse_WhenTitleDoesNotExist()
+        {
+            var courses = new List<Course>
+            {
+                new Course { Id = Guid.NewGuid(), Name = "Other Title" }
+            };
+            var mockDbSet = courses.AsQueryable().BuildMockDbSet();
+            _mockCourseRepo.Setup(r => r.GetCourses()).Returns(mockDbSet.Object);
+
+            var exists = await _service.CourseTitleExistsAsync("Nonexistent Title");
+
+            Assert.False(exists);
+        }
+
         private class DummyCourseRepository : ICourseRepository
         {
             public Course AddCourse(Course course) => throw new NotImplementedException();
@@ -347,6 +406,8 @@ namespace BL.Tests
         {
             public bool WasAddCalled { get; private set; } = false;
             public Course? LastAddedCourse { get; private set; }
+            public IQueryable<Course> GetCoursesMock { get; set; } = Enumerable.Empty<Course>().AsQueryable();
+
 
             public Course AddCourse(Course course)
             {
@@ -357,7 +418,7 @@ namespace BL.Tests
 
             public Course? DeleteCourse(Guid courseId) => null;
             public Course? GetCourseById(Guid courseId) => null;
-            public IQueryable<Course> GetCourses() => Enumerable.Empty<Course>().AsQueryable();
+            public IQueryable<Course> GetCourses() => GetCoursesMock;
             public Course? UpdateCourse(Course course) => null;
         }
 

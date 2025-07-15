@@ -1,4 +1,5 @@
-﻿using IBL;
+﻿using BL.Exceptions;
+using IBL;
 using IDAL;
 using Microsoft.EntityFrameworkCore;
 using Model;
@@ -39,10 +40,24 @@ namespace BL.Services
 
         public async Task<Stage> AddStageAsync(Stage stage)
         {
+            var exists = await _stageRepository.GetStages()
+                .AnyAsync(s => s.CourseId == stage.CourseId && s.Name == stage.Name);
+
+            if (exists)
+                throw new StageAlreadyExistsInCourseException(stage.Name);
+
             return await Task.FromResult(_stageRepository.AddStage(stage));
         }
         public async Task<Stage?> UpdateStageAsync(Stage stage)
         {
+            var exists = await _stageRepository.GetStages()
+                .AnyAsync(s => s.CourseId == stage.CourseId
+                            && s.Name.ToLower() == stage.Name.ToLower()
+                            && s.Id != stage.Id);
+
+            if (exists)
+                throw new StageAlreadyExistsInCourseException(stage.Name);
+
             return await Task.FromResult(_stageRepository.UpdateStage(stage));
         }
         public async Task<Stage?> DeleteStageAsync(Guid id)

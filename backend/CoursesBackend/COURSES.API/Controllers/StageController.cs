@@ -5,6 +5,7 @@ using IBL;
 using Model;
 using Model.Constans;
 using Model.DTO;
+using BL.Exceptions;
 
 namespace COURSES.API.Controllers
 {
@@ -54,6 +55,9 @@ namespace COURSES.API.Controllers
         [HttpPost]
         public async Task<ActionResult<StageResponseDTO>> CreateStage([FromBody] CreateStageDTO createStageDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             if (createStageDto == null)
                 return BadRequest("Stage data is required");
 
@@ -67,20 +71,38 @@ namespace COURSES.API.Controllers
 
             var stage = CreateStageDTO.ToEntity(createStageDto);
 
-            var createdStage = await _stageService.AddStageAsync(stage);
-            if (createdStage == null)
-                return BadRequest("Failed to create stage");
-            
-            return CreatedAtAction(
-                nameof(GetStageById), 
-                new { id = createdStage.Id }, 
-                StageResponseDTO.FromStage(createdStage));
+            try
+            {
+                var createdStage = await _stageService.AddStageAsync(stage);
+                if (createdStage == null)
+                    return BadRequest("Failed to create stage");
+
+                return CreatedAtAction(
+                    nameof(GetStageById),
+                    new { id = createdStage.Id },
+                    StageResponseDTO.FromStage(createdStage));
+            }
+            catch(StageAlreadyExistsInCourseException ex)
+            {
+                var errors = new SerializableError
+                {
+                    { "Name", new[] { ex.Message } }
+                };
+                return BadRequest(errors);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [Authorize(Roles = IdentityRoleConstants.User)]
         [HttpPut("{id}")]
         public async Task<ActionResult<StageResponseDTO>> UpdateStage(Guid id, [FromBody] UpdateStageDTO updateStageDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             if (updateStageDto == null)
                 return BadRequest("Stage data is required");
 
@@ -103,11 +125,26 @@ namespace COURSES.API.Controllers
             existingStage.Description = updateStageDto.Description;
             existingStage.Duration = updateStageDto.Duration;
 
-            var updatedStage = await _stageService.UpdateStageAsync(existingStage);
-            if (updatedStage == null)
-                return BadRequest("Failed to update stage");
+            try
+            {
+                var updatedStage = await _stageService.UpdateStageAsync(existingStage);
+                if (updatedStage == null)
+                    return BadRequest("Failed to update stage");
 
-            return Ok(StageResponseDTO.FromStage(updatedStage));
+                return Ok(StageResponseDTO.FromStage(updatedStage));
+            }
+            catch (StageAlreadyExistsInCourseException ex)
+            {
+                var errors = new SerializableError
+                {
+                    { "Name", new[] { ex.Message } }
+                };
+                return BadRequest(errors);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [Authorize(Roles = IdentityRoleConstants.User)]

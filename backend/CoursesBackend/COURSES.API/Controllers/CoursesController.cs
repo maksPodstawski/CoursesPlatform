@@ -6,6 +6,7 @@ using Model.DTO;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using System.IO;
+using BL.Exceptions;
 
 namespace COURSES.API.Controllers
 {
@@ -93,6 +94,9 @@ namespace COURSES.API.Controllers
         [HttpPost]
         public async Task<ActionResult<CourseResponseDTO>> CreateCourse([FromForm] CreateCourseWithImageDTO createCourseDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
@@ -101,9 +105,7 @@ namespace COURSES.API.Controllers
 
             try
             {
-
                 var course = Course.FromCreateDTO(createCourseDto);
-
 
                 var createdCourse = await _courseService.AddCourseAsync(course);
 
@@ -168,6 +170,15 @@ namespace COURSES.API.Controllers
                     CourseResponseDTO.FromCourse(createdCourse)
                 );
             }
+            catch(CourseAlreadyExistsException ex)
+            {
+                var errors = new SerializableError
+                {
+                    { "Name", new[] { ex.Message } }
+                };
+                return BadRequest(errors);
+            }
+
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
@@ -176,34 +187,50 @@ namespace COURSES.API.Controllers
 
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<ActionResult<CourseResponseDTO>> UpdateCourse(Guid id, [FromBody] UpdateCourseDTO updateCourseDto)
+        public async Task<ActionResult<CourseResponseDTO>> UpdateCourse(Guid id, [FromForm] UpdateCourseWithImageDTO updateCourseDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var existingCourse = await _courseService.GetCourseByIdAsync(id);
             if (existingCourse == null)
-            {
                 return NotFound();
-            }
 
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
-            {
                 return Unauthorized();
-            }
 
             var isCreator = await _creatorService.IsUserCreatorOfCourseAsync(Guid.Parse(userId), id);
             if (!isCreator)
-            {
                 return Forbid();
-            }
 
             existingCourse.Name = updateCourseDto.Name;
             existingCourse.Description = updateCourseDto.Description;
-            existingCourse.ImageUrl = updateCourseDto.ImageUrl;
             existingCourse.Duration = updateCourseDto.Duration;
             existingCourse.Price = updateCourseDto.Price;
             existingCourse.IsHidden = updateCourseDto.IsHidden;
             existingCourse.Difficulty = updateCourseDto.Difficulty;
             existingCourse.UpdatedAt = DateTime.UtcNow;
+
+            if (updateCourseDto.Image != null && updateCourseDto.Image.Length > 0)
+            {
+                var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "UploadedImages", existingCourse.Id.ToString());
+                if (!Directory.Exists(uploadsRoot))
+                    Directory.CreateDirectory(uploadsRoot);
+
+                foreach (var existingFile in Directory.GetFiles(uploadsRoot))
+                {
+                    try { System.IO.File.Delete(existingFile); } catch { }
+                }
+
+                var fileName = Path.GetFileName(updateCourseDto.Image.FileName);
+                var filePath = Path.Combine(uploadsRoot, fileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await updateCourseDto.Image.CopyToAsync(stream);
+                }
+                existingCourse.ImageUrl = $"/UploadedImages/{existingCourse.Id}/{fileName}";
+            }
 
             if (updateCourseDto.SubcategoryIds != null)
             {
@@ -229,13 +256,27 @@ namespace COURSES.API.Controllers
                 }
             }
 
-            var updatedCourse = await _courseService.UpdateCourseAsync(existingCourse);
-            if (updatedCourse == null)
+            try
             {
-                return BadRequest("Failed to update course");
+                var updatedCourse = await _courseService.UpdateCourseAsync(existingCourse);
+                if (updatedCourse == null)
+                {
+                    return BadRequest("Failed to update course");
+                }
+                return Ok(CourseResponseDTO.FromCourse(updatedCourse));
             }
-
-            return Ok(CourseResponseDTO.FromCourse(updatedCourse));
+            catch (CourseAlreadyExistsException ex)
+            {
+                var errors = new SerializableError
+                {
+                    { "Name", new[] { ex.Message } }
+                };
+                return BadRequest(errors);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("{courseId}/image/{fileName}")]
