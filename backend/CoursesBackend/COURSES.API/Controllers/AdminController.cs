@@ -1,4 +1,5 @@
-﻿using IBL;
+﻿using BL.Exceptions;
+using IBL;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Model;
@@ -43,84 +44,143 @@ namespace COURSES.API.Controllers
         [HttpPost("categories")]
         public async Task<IActionResult> AddCategory([FromBody] CategoryNameDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             if (string.IsNullOrWhiteSpace(dto?.Name))
                 return BadRequest(new { message = "Category name is required." });
 
-            var exists = await _categoryService.GetCategoryByNameAsync(dto.Name.Trim());
-            if (exists != null)
-                return BadRequest(new { message = "A category with this name already exists." });
-
             var category = new Category { Name = dto.Name.Trim() };
-            var created = await _categoryService.AddCategoryAsync(category);
 
-            var resultDto = new CategoryDTO
+            try
             {
-                Id = created.Id,
-                Name = created.Name
-            };
+                var created = await _categoryService.AddCategoryAsync(category);
 
-            return CreatedAtAction(nameof(AddCategory), new { id = resultDto.Id }, resultDto);
+                var resultDto = new CategoryDTO
+                {
+                    Id = created.Id,
+                    Name = created.Name
+                };
+
+                return CreatedAtAction(nameof(AddCategory), new { id = resultDto.Id }, resultDto);
+            }
+            catch (CategoryAlreadyExistsException ex)
+            {
+                var errors = new SerializableError
+                {
+                    { "Name", new[] { ex.Message } }
+                };
+                return BadRequest(errors);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost("subcategories")]
         public async Task<IActionResult> AddSubcategory([FromBody] SubcategoryNameDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             if (string.IsNullOrWhiteSpace(dto?.Name))
                 return BadRequest(new { message = "Subcategory name is required." });
             if (dto.CategoryId == Guid.Empty)
                 return BadRequest(new { message = "Category ID is required." });
 
-            var exists = await _subcategoryService.GetSubcategoryByNameAsync(dto.Name.Trim(), dto.CategoryId);
-            if (exists != null)
-                return BadRequest(new { message = "A subcategory with this name already exists in this category." });
+            var category = await _categoryService.GetCategoryByIdAsync(dto.CategoryId);
+            if (category == null)
+                return BadRequest(new { message = "Category not found." });
 
+            if (category.Name.Trim().ToLower() == dto.Name.Trim().ToLower())
+            {
+                var errors = new SerializableError
+                {
+                    { "Name", new[] { "Subcategory name cannot be the same as category name." } }
+                };
+                return BadRequest(errors);
+            }
             var subcategory = new Subcategory
             {
                 Name = dto.Name.Trim(),
                 CategoryId = dto.CategoryId
             };
 
-            var created = await _subcategoryService.AddSubcategoryAsync(subcategory);
-
-            var resultDto = new SubcategoryDTO
+            try
             {
-                Id = created.Id,
-                Name = created.Name,
-                CategoryId = created.CategoryId
-            };
+                var created = await _subcategoryService.AddSubcategoryAsync(subcategory);
 
-            return CreatedAtAction(nameof(AddSubcategory), new { id = resultDto.Id }, resultDto);
+                var resultDto = new SubcategoryDTO
+                {
+                    Id = created.Id,
+                    Name = created.Name,
+                    CategoryId = created.CategoryId
+                };
+
+                return CreatedAtAction(nameof(AddSubcategory), new { id = resultDto.Id }, resultDto);
+            }
+            catch (SubcategoryAlreadyExistsException ex)
+            {
+                var errors = new SerializableError
+                {
+                    { "Name", new[] { ex.Message } }
+                };
+                return BadRequest(errors);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("category/{id}")]
         public async Task<IActionResult> UpdateCategory(Guid id, [FromBody] CategoryNameDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             if (string.IsNullOrWhiteSpace(dto?.Name))
                 return BadRequest(new { message = "Category name is required." });
-
-            var exists = await _categoryService.GetCategoryByNameAsync(dto.Name.Trim());
-            if (exists != null && exists.Id != id)
-                return BadRequest(new { message = "A category with this name already exists." });
 
             var category = await _categoryService.GetCategoryByIdAsync(id);
             if (category == null)
                 return NotFound(new { message = "Category not found." });
 
             category.Name = dto.Name.Trim();
-            var updated = await _categoryService.UpdateCategoryAsync(category);
 
-            var resultDto = new CategoryDTO
+            try
             {
-                Id = updated.Id,
-                Name = updated.Name
-            };
+                var updated = await _categoryService.UpdateCategoryAsync(category);
 
-            return Ok(resultDto);
+                var resultDto = new CategoryDTO
+                {
+                    Id = updated.Id,
+                    Name = updated.Name
+                };
+
+                return Ok(resultDto);
+            }
+            catch (CategoryAlreadyExistsException ex)
+            {
+                var errors = new SerializableError
+                {
+                    { "Name", new[] { ex.Message } }
+                };
+                return BadRequest(errors);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("subcategory/{id}")]
         public async Task<IActionResult> UpdateSubcategory(Guid id, [FromBody] SubcategoryNameDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             if (string.IsNullOrWhiteSpace(dto?.Name))
                 return BadRequest(new { message = "Subcategory name is required." });
 
@@ -128,21 +188,46 @@ namespace COURSES.API.Controllers
             if (subcategory == null)
                 return NotFound(new { message = "Subcategory not found." });
 
-            var exists = await _subcategoryService.GetSubcategoryByNameAsync(dto.Name.Trim(), subcategory.CategoryId);
-            if (exists != null && exists.Id != id)
-                return BadRequest(new { message = "A subcategory with this name already exists in this category." });
+            var category = await _categoryService.GetCategoryByIdAsync(subcategory.CategoryId);
+            if (category == null)
+                return BadRequest(new { message = "Category not found." });
+
+            if (category.Name.Trim().ToLower() == dto.Name.Trim().ToLower())
+            {
+                var errors = new SerializableError
+                {
+                    { "Name", new[] { "Subcategory name cannot be the same as category name." } }
+                };
+                return BadRequest(errors);
+            }
 
             subcategory.Name = dto.Name.Trim();
-            var updated = await _subcategoryService.UpdateSubcategoryAsync(subcategory);
 
-            var resultDto = new SubcategoryDTO
+            try
             {
-                Id = updated.Id,
-                Name = updated.Name,
-                CategoryId = updated.CategoryId
-            };
+                var updated = await _subcategoryService.UpdateSubcategoryAsync(subcategory);
 
-            return Ok(resultDto);
+                var resultDto = new SubcategoryDTO
+                {
+                    Id = updated.Id,
+                    Name = updated.Name,
+                    CategoryId = updated.CategoryId
+                };
+
+                return Ok(resultDto);
+            }
+            catch (SubcategoryAlreadyExistsException ex)
+            {
+                var errors = new SerializableError
+                {
+                    { "Name", new[] { ex.Message } }
+                };
+                return BadRequest(errors);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpDelete("course/{courseId}")]
