@@ -21,6 +21,7 @@ namespace DAL
         public DbSet<PurchasedCourses> PurchasedCourses { get; set; }
         public DbSet<Creator> Creators { get; set; }
         public DbSet<CourseSubcategory> CourseSubcategories { get; set; }
+        public DbSet<Invitation> Invitations { get; set; }
         
         public CoursesPlatformContext() { }
         

@@ -17,13 +17,15 @@ namespace CONTROLLERS.Tests
     public class CreatorControllerTests
     {
         private readonly Mock<ICreatorService> _mockCreatorService;
+        private readonly Mock<IInvitationService> _mockInvitationService;
         private readonly CreatorController _controller;
 
         public CreatorControllerTests()
         {
             _mockCreatorService = new Mock<ICreatorService>();
+            _mockInvitationService = new Mock<IInvitationService>();
 
-            _controller = new CreatorController(_mockCreatorService.Object)
+            _controller = new CreatorController(_mockCreatorService.Object, _mockInvitationService.Object)
             {
                 ControllerContext = new ControllerContext
                 {
