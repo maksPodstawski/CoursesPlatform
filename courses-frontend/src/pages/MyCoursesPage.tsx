@@ -2,7 +2,7 @@ import { MyCourses } from "../components/MyCourses.tsx";
 
 export default function MyCoursesPage() {
 	return (
-		<main className="flex-1 overflow-hidden bg-[#1a1a1a]">
+		<main className="flex-1 overflow-hidden bg-[#1a1a1a]" style={{ marginTop: 0 }}>
 			<MyCourses />
 		</main>
 	);
