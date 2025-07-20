@@ -1,4 +1,5 @@
-﻿using IBL;
+﻿using BL.Exceptions;
+using IBL;
 using IDAL;
 using Microsoft.EntityFrameworkCore;
 using Model;
@@ -76,6 +77,9 @@ namespace BL.Services
             if (course == null)
                 throw new ArgumentNullException(nameof(course));
 
+            if (await CourseTitleExistsAsync(course.Name))
+                throw new CourseAlreadyExistsException(title: course.Name);
+
             var result = _courseRepository.AddCourse(course);
             if (result == null)
                 throw new InvalidOperationException("Failed to add course. Repository returned null.");
@@ -90,6 +94,12 @@ namespace BL.Services
 
             if(course.Id == Guid.Empty)
                 throw new ArgumentException("Course ID cannot be empty.", nameof(course.Id));
+
+            var exists = await _courseRepository.GetCourses()
+                .AnyAsync(c => c.Name.ToLower() == course.Name.ToLower() && c.Id != course.Id);
+
+            if (exists)
+                throw new CourseAlreadyExistsException(title: course.Name);
 
             return await Task.FromResult(_courseRepository.UpdateCourse(course));
         }
@@ -133,6 +143,12 @@ namespace BL.Services
         {
             _courseSubcategoryRepository.DeleteCourseSubcategory(courseSubcategoryId);
             await Task.CompletedTask;
+        }
+
+        public async Task<bool> CourseTitleExistsAsync(string title)
+        {
+            return await _courseRepository.GetCourses()
+                .AnyAsync(c => c.Name.ToLower() == title.ToLower());
         }
     }
 }

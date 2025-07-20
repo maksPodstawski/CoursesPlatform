@@ -8,7 +8,13 @@ async function handleResponse<T = any>(response: Response, defaultMsg: string): 
     let msg = defaultMsg;
     try {
         const data = await response.json();
-        msg = data.message || msg;
+        if (data.message) {
+            msg = data.message;
+        } else if (data.Name && Array.isArray(data.Name)) {
+            msg = data.Name[0];
+        } else {
+            msg = JSON.stringify(data);
+        }
     } catch {
         msg = await response.text() || msg;
     }

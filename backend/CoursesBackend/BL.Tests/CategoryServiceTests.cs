@@ -135,6 +135,10 @@ namespace BL.Tests
         public async Task AddCategoryAsync_ReturnsAddedCategory()
         {
             var category = new Category { Id = Guid.NewGuid(), Name = "DevOps" };
+            var categories = new List<Category>(); 
+            var mockDbSet = categories.AsQueryable().BuildMock();
+            _mockRepo.Setup(r => r.GetCategories()).Returns(mockDbSet);
+
             _mockRepo.Setup(r => r.AddCategory(category)).Returns(category);
 
             var result = await _service.AddCategoryAsync(category);
@@ -143,6 +147,7 @@ namespace BL.Tests
             Assert.Equal("DevOps", result.Name);
             _mockRepo.Verify(r => r.AddCategory(category), Times.Once);
         }
+
 
         [Fact]
         public async Task AddCategoryAsync_NullCategory_ThrowsArgumentNullException()
@@ -166,16 +171,24 @@ namespace BL.Tests
         public async Task AddCategoryAsync_RepositoryReturnsNull_ThrowsInvalidOperationException()
         {
             var category = new Category { Id = Guid.NewGuid(), Name = "Test Category" };
+            var mockDbSet = new List<Category>().AsQueryable().BuildMock();
+            _mockRepo.Setup(r => r.GetCategories()).Returns(mockDbSet); 
+
             _mockRepo.Setup(r => r.AddCategory(category)).Returns((Category)null!);
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => _service.AddCategoryAsync(category));
             _mockRepo.Verify(r => r.AddCategory(category), Times.Once);
         }
 
+
         [Fact]
         public async Task UpdateCategoryAsync_ReturnsUpdatedCategory()
         {
             var category = new Category { Id = Guid.NewGuid(), Name = "Mobile" };
+            var categories = new List<Category> { category };
+            var mockDbSet = categories.AsQueryable().BuildMock();
+            _mockRepo.Setup(r => r.GetCategories()).Returns(mockDbSet); 
+
             _mockRepo.Setup(r => r.UpdateCategory(category)).Returns(category);
 
             var result = await _service.UpdateCategoryAsync(category);
@@ -184,16 +197,21 @@ namespace BL.Tests
             _mockRepo.Verify(r => r.UpdateCategory(category), Times.Once);
         }
 
+
         [Fact]
         public async Task UpdateCategoryAsync_NonExistingCategory_ReturnsNull()
         {
             var category = new Category { Id = Guid.NewGuid(), Name = "NonExistent" };
+            var categories = new List<Category>(); 
+            var mockDbSet = categories.AsQueryable().BuildMock();
+            _mockRepo.Setup(r => r.GetCategories()).Returns(mockDbSet); 
             _mockRepo.Setup(r => r.UpdateCategory(category)).Returns((Category)null!);
 
             var result = await _service.UpdateCategoryAsync(category);
 
             Assert.Null(result);
         }
+
 
         [Fact]
         public async Task UpdateCategoryAsync_NullCategory_ThrowsArgumentNullException()
@@ -284,7 +302,7 @@ namespace BL.Tests
             private readonly List<Category> _store = new();
             public Category AddCategory(Category category) { _store.Add(category); return category; }
             public Category DeleteCategory(Guid id) => throw new NotImplementedException();
-            public IQueryable<Category> GetCategories() => _store.AsQueryable();
+            public IQueryable<Category> GetCategories() => _store.AsQueryable().BuildMock(); // <- poprawka!
             public Category GetCategoryById(Guid id) => _store.FirstOrDefault(c => c.Id == id)!;
             public Category UpdateCategory(Category category) => throw new NotImplementedException();
         }
@@ -307,12 +325,21 @@ namespace BL.Tests
         {
             public int AddCallCount { get; private set; } = 0;
             public Category? LastAdded { get; private set; }
-            public Category AddCategory(Category category) { AddCallCount++; LastAdded = category; return category; }
+            private readonly List<Category> _store = new(); 
+
+            public Category AddCategory(Category category)
+            {
+                AddCallCount++;
+                LastAdded = category;
+                _store.Add(category);
+                return category;
+            }
             public Category DeleteCategory(Guid id) => throw new NotImplementedException();
-            public IQueryable<Category> GetCategories() => throw new NotImplementedException();
+            public IQueryable<Category> GetCategories() => _store.AsQueryable().BuildMock(); 
             public Category GetCategoryById(Guid id) => throw new NotImplementedException();
             public Category UpdateCategory(Category category) => throw new NotImplementedException();
         }
+
 
         [Fact]
         public async Task Spy_TracksAddCall()

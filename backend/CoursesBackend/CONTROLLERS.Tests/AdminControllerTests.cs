@@ -92,6 +92,12 @@ namespace CONTROLLERS.Tests
                 CategoryId = dto.CategoryId
             };
 
+            _categoryService.Setup(s => s.GetCategoryByIdAsync(dto.CategoryId))
+                .ReturnsAsync(new Category { Id = dto.CategoryId, Name = "SomeCategory" });
+
+            _subcategoryService.Setup(s => s.GetSubcategoryByNameAsync(dto.Name.Trim(), dto.CategoryId))
+                .ReturnsAsync((Subcategory?)null);
+
             _subcategoryService.Setup(s => s.AddSubcategoryAsync(It.IsAny<Subcategory>())).ReturnsAsync(sub);
 
             var result = await _controller.AddSubcategory(dto);
@@ -100,6 +106,7 @@ namespace CONTROLLERS.Tests
             var response = Assert.IsType<SubcategoryDTO>(created.Value);
             Assert.Equal("C#", response.Name);
         }
+
 
         [Fact]
         public async Task AddSubcategory_MissingName_ReturnsBadRequest()

@@ -6,6 +6,8 @@ import TextEditor from '../components/TextEditor';
 import { getCategories, getSubcategories } from '../services/categoryService';
 import { Category, Subcategory } from '../types/courses';
 import Sidebar from '../components/Sidebar';
+import { validateCourseForm, CourseFormData, CourseFieldErrors } from '../validation/courseValidation';
+import { validateStageForm, StageFormData } from '../validation/stageValidation';
 
 interface CreatorCourse {
     id: string;
@@ -53,8 +55,14 @@ const CreatorCourses = () => {
     const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>("");
     const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
-    const [newStage, setNewStage] = useState<{ name: string; description: string; duration: number; videoFile: File | null }>({ name: '', description: '', duration: 1, videoFile: null });
+    const [newStage, setNewStage] = useState<{ name: string; description: string; duration: number | ''; price: number | ''; videoFile: File | null }>({ name: '', description: '', duration: '', price: '', videoFile: null });
     const [coursesListOpen, setCoursesListOpen] = useState(true);
+    const [fieldErrors, setFieldErrors] = useState<CourseFieldErrors>({});
+    const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
+    const [isFormValid, setIsFormValid] = useState(true);
+    const [stageFieldErrors, setStageFieldErrors] = useState<Partial<Record<string, string>>>({});
+    const [isStageFormValid, setIsStageFormValid] = useState(true);
+    const [stageTouched, setStageTouched] = useState<{ [key: string]: boolean }>({});
 
     useEffect(() => {
         const fetchCreatorCourses = async () => {
@@ -102,7 +110,9 @@ const CreatorCourses = () => {
         if (selectedCourse) {
             setEditForm({
                 ...selectedCourse,
-                description: selectedCourse.description || ''
+                description: selectedCourse.description || '',
+                duration: selectedCourse.duration ? String(selectedCourse.duration) : '',
+                price: selectedCourse.price ? String(selectedCourse.price) : '',
             });
             setImageFile(null);
             if (selectedCourse.subcategories && selectedCourse.subcategories.length > 0) {
@@ -126,13 +136,41 @@ const CreatorCourses = () => {
         }
     }, [localStages, selectedCourse]);
 
+    useEffect(() => {
+        if (!editForm) return;
+        const formData: CourseFormData = {
+            name: editForm.name,
+            description: editForm.description,
+            duration: Number(editForm.duration),
+            price: Number(editForm.price),
+            difficulty: Number(editForm.difficulty),
+            selectedCategory,
+            selectedSubcategory,
+            imageFile: imageFile,
+        };
+        const errors = validateCourseForm(formData);
+        setFieldErrors(errors);
+        setIsFormValid(Object.keys(errors).length === 0);
+    }, [editForm, selectedCategory, selectedSubcategory, localStages, imageFile]);
+
+    useEffect(() => {
+        const stageData: StageFormData = {
+            name: newStage.name,
+            description: newStage.description,
+            duration: Number(newStage.duration),
+        };
+        const errors = validateStageForm(stageData);
+        setStageFieldErrors(errors);
+        setIsStageFormValid(Object.keys(errors).length === 0);
+    }, [newStage]);
+
     const handleCourseFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
         if (type === 'file' && name === 'imageFile') {
             const fileInput = e.target as HTMLInputElement;
             setImageFile(fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null);
         } else {
-            setEditForm((prev: any) => ({ ...prev, [name]: type === 'number' ? Number(value) : value }));
+            setEditForm((prev: any) => ({ ...prev, [name]: type === 'number' ? (value === '' ? '' : Number(value)) : value }));
         }
     };
 
@@ -153,10 +191,32 @@ const CreatorCourses = () => {
     };
 
     const handleSaveCourse = async () => {
-        if (!selectedCourse) return;
+        setErrorMsg(null);
         setStatusMsg('Saving...');
         setProgress(10);
-        setErrorMsg(null);
+        setFieldErrors({});
+        if (!selectedCourse) return;
+
+        // --- WALIDACJA FORMULARZA ---
+        const formData: CourseFormData = {
+            name: editForm.name,
+            description: editForm.description,
+            duration: Number(editForm.duration),
+            price: Number(editForm.price),
+            difficulty: Number(editForm.difficulty),
+            selectedCategory,
+            selectedSubcategory,
+            imageFile: imageFile,
+        };
+        const errors = validateCourseForm(formData);
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors);
+            setStatusMsg(null);
+            setProgress(0);
+            return;
+        }
+        // --- KONIEC WALIDACJI ---
+
         try {
             let imageUrl = editForm.imageUrl;
             if (imageFile) {
@@ -174,22 +234,40 @@ const CreatorCourses = () => {
 
             setStatusMsg('Saving course details...');
             setProgress(30);
+            const formData = new FormData();
+            formData.append('Name', editForm.name);
+            formData.append('Description', editForm.description);
+            formData.append('Duration', editForm.duration.toString());
+            formData.append('Price', editForm.price.toString());
+            formData.append('IsHidden', editForm.isHidden ?? false);
+            formData.append('Difficulty', editForm.difficulty ?? 1);
+            if (imageFile) {
+                formData.append('Image', imageFile);
+            }
+            if (selectedSubcategory) {
+                formData.append('SubcategoryIds', selectedSubcategory);
+            }
+            for (let [key, value] of formData.entries()) {
+                console.log(key, value);
+            }
             const res = await fetch(`${config.apiBaseUrl}/api/Courses/${selectedCourse.id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({
-                    name: editForm.name,
-                    description: editForm.description,
-                    imageUrl: imageUrl,
-                    duration: editForm.duration,
-                    price: editForm.price,
-                    isHidden: editForm.isHidden ?? false,
-                    difficulty: editForm.difficulty ?? 1,
-                    subcategoryIds: selectedSubcategory ? [selectedSubcategory] : []
-                })
+                body: formData
             });
-            if (!res.ok) throw new Error('Failed to update course');
+            if (!res.ok) {
+                let errorMsg = 'Failed to update course';
+                try {
+                    const errorData = await res.json();
+                    errorMsg = errorData?.Name ? errorData.Name[0] : (errorData?.error || errorMsg);
+                } catch {
+                    const text = await res.text();
+                    errorMsg = text || errorMsg;
+                }
+                setErrorMsg(errorMsg);
+                setProgress(0);
+                return;
+            }
             setStatusMsg('Synchronizing stages...');
             setProgress(60);
             const backendStagesRes = await fetch(`${config.apiBaseUrl}/api/stages/course/${selectedCourse.id}`, { credentials: 'include' });
@@ -207,7 +285,17 @@ const CreatorCourses = () => {
                         courseId: selectedCourse.id
                     })
                 });
-                if (!res.ok) throw new Error('Stage creation failed.');
+                if (!res.ok) {
+                    let errorMsg = 'Stage creation failed.';
+                    try {
+                        const errorData = await res.json();
+                        errorMsg = errorData?.Name ? errorData.Name[0] : (errorData?.error || errorMsg);
+                    } catch {
+                        const text = await res.text();
+                        errorMsg = text || errorMsg;
+                    }
+                    throw new Error(errorMsg);
+                }
                 const createdStage = await res.json();
                 if (stage.videoFile) {
                     const formData = new FormData();
@@ -279,7 +367,7 @@ const CreatorCourses = () => {
 
     const handleStageFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type } = e.target;
-        setNewStage(prev => ({ ...prev, [name]: type === 'number' ? Number(value) : value }));
+        setNewStage(prev => ({ ...prev, [name]: type === 'number' ? (value === '' ? '' : Number(value)) : value }));
     };
 
     const handleStageDescriptionChange = (val: string) => {
@@ -293,16 +381,23 @@ const CreatorCourses = () => {
     };
 
     const handleAddStage = () => {
-        if (!newStage.name || !newStage.description) return;
+        const stageData: StageFormData = {
+            name: newStage.name,
+            description: newStage.description,
+            duration: Number(newStage.duration),
+        };
+        const errors = validateStageForm(stageData);
+        setStageFieldErrors(errors);
+        if (Object.keys(errors).length > 0) return;
         setLocalStages(prev => ([...prev, {
             id: Math.random().toString(36).substr(2, 9),
             name: newStage.name,
             description: newStage.description,
-            duration: newStage.duration,
+            duration: Number(newStage.duration),
             videoFile: newStage.videoFile,
             videoPath: newStage.videoFile ? URL.createObjectURL(newStage.videoFile) : undefined,
         }]));
-        setNewStage({ name: '', description: '', duration: 1, videoFile: null });
+        setNewStage({ name: '', description: '', duration: '', price: '', videoFile: null });
     };
     const handleRemoveStage = (id: string) => {
         setLocalStages(prev => prev.filter(s => s.id !== id));
@@ -330,52 +425,223 @@ const CreatorCourses = () => {
                 <h3>Course Details</h3>
                 <div className="form-group">
                     <label>Course Name</label>
-                    <input className="form-input" name="name" value={editForm?.name || ''} onChange={handleCourseFieldChange} />
+                    <input className="form-input" name="name" value={editForm?.name || ''} onChange={handleCourseFieldChange} onBlur={() => setTouched(t => ({ ...t, name: true }))} />
+                    {touched.name && fieldErrors.name && (
+                        <div className="field-error">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={2}
+                                stroke="currentColor"
+                                className="icon"
+                                width="16"
+                                height="16"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                                />
+                            </svg>
+                            <span>{fieldErrors.name}</span>
+                        </div>
+                    )}
                 </div>
                 <div className="form-group">
                     <label>Description</label>
-                    <TextEditor key={selectedCourse?.id || 'no-course'} value={editForm?.description || ''} onChange={handleDescriptionChange} placeholder="Enter course description" />
+                    <div tabIndex={-1} onBlur={() => setTouched(t => ({ ...t, description: true }))} style={{ outline: 'none' }}>
+                        <TextEditor key={selectedCourse?.id || 'no-course'} value={editForm?.description || ''} onChange={handleDescriptionChange} placeholder="Enter course description" />
+                    </div>
+                    {touched.description && fieldErrors.description && (
+                        <div className="field-error">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={2}
+                                stroke="currentColor"
+                                className="icon"
+                                width="16"
+                                height="16"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                                />
+                            </svg>
+                            <span>{fieldErrors.description}</span>
+                        </div>
+                    )}
                 </div>
                 <div className="form-group">
                     <label>Course Image</label>
-                    <input className="form-input" name="imageFile" type="file" accept="image/*" onChange={handleCourseFieldChange} />
+                    <input className="form-input" name="imageFile" type="file" accept="image/*" onChange={handleCourseFieldChange} onBlur={() => setTouched(t => ({ ...t, imageFile: true }))} />
+                    {touched.imageFile && fieldErrors.imageFile && (
+                        <div className="field-error">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={2}
+                                stroke="currentColor"
+                                className="icon"
+                                width="16"
+                                height="16"
+                                style={{ marginRight: 4, verticalAlign: 'middle' }}
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                                />
+                            </svg>
+                            <span>{fieldErrors.imageFile}</span>
+                        </div>
+                    )}
                 </div>
                 <div className="duration-price-group">
                     <div className="form-group">
                         <label>Duration</label>
-                        <input className="form-input" name="duration" type="number" value={editForm?.duration || 1} onChange={handleCourseFieldChange} />
+                        <input className="form-input" name="duration" type="number" value={editForm?.duration || ''} onChange={handleCourseFieldChange} onBlur={() => setTouched(t => ({ ...t, duration: true }))} placeholder="Enter duration" />
+                        {touched.duration && fieldErrors.duration && (
+                            <div className="field-error">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="icon"
+                                    width="16"
+                                    height="16"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                                    />
+                                </svg>
+                                <span>{fieldErrors.duration}</span>
+                            </div>
+                        )}
                     </div>
                     <div className="form-group">
                         <label>Price</label>
-                        <input className="form-input" name="price" type="number" value={editForm?.price || 1} onChange={handleCourseFieldChange} />
+                        <input className="form-input" name="price" type="number" value={editForm?.price || ''} onChange={handleCourseFieldChange} onBlur={() => setTouched(t => ({ ...t, price: true }))} placeholder="Enter price" />
+                        {touched.price && fieldErrors.price && (
+                            <div className="field-error">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="icon"
+                                    width="16"
+                                    height="16"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                                    />
+                                </svg>
+                                <span>{fieldErrors.price}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
                 <div className="category-row">
                     <div className="form-group">
                         <label className="category-label">Category</label>
-                        <select className="category-select" value={selectedCategory} onChange={handleCategoryChange} required>
+                        <select className="category-select" value={selectedCategory} onChange={handleCategoryChange} onBlur={() => setTouched(t => ({ ...t, selectedCategory: true }))} required>
                             <option value="">Select a category</option>
                             {categories.map(cat => (
                                 <option key={cat.id} value={cat.id}>{cat.name}</option>
                             ))}
                         </select>
+                        {touched.selectedCategory && fieldErrors.selectedCategory && (
+                            <div className="field-error">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="icon"
+                                    width="16"
+                                    height="16"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                                    />
+                                </svg>
+                                <span>{fieldErrors.selectedCategory}</span>
+                            </div>
+                        )}
                     </div>
                     <div className="form-group">
                         <label className="subcategory-label">Subcategory</label>
-                        <select className="subcategory-select" value={selectedSubcategory} onChange={handleSubcategoryChange} required disabled={!selectedCategory}>
+                        <select className="subcategory-select" value={selectedSubcategory} onChange={handleSubcategoryChange} onBlur={() => setTouched(t => ({ ...t, selectedSubcategory: true }))} required disabled={!selectedCategory}>
                             <option value="">Select a subcategory</option>
                             {subcategories.map(sub => (
                                 <option key={sub.id} value={sub.id}>{sub.name}</option>
                             ))}
                         </select>
+                        {touched.selectedSubcategory && fieldErrors.selectedSubcategory && (
+                            <div className="field-error">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="icon"
+                                    width="16"
+                                    height="16"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                                    />
+                                </svg>
+                                <span>{fieldErrors.selectedSubcategory}</span>
+                            </div>
+                        )}
                     </div>
                     <div className="form-group">
                         <label className="difficulty-label">Difficulty Level</label>
-                        <select className="difficulty-select" name="difficulty" value={editForm?.difficulty || 1} onChange={handleDifficultyChange} required>
+                        <select className="difficulty-select" name="difficulty" value={editForm?.difficulty || 1} onChange={handleDifficultyChange} onBlur={() => setTouched(t => ({ ...t, difficulty: true }))} required>
                             <option value={1}>Beginner</option>
                             <option value={2}>Intermediate</option>
                             <option value={3}>Advanced</option>
                         </select>
+                        {touched.difficulty && fieldErrors.difficulty && (
+                            <div className="field-error">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="icon"
+                                    width="16"
+                                    height="16"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                                    />
+                                </svg>
+                                <span>{fieldErrors.difficulty}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
                 <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
@@ -459,15 +725,80 @@ const CreatorCourses = () => {
                     <h3>Edit Stage</h3>
                     <div className="form-group">
                         <label>Stage Name</label>
-                        <input className="form-input" name="name" value={stageEdit.name} onChange={e => setStageEdit({ ...stageEdit, name: e.target.value })} />
+                        <input className="form-input" name="name" value={stageEdit.name} onChange={e => setStageEdit({ ...stageEdit, name: e.target.value })} onBlur={() => setStageTouched(t => ({ ...t, name: true }))} />
+                        {stageTouched.name && stageFieldErrors.name && (
+                            <div className="field-error">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="icon"
+                                    width="16"
+                                    height="16"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                                    />
+                                </svg>
+                                <span>{stageFieldErrors.name}</span>
+                            </div>
+                        )}
                     </div>
                     <div className="form-group">
                         <label>Description</label>
-                        <TextEditor value={stageEdit.description} onChange={val => setStageEdit({ ...stageEdit, description: val })} placeholder="Enter stage description" />
+                        <div tabIndex={-1} onBlur={() => setStageTouched(t => ({ ...t, description: true }))} style={{ outline: 'none' }}>
+                            <TextEditor value={stageEdit.description} onChange={val => setStageEdit({ ...stageEdit, description: val })} placeholder="Enter stage description" />
+                        </div>
+                        {stageTouched.description && stageFieldErrors.description && (
+                            <div className="field-error">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="icon"
+                                    width="16"
+                                    height="16"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                                    />
+                                </svg>
+                                <span>{stageFieldErrors.description}</span>
+                            </div>
+                        )}
                     </div>
                     <div className="form-group">
                         <label>Duration (min)</label>
-                        <input className="form-input" name="duration" type="number" value={stageEdit.duration} onChange={e => setStageEdit({ ...stageEdit, duration: Number(e.target.value) })} />
+                        <input className="form-input" name="duration" type="number" value={stageEdit.duration} onChange={e => setStageEdit({ ...stageEdit, duration: Number(e.target.value) })} onBlur={() => setStageTouched(t => ({ ...t, duration: true }))} />
+                        {stageTouched.duration && stageFieldErrors.duration && (
+                            <div className="field-error">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="icon"
+                                    width="16"
+                                    height="16"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                                    />
+                                </svg>
+                                <span>{stageFieldErrors.duration}</span>
+                            </div>
+                        )}
                     </div>
                     <div className="form-group">
                         <label>Upload Video (optional)</label>
@@ -481,21 +812,86 @@ const CreatorCourses = () => {
                     <h3>Add Stage</h3>
                     <div className="form-group">
                         <label>Stage Name</label>
-                        <input className="form-input" name="name" value={newStage.name} onChange={handleStageFieldChange} />
+                        <input className="form-input" name="name" value={newStage.name} onChange={handleStageFieldChange} onBlur={() => setStageTouched(t => ({ ...t, name: true }))} />
+                        {stageTouched.name && stageFieldErrors.name && (
+                            <div className="field-error">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="icon"
+                                    width="16"
+                                    height="16"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                                    />
+                                </svg>
+                                <span>{stageFieldErrors.name}</span>
+                            </div>
+                        )}
                     </div>
                     <div className="form-group">
                         <label>Description</label>
-                        <TextEditor value={newStage.description} onChange={handleStageDescriptionChange} placeholder="Enter stage description" />
+                        <div tabIndex={-1} onBlur={() => setStageTouched(t => ({ ...t, description: true }))} style={{ outline: 'none' }}>
+                            <TextEditor value={newStage.description} onChange={handleStageDescriptionChange} placeholder="Enter stage description" />
+                        </div>
+                        {stageTouched.description && stageFieldErrors.description && (
+                            <div className="field-error">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="icon"
+                                    width="16"
+                                    height="16"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                                    />
+                                </svg>
+                                <span>{stageFieldErrors.description}</span>
+                            </div>
+                        )}
                     </div>
                     <div className="form-group">
                         <label>Duration (min)</label>
-                        <input className="form-input" name="duration" type="number" value={newStage.duration} onChange={handleStageFieldChange} />
+                        <input className="form-input" name="duration" type="number" value={newStage.duration || ''} onChange={handleStageFieldChange} onBlur={() => setStageTouched(t => ({ ...t, duration: true }))} placeholder="Enter duration" />
+                        {stageTouched.duration && stageFieldErrors.duration && (
+                            <div className="field-error">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="icon"
+                                    width="16"
+                                    height="16"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                                    />
+                                </svg>
+                                <span>{stageFieldErrors.duration}</span>
+                            </div>
+                        )}
                     </div>
                     <div className="form-group">
                         <label>Upload Video (optional)</label>
                         <input className="form-input" name="video" type="file" accept="video/*" onChange={handleStageFileChange} />
                     </div>
-                    <button className="btn btn-secondary" type="button" onClick={handleAddStage}>
+                    <button className="btn btn-secondary" type="button" onClick={handleAddStage} disabled={!isStageFormValid}>
                         Add Stage
                     </button>
                 </div>
@@ -687,18 +1083,21 @@ const CreatorCourses = () => {
                             {activeTab === 'details' && renderDetailsTab()}
                             {activeTab === 'stages' && renderStagesTab()}
                             {activeTab === 'summary' && renderSummaryTab()}
-                            {statusMsg && (
-                                <div className="submission-status" style={{ marginTop: 16, marginBottom: 0 }}>
-                                    <div className="status-content">
-                                        <div className="status-message">{statusMsg}</div>
-                                        <div className="progress-bar">
-                                            <div className="progress-fill" style={{ width: `${progress}%` }} />
+                            {errorMsg ? (
+                                <div className="error-message">{errorMsg}</div>
+                            ) : (
+                                statusMsg && (
+                                    <div className="submission-status" style={{ marginTop: 16, marginBottom: 0 }}>
+                                        <div className="status-content">
+                                            <div className="status-message">{statusMsg}</div>
+                                            <div className="progress-bar">
+                                                <div className="progress-fill" style={{ width: `${progress}%` }} />
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                )
                             )}
-                            {errorMsg && <div className="error-message">{errorMsg}</div>}
-                            <button className="btn btn-primary" style={{ marginTop: 32 }} type="button" onClick={handleSaveCourse}>
+                            <button className="btn btn-primary" style={{ marginTop: 32 }} type="button" onClick={handleSaveCourse} disabled={!isFormValid}>
                                 Save Course
                             </button>
                         </div>

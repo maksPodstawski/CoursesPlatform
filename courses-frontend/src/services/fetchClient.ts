@@ -106,10 +106,6 @@ class FetchClient {
 		try {
 			const response = await this.retryWithBackoff(fullUrl, options);
 
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-
 			return response;
 		} catch (error) {
 			console.error("Fetch error:", error);

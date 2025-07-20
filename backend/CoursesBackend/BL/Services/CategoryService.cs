@@ -1,4 +1,5 @@
-﻿using IBL;
+﻿using BL.Exceptions;
+using IBL;
 using IDAL;
 using Microsoft.EntityFrameworkCore;
 using Model;
@@ -43,6 +44,12 @@ namespace BL.Services
             if(string.IsNullOrWhiteSpace(category.Name))
                 throw new ArgumentException("Category name cannot be null or empty.", nameof(category.Name));
 
+            var exists = await _categoryRepository.GetCategories()
+                .AnyAsync(c => c.Name.ToLower() == category.Name.ToLower());
+
+            if (exists)
+                throw new CategoryAlreadyExistsException(category.Name);
+
             var result = _categoryRepository.AddCategory(category);
             if (result == null)
                 throw new InvalidOperationException("Failed to add category. Repository returned null.");
@@ -57,6 +64,12 @@ namespace BL.Services
 
             if (string.IsNullOrWhiteSpace(category.Name))
                 throw new ArgumentException("Category name cannot be null or empty.", nameof(category.Name));
+
+            var exists = await _categoryRepository.GetCategories()
+                .AnyAsync(c => c.Name.ToLower() == category.Name.ToLower() && c.Id != category.Id);
+
+            if (exists)
+                throw new CategoryAlreadyExistsException(category.Name);
 
             return await Task.FromResult(_categoryRepository.UpdateCategory(category));
         }

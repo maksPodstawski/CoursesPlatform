@@ -88,6 +88,7 @@ namespace Model.DTO
     {
         [Required]
         public required string Name { get; set; }
+        [Required]
         public string? Description { get; set; }
         [Required]
         public IFormFile Image { get; set; } = null!;
@@ -96,8 +97,27 @@ namespace Model.DTO
         [Required]
         public decimal Price { get; set; }
         public bool IsHidden { get; set; } = false;
+        [Required(ErrorMessage = "Subcategory is required!")]
         public List<Guid> SubcategoryIds { get; set; } = new();
         [Required]
         public Difficulty Difficulty { get; set; } = Difficulty.Beginner;
+    }
+
+    public class UpdateCourseWithImageDTO
+    {
+        [Required]
+        public Guid Id { get; set; }
+        [Required]
+        public string Name { get; set; }
+        public string? Description { get; set; }
+        [Required]
+        public int Duration { get; set; }
+        [Required]
+        public decimal Price { get; set; }
+        public bool IsHidden { get; set; }
+        [Required]
+        public Difficulty Difficulty { get; set; }
+        public List<Guid> SubcategoryIds { get; set; }
+        public IFormFile? Image { get; set; }
     }
 } 

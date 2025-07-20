@@ -10,6 +10,7 @@ using Moq;
 using MockQueryable.Moq;
 using Xunit;
 using BL.Services;
+using MockQueryable;
 
 namespace BL.Tests
 {
@@ -17,19 +18,21 @@ namespace BL.Tests
     {
         private readonly SubcategoryService _subcategoryService;
         private readonly Mock<ISubcategoryRepository> _mockRepository;
+        private readonly Mock<ICategoryRepository> _mockCategoryRepo;
 
         public SubcategoryServiceTests()
         {
             _mockRepository = new Mock<ISubcategoryRepository>();
-            _subcategoryService = new SubcategoryService(_mockRepository.Object);
+            _mockCategoryRepo = new Mock<ICategoryRepository>();
+            _subcategoryService = new SubcategoryService(_mockRepository.Object, _mockCategoryRepo.Object);
         }
 
-        
+
         [Fact]
         public async Task DummyTest_DoesNotUseDependency()
         {
             var dummyRepo = new DummySubcategoryRepository();
-            var service = new SubcategoryService(dummyRepo);
+            var service = new SubcategoryService(dummyRepo, _mockCategoryRepo.Object);
 
             var subcategory = new Subcategory { Name = "Dummy", CategoryId = Guid.NewGuid() };
             await Assert.ThrowsAsync<NotImplementedException>(() => service.AddSubcategoryAsync(subcategory));
@@ -40,7 +43,7 @@ namespace BL.Tests
         public async Task StubTest_ReturnsPredefinedSubcategory()
         {
             var stubRepo = new StubSubcategoryRepository();
-            var service = new SubcategoryService(stubRepo);
+            var service = new SubcategoryService(stubRepo, _mockCategoryRepo.Object);
 
             var result = await service.GetSubcategoryByIdAsync(Guid.NewGuid());
 
@@ -53,7 +56,7 @@ namespace BL.Tests
         public async Task FakeTest_AddAndGetSubcategoryFromMemory()
         {
             var fakeRepo = new FakeSubcategoryRepository();
-            var service = new SubcategoryService(fakeRepo);
+            var service = new SubcategoryService(fakeRepo, _mockCategoryRepo.Object);
 
             var input = new Subcategory { Id = Guid.NewGuid(), Name = "FakeSub", CategoryId = Guid.NewGuid() };
             await service.AddSubcategoryAsync(input);
@@ -62,11 +65,15 @@ namespace BL.Tests
             Assert.Equal("FakeSub", result!.Name);
         }
 
-       
+
         [Fact]
         public async Task MockTest_VerifyAddCalled()
         {
             var subcategory = new Subcategory { Name = "Mocked", CategoryId = Guid.NewGuid() };
+            var subcategories = new List<Subcategory>();
+            var mockDbSet = subcategories.AsQueryable().BuildMock();
+            _mockRepository.Setup(r => r.GetSubcategories()).Returns(mockDbSet);
+
             _mockRepository.Setup(r => r.AddSubcategory(It.IsAny<Subcategory>())).Returns(subcategory);
 
             var result = await _subcategoryService.AddSubcategoryAsync(subcategory);
@@ -75,12 +82,13 @@ namespace BL.Tests
             _mockRepository.Verify(r => r.AddSubcategory(It.Is<Subcategory>(s => s.Name == "Mocked")), Times.Once);
         }
 
-        
+
+
         [Fact]
         public async Task SpyTest_TracksInteraction()
         {
             var spyRepo = new SpySubcategoryRepository();
-            var service = new SubcategoryService(spyRepo);
+            var service = new SubcategoryService(spyRepo, _mockCategoryRepo.Object);
 
             var subcategory = new Subcategory { Id = Guid.NewGuid(), Name = "SpyTest", CategoryId = Guid.NewGuid() };
             await service.UpdateSubcategoryAsync(subcategory);
@@ -146,7 +154,7 @@ namespace BL.Tests
             return item!;
         }
 
-        public IQueryable<Subcategory> GetSubcategories() => _subcategories.AsQueryable();
+        public IQueryable<Subcategory> GetSubcategories() => _subcategories.AsQueryable().BuildMock(); 
 
         public Subcategory GetSubcategoryByID(Guid id) => _subcategories.FirstOrDefault(s => s.Id == id)!;
 
@@ -162,13 +170,15 @@ namespace BL.Tests
         }
     }
 
+
     public class SpySubcategoryRepository : ISubcategoryRepository
     {
         public bool WasUpdateCalled { get; private set; }
+        private readonly List<Subcategory> _subcategories = new(); 
 
         public Subcategory AddSubcategory(Subcategory subcategory) => throw new NotImplementedException();
         public Subcategory DeleteSubcategory(Guid id) => throw new NotImplementedException();
-        public IQueryable<Subcategory> GetSubcategories() => throw new NotImplementedException();
+        public IQueryable<Subcategory> GetSubcategories() => _subcategories.AsQueryable().BuildMock(); 
         public Subcategory GetSubcategoryByID(Guid id) => throw new NotImplementedException();
 
         public Subcategory UpdateSubcategory(Subcategory subcategory)
@@ -177,4 +187,5 @@ namespace BL.Tests
             return subcategory;
         }
     }
+
 }

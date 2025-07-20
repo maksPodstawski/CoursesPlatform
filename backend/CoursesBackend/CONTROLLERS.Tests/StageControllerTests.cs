@@ -11,6 +11,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using BL.Exceptions;
 
 namespace CONTROLLERS.Tests
 {
@@ -154,6 +155,37 @@ namespace CONTROLLERS.Tests
             var returned = Assert.IsType<StageResponseDTO>(createdAt.Value);
             Assert.Equal(createdStage.Id, returned.Id);
             Assert.Equal(createDto.Name, returned.Name);
+        }
+
+        [Fact]
+        public async Task CreateStage_StageAlreadyExistsInCourseException_ReturnsBadRequestWithError()
+        {
+            var userId = Guid.NewGuid().ToString();
+            SetUser(userId);
+
+            var createDto = new CreateStageDTO
+            {
+                CourseId = Guid.NewGuid(),
+                Name = "Duplicate Stage",
+                Description = "Desc",
+                Duration = 1.0
+            };
+
+            _mockCreatorService
+                .Setup(s => s.IsUserCreatorOfCourseAsync(Guid.Parse(userId), createDto.CourseId))
+                .ReturnsAsync(true);
+
+            _mockStageService
+                .Setup(s => s.AddStageAsync(It.IsAny<Stage>()))
+                .ThrowsAsync(new StageAlreadyExistsInCourseException(createDto.Name));
+
+            var result = await _controller.CreateStage(createDto);
+
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
+            var errors = Assert.IsType<SerializableError>(badRequest.Value);
+            Assert.True(errors.ContainsKey("Name"));
+            var errorMessages = errors["Name"] as string[];
+            Assert.Contains("Duplicate Stage", errorMessages[0]);
         }
     }
 }
