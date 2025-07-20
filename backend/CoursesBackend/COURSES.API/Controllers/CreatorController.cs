@@ -13,10 +13,12 @@ namespace COURSES.API.Controllers
     public class CreatorController : ControllerBase
     {
         private readonly ICreatorService _creatorService;
+        private readonly IInvitationService _invitationService;
 
-        public CreatorController(ICreatorService creatorService)
+        public CreatorController(ICreatorService creatorService, IInvitationService invitationService)
         {
             _creatorService = creatorService;
+            _invitationService = invitationService;
         }
 
         [HttpGet]
@@ -96,6 +98,68 @@ namespace COURSES.API.Controllers
             }
 
             return Ok(courses.Select(CourseResponseDTO.FromCourse));
+        }
+
+        [HttpPost("invite-coauthor")] 
+        public async Task<IActionResult> InviteCoAuthor([FromBody] InviteByEmailDTO dto)
+        {
+            try
+            {
+                var invitation = await _invitationService.InviteCoAuthorByEmailAsync(dto.Email, dto.CourseId);
+                return Ok(invitation);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("accept-invitation")] 
+        public async Task<IActionResult> AcceptInvitation([FromBody] AcceptInvitationDTO dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+            try
+            {
+                await _invitationService.AcceptInvitationAsync(dto.InvitationId, Guid.Parse(userId));
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("decline-invitation")] 
+        public async Task<IActionResult> DeclineInvitation([FromBody] AcceptInvitationDTO dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+            try
+            {
+                await _invitationService.DeclineInvitationAsync(dto.InvitationId, Guid.Parse(userId));
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("invitations-by-course/{courseId}")]
+        public async Task<IActionResult> GetInvitationsByCourse(Guid courseId)
+        {
+            var invitations = await _invitationService.GetInvitationsByCourseAsync(courseId);
+            return Ok(invitations);
+        }
+
+        [HttpGet("invitations-by-email")]
+        public async Task<IActionResult> GetInvitationsByEmail([FromQuery] string email)
+        {
+            var invitations = await _invitationService.GetInvitationsByEmailAsync(email);
+            return Ok(invitations);
         }
     }
 } 

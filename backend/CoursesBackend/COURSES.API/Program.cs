@@ -102,6 +102,8 @@ builder.Services.AddScoped<IPurchasedCoursesService, PurchasedCoursesService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddHttpClient<IRecaptchaService, RecaptchaService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+builder.Services.AddScoped<IBL.IInvitationService, BL.Services.InvitationService>();
+builder.Services.AddScoped<IDAL.IInvitationRepository, DAL.InvitationRepository>();
 
 builder.Services.AddAuthentication(opt =>
 {
