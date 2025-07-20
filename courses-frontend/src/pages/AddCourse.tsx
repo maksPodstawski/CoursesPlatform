@@ -6,6 +6,8 @@ import Sidebar from "../components/Sidebar";
 import { getCategories, getSubcategories } from "../services/categoryService";
 import { Category, Subcategory } from "../types/courses";
 import TextEditor from '../components/TextEditor';
+import { validateCourseForm, CourseFormData } from '../validation/courseValidation';
+import { validateStageForm, StageFormData } from '../validation/stageValidation';
 
 type Stage = {
   name: string;
@@ -33,12 +35,14 @@ type SubmissionStatus = {
   error: string | null;
 };
 
+type CourseFieldErrors = Partial<Record<keyof CourseFormData | 'imageFile', string>>;
+
 export const AddCourse = () => {
   const [form, setForm] = useState<CourseForm>({
     name: "",
     description: "",
-    duration: "1",
-    price: "1",
+    duration: "",
+    price: "",
     difficulty: 1,
     stages: [],
     imageFile: null,
@@ -47,7 +51,7 @@ export const AddCourse = () => {
   const [currentStage, setCurrentStage] = useState<Stage>({
     name: "",
     description: "",
-    duration: "1",
+    duration: "",
     videoFile: null,
   });
 
@@ -64,6 +68,13 @@ export const AddCourse = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
 
+  const [fieldErrors, setFieldErrors] = useState<CourseFieldErrors>({});
+  const [isFormValid, setIsFormValid] = useState(true);
+  const [stageFieldErrors, setStageFieldErrors] = useState<Partial<Record<string, string>>>({});
+  const [isStageFormValid, setIsStageFormValid] = useState(true);
+  const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
+  const [stageTouched, setStageTouched] = useState<{ [key: string]: boolean }>({});
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -78,6 +89,33 @@ export const AddCourse = () => {
       setSelectedSubcategory("");
     }
   }, [selectedCategory]);
+
+  useEffect(() => {
+    const formData: CourseFormData = {
+      name: form.name,
+      description: form.description,
+      duration: Number(form.duration),
+      price: Number(form.price),
+      difficulty: Number(form.difficulty),
+      selectedCategory,
+      selectedSubcategory,
+      imageFile: form.imageFile,
+    };
+    const errors = validateCourseForm(formData);
+    setFieldErrors(errors);
+    setIsFormValid(Object.keys(errors).length === 0);
+  }, [form, selectedCategory, selectedSubcategory]);
+
+  useEffect(() => {
+    const stageData: StageFormData = {
+      name: currentStage.name,
+      description: currentStage.description,
+      duration: Number(currentStage.duration),
+    };
+    const errors = validateStageForm(stageData);
+    setStageFieldErrors(errors);
+    setIsStageFormValid(Object.keys(errors).length === 0);
+  }, [currentStage]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -135,6 +173,14 @@ export const AddCourse = () => {
   };
 
   const addStage = () => {
+    const stageData: StageFormData = {
+      name: currentStage.name,
+      description: currentStage.description,
+      duration: Number(currentStage.duration),
+    };
+    const errors = validateStageForm(stageData);
+    setStageFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
     if (currentStage.name && currentStage.description) {
       setForm((prev) => ({
         ...prev,
@@ -143,7 +189,7 @@ export const AddCourse = () => {
       setCurrentStage({
         name: "",
         description: "",
-        duration: "1",
+        duration: "",
         videoFile: null,
       });
     }
@@ -176,8 +222,27 @@ export const AddCourse = () => {
     setForm((prev) => ({ ...prev, description: val }));
   };
 
+  const handleDescriptionBlur = () => setTouched(t => ({ ...t, description: true }));
+  const handleStageDescriptionBlur = () => setStageTouched(t => ({ ...t, description: true }));
+
+  const handleCategoryBlur = () => setTouched(t => ({ ...t, selectedCategory: true }));
+  const handleSubcategoryBlur = () => setTouched(t => ({ ...t, selectedSubcategory: true }));
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const formData: CourseFormData = {
+      name: form.name,
+      description: form.description,
+      duration: Number(form.duration),
+      price: Number(form.price),
+      difficulty: Number(form.difficulty),
+      selectedCategory,
+      selectedSubcategory,
+      imageFile: form.imageFile,
+    };
+    const errors = validateCourseForm(formData);
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     // Walidacja duration - tylko liczby całkowite
     if (!/^[0-9]+$/.test(form.duration.trim())) {
@@ -254,7 +319,15 @@ export const AddCourse = () => {
         body: formData,
       });
 
-      if (!courseRes.ok) throw new Error("Course creation failed");
+      if (!courseRes.ok) {
+        const errorData = await courseRes.json();
+        setSubmissionStatus(prev => ({
+          ...prev,
+          isSubmitting: false,
+          error: errorData?.Name ? errorData.Name[0] : "Course creation failed",
+        }));
+        return;
+      }
       const courseData = await courseRes.json();
       const courseId = courseData.id;
 
@@ -329,7 +402,10 @@ export const AddCourse = () => {
     type: "text" | "number" | "textarea" = "text",
     placeholder?: string,
     value?: string | number,
-    onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void
+    onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void,
+    error?: string,
+    onBlur?: () => void,
+    touched?: boolean
   ) => (
     <div className="form-group">
       <label htmlFor={name}>{label}</label>
@@ -339,6 +415,7 @@ export const AddCourse = () => {
           name={name}
           value={value}
           onChange={onChange}
+          onBlur={onBlur}
           className="form-input"
           placeholder={placeholder}
         />
@@ -349,6 +426,7 @@ export const AddCourse = () => {
           type={type}
           value={value}
           onChange={onChange}
+          onBlur={onBlur}
           className="form-input"
           placeholder={placeholder}
           min={type === "number" ? 1 : undefined}
@@ -356,6 +434,28 @@ export const AddCourse = () => {
           inputMode={type === "number" ? "decimal" : undefined}
           pattern={type === "number" && name === "duration" ? "[0-9]*" : type === "number" ? "[0-9]*[.,]?[0-9]*" : undefined}
         />
+      )}
+      {touched && error && (
+        <div className="field-error">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="icon"
+            width="16"
+            height="16"
+            style={{ marginRight: 4, verticalAlign: 'middle' }}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+            />
+          </svg>
+          <span>{error}</span>
+        </div>
       )}
     </div>
   );
@@ -371,14 +471,38 @@ export const AddCourse = () => {
           <div className="form-content">
             <div className="course-section">
               <h3>Course Details</h3>
-              {renderField("Course Name", "name", "text", "Enter course name", form.name, handleChange)}
+              {renderField("Course Name", "name", "text", "Enter course name", form.name, handleChange, fieldErrors.name, () => setTouched(t => ({ ...t, name: true })), touched.name)}
               <div className="form-group">
                 <label htmlFor="description">Description</label>
-                <TextEditor
-                  value={form.description}
-                  onChange={handleDescriptionChange}
-                  placeholder="Enter course description"
-                />
+                <div tabIndex={-1} onBlur={handleDescriptionBlur} style={{ outline: 'none' }}>
+                  <TextEditor
+                    value={form.description}
+                    onChange={handleDescriptionChange}
+                    placeholder="Enter course description"
+                  />
+                </div>
+                {touched.description && fieldErrors.description && (
+                  <div className="field-error">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                      className="icon"
+                      width="16"
+                      height="16"
+                      style={{ marginRight: 4, verticalAlign: 'middle' }}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                      />
+                    </svg>
+                    <span>{fieldErrors.description}</span>
+                  </div>
+                )}
               </div>
               <div className="form-group">
                 <label htmlFor="imageFile">Course Image</label>
@@ -388,31 +512,98 @@ export const AddCourse = () => {
                   type="file"
                   accept="image/*"
                   onChange={handleChange}
+                  onBlur={() => setTouched(t => ({ ...t, imageFile: true }))}
                   className="form-input"
                 />
+                {touched.imageFile && fieldErrors.imageFile && (
+                  <div className="field-error">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                      className="icon"
+                      width="16"
+                      height="16"
+                      style={{ marginRight: 4, verticalAlign: 'middle' }}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                      />
+                    </svg>
+                    <span>{fieldErrors.imageFile}</span>
+                  </div>
+                )}
               </div>
               <div className="duration-price-group">
-                {renderField("Duration", "duration", "number", "Duration in minutes", form.duration, handleChange)}
-                {renderField("Price", "price", "text", "Course price", form.price, handleChange)}
+                {renderField("Duration", "duration", "number", "Duration in minutes", form.duration, handleChange, fieldErrors.duration, () => setTouched(t => ({ ...t, duration: true })), touched.duration)}
+                {renderField("Price", "price", "text", "Course price", form.price, handleChange, fieldErrors.price, () => setTouched(t => ({ ...t, price: true })), touched.price)}
               </div>
               <div className="category-row">
                 <div className="form-group">
                   <label className="category-label">Category</label>
-                  <select className="category-select" value={selectedCategory} onChange={handleCategoryChange} required>
+                  <select className="category-select" value={selectedCategory} onChange={handleCategoryChange} onBlur={handleCategoryBlur} required>
                     <option value="">Select a category</option>
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}
                   </select>
+                  {touched.selectedCategory && fieldErrors.selectedCategory && (
+                    <div className="field-error">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                        className="icon"
+                        width="16"
+                        height="16"
+                        style={{ marginRight: 4, verticalAlign: 'middle' }}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                        />
+                      </svg>
+                      <span>{fieldErrors.selectedCategory}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="form-group">
                   <label className="subcategory-label">Subcategory</label>
-                  <select className="subcategory-select" value={selectedSubcategory} onChange={handleSubcategoryChange} required disabled={!selectedCategory}>
+                  <select className="subcategory-select" value={selectedSubcategory} onChange={handleSubcategoryChange} onBlur={handleSubcategoryBlur} required disabled={!selectedCategory}>
                     <option value="">Select a subcategory</option>
                     {subcategories.map((sub) => (
                       <option key={sub.id} value={sub.id}>{sub.name}</option>
                     ))}
                   </select>
+                  {touched.selectedSubcategory && fieldErrors.selectedSubcategory && (
+                    <div className="field-error">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                        className="icon"
+                        width="16"
+                        height="16"
+                        style={{ marginRight: 4, verticalAlign: 'middle' }}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                        />
+                      </svg>
+                      <span>{fieldErrors.selectedSubcategory}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="form-group">
                   <label className="difficulty-label">Difficulty Level</label>
@@ -421,6 +612,28 @@ export const AddCourse = () => {
                     <option value={2}>Intermediate</option>
                     <option value={3}>Advanced</option>
                   </select>
+                  {touched.difficulty && fieldErrors.difficulty && (
+                    <div className="field-error">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                        className="icon"
+                        width="16"
+                        height="16"
+                        style={{ marginRight: 4, verticalAlign: 'middle' }}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                        />
+                      </svg>
+                      <span>{fieldErrors.difficulty}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -473,16 +686,40 @@ export const AddCourse = () => {
             <div className="stages-section">
               <h3>Course Stages</h3>
               <div className="stage-form">
-                {renderField("Stage Name", "name", "text", "Enter stage name", currentStage.name, handleStageChange)}
+                {renderField("Stage Name", "name", "text", "Enter stage name", currentStage.name, handleStageChange, stageFieldErrors.name, () => setStageTouched(t => ({ ...t, name: true })), stageTouched.name)}
                 <div className="form-group">
                   <label htmlFor="stage-description">Description</label>
-                  <TextEditor
-                    value={currentStage.description || ''}
-                    onChange={val => handleStageChange({ target: { name: 'description', value: val } } as any)}
-                    placeholder="Enter stage description"
-                  />
+                  <div tabIndex={-1} onBlur={handleStageDescriptionBlur} style={{ outline: 'none' }}>
+                    <TextEditor
+                      value={currentStage.description || ''}
+                      onChange={val => handleStageChange({ target: { name: 'description', value: val } } as any)}
+                      placeholder="Enter stage description"
+                    />
+                  </div>
+                  {stageTouched.description && stageFieldErrors.description && (
+                    <div className="field-error">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                        className="icon"
+                        width="16"
+                        height="16"
+                        style={{ marginRight: 4, verticalAlign: 'middle' }}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                        />
+                      </svg>
+                      <span>{stageFieldErrors.description}</span>
+                    </div>
+                  )}
                 </div>
-                {renderField("Duration", "duration", "number", "Duration in minutes", currentStage.duration, handleStageChange)}
+                {renderField("Duration", "duration", "number", "Duration in minutes", currentStage.duration, handleStageChange, stageFieldErrors.duration, () => setStageTouched(t => ({ ...t, duration: true })), stageTouched.duration)}
                 
                 <div className="form-group">
                   <label htmlFor="video">Upload Video (optional)</label>
@@ -497,7 +734,7 @@ export const AddCourse = () => {
                 </div>
 
                 <div style={{ textAlign: 'center' }}>
-                  <button type="button" className="btn btn-secondary" onClick={addStage}>
+                  <button type="button" className="btn btn-secondary" onClick={addStage} disabled={!isStageFormValid}>
                     Add Stage
                   </button>
                 </div>
@@ -700,7 +937,7 @@ export const AddCourse = () => {
           <button 
             type="submit" 
             className="btn btn-primary"
-            disabled={submissionStatus.isSubmitting}
+            disabled={submissionStatus.isSubmitting || !isFormValid}
           >
             {submissionStatus.isSubmitting ? 'Creating Course...' : 'Submit Course'}
           </button>

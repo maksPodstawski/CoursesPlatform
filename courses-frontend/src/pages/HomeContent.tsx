@@ -24,7 +24,8 @@ const HomeContent = () => {
     const fetchCourses = async () => {
       try {
         const data = await getCourses();
-        const topCourses = data.slice(0, 3);
+        const shuffled = [...data].sort(() => Math.random() - 0.5);
+        const topCourses = shuffled.slice(0, 3);
         
         const enhancedData = await Promise.all(
           topCourses.map(async (course: any) => {

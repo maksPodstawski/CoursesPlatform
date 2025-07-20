@@ -33,8 +33,12 @@ export default function AdminCategoryManagement() {
 
     const [categoryName, setCategoryName] = useState("")
     const [subcategoryName, setSubcategoryName] = useState("")
+    const [categoryTouched, setCategoryTouched] = useState(false)
+    const [subcategoryTouched, setSubcategoryTouched] = useState(false)
 
     const [message, setMessage] = useState<{ type: string; text: string } | null>(null) // Unified message state
+    const [errorMessageCategory, setErrorMessageCategory] = useState<string | null>(null)
+    const [errorMessageSubcategory, setErrorMessageSubcategory] = useState<string | null>(null)
 
     // Edit states
     const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
@@ -100,25 +104,35 @@ export default function AdminCategoryManagement() {
 
     const handleAddCategory = async (e: React.FormEvent) => {
         e.preventDefault()
+        setCategoryTouched(true)
+        setErrorMessageCategory(null)
+        if (!categoryName.trim()) return;
         try {
             await adminService.addCategory(categoryName)
+            setErrorMessageCategory(null)
             showMessage("success", "✅ Category added successfully!")
             setCategoryName("")
+            setCategoryTouched(false)
             fetchAll()
         } catch (error: any) {
-            showMessage("danger", "❌ " + (error.message || "Error adding category."))
+            setErrorMessageCategory(error.message)
         }
     }
 
     const handleAddSubcategory = async (e: React.FormEvent) => {
         e.preventDefault()
+        setSubcategoryTouched(true)
+        setErrorMessageSubcategory(null)
+        if (!subcategoryName.trim()) return;
         try {
             await adminService.addSubcategory(subcategoryName, selectedCategoryId)
+            setErrorMessageSubcategory(null)
             setSubcategoryName("")
+            setSubcategoryTouched(false)
             showMessage("success", "✅ Subcategory added successfully!")
             fetchAll()
         } catch (error: any) {
-            showMessage("danger", "❌ " + (error.message || "Error adding subcategory."))
+            setErrorMessageSubcategory(error.message)
         }
     }
 
@@ -338,6 +352,9 @@ export default function AdminCategoryManagement() {
                                 </div>
                             </div>
                             <div className="card-content">
+                                {errorMessageCategory && (
+                                    <div className="error-message">{errorMessageCategory}</div>
+                                )}
                                 <form onSubmit={handleAddCategory} className="form">
                                     <div className="form-group">
                                         <label htmlFor="categoryName">Category Name</label>
@@ -346,12 +363,20 @@ export default function AdminCategoryManagement() {
                                             type="text"
                                             value={categoryName}
                                             onChange={(e) => setCategoryName(e.target.value)}
+                                            onBlur={() => setCategoryTouched(true)}
                                             placeholder="Enter category name"
                                             className="form-input"
-                                            required
                                         />
+                                        {categoryTouched && !categoryName.trim() && (
+                                            <div className="field-error">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="icon" width="16" height="16" style={{ marginRight: 4, verticalAlign: 'middle' }}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                                                </svg>
+                                                <span>Category name is required.</span>
+                                            </div>
+                                        )}
                                     </div>
-                                    <button type="submit" className="btn btn-primary">
+                                    <button type="submit" className="btn btn-primary" disabled={!categoryName.trim()}>
                                         <Plus size={16} />
                                         Add Category
                                     </button>
@@ -371,6 +396,9 @@ export default function AdminCategoryManagement() {
                                 </div>
                             </div>
                             <div className="card-content">
+                                {errorMessageSubcategory && (
+                                    <div className="error-message">{errorMessageSubcategory}</div>
+                                )}
                                 <form onSubmit={handleAddSubcategory} className="form">
                                     <div className="form-group">
                                         <label htmlFor="subcategoryName">Subcategory Name</label>
@@ -379,10 +407,18 @@ export default function AdminCategoryManagement() {
                                             type="text"
                                             value={subcategoryName}
                                             onChange={(e) => setSubcategoryName(e.target.value)}
+                                            onBlur={() => setSubcategoryTouched(true)}
                                             placeholder="Enter subcategory name"
                                             className="form-input"
-                                            required
                                         />
+                                        {subcategoryTouched && !subcategoryName.trim() && (
+                                            <div className="field-error">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="icon" width="16" height="16" style={{ marginRight: 4, verticalAlign: 'middle' }}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                                                </svg>
+                                                <span>Subcategory name is required.</span>
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="form-group">
                                         <label htmlFor="categorySelect">Parent Category</label>
@@ -401,7 +437,7 @@ export default function AdminCategoryManagement() {
                                             ))}
                                         </select>
                                     </div>
-                                    <button type="submit" className="btn btn-primary" disabled={!selectedCategoryId}>
+                                    <button type="submit" className="btn btn-primary" disabled={!selectedCategoryId || !subcategoryName.trim()}>
                                         <Plus size={16} />
                                         Add Subcategory
                                     </button>

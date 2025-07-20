@@ -99,7 +99,7 @@ namespace BL.Services
                 .AnyAsync(c => c.Name.ToLower() == course.Name.ToLower() && c.Id != course.Id);
 
             if (exists)
-                throw new CourseAlreadyExistsException(course.Name);
+                throw new CourseAlreadyExistsException(title: course.Name);
 
             return await Task.FromResult(_courseRepository.UpdateCourse(course));
         }

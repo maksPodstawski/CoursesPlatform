@@ -192,10 +192,6 @@ namespace COURSES.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var existingCourse = await _courseService.GetCourseByIdAsync(id);
-            if (existingCourse == null)
-                return NotFound();
-
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
@@ -204,60 +200,67 @@ namespace COURSES.API.Controllers
             if (!isCreator)
                 return Forbid();
 
-            existingCourse.Name = updateCourseDto.Name;
-            existingCourse.Description = updateCourseDto.Description;
-            existingCourse.Duration = updateCourseDto.Duration;
-            existingCourse.Price = updateCourseDto.Price;
-            existingCourse.IsHidden = updateCourseDto.IsHidden;
-            existingCourse.Difficulty = updateCourseDto.Difficulty;
-            existingCourse.UpdatedAt = DateTime.UtcNow;
+            var existingCourse = await _courseService.GetCourseByIdAsync(id);
+            if (existingCourse == null)
+                return NotFound();
 
-            if (updateCourseDto.Image != null && updateCourseDto.Image.Length > 0)
-            {
-                var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "UploadedImages", existingCourse.Id.ToString());
-                if (!Directory.Exists(uploadsRoot))
-                    Directory.CreateDirectory(uploadsRoot);
-
-                foreach (var existingFile in Directory.GetFiles(uploadsRoot))
-                {
-                    try { System.IO.File.Delete(existingFile); } catch { }
-                }
-
-                var fileName = Path.GetFileName(updateCourseDto.Image.FileName);
-                var filePath = Path.Combine(uploadsRoot, fileName);
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await updateCourseDto.Image.CopyToAsync(stream);
-                }
-                existingCourse.ImageUrl = $"/UploadedImages/{existingCourse.Id}/{fileName}";
-            }
-
-            if (updateCourseDto.SubcategoryIds != null)
-            {
-                var oldSubcategories = existingCourse.CourseSubcategories?.ToList() ?? new List<CourseSubcategory>();
-                foreach (var cs in oldSubcategories)
-                {
-                    await _courseService.RemoveCourseSubcategoryAsync(cs.Id);
-                }
-
-                foreach (var subId in updateCourseDto.SubcategoryIds)
-                {
-                    var subcategory = await _courseService.GetSubcategoryByIdAsync(subId);
-                    if (subcategory != null)
-                    {
-                        var courseSubcategory = new CourseSubcategory
-                        {
-                            Id = Guid.NewGuid(),
-                            CourseId = existingCourse.Id,
-                            SubcategoryId = subcategory.Id
-                        };
-                        await _courseService.AddCourseSubcategoryAsync(courseSubcategory);
-                    }
-                }
-            }
 
             try
             {
+
+                existingCourse.Name = updateCourseDto.Name;
+                existingCourse.Description = updateCourseDto.Description;
+                existingCourse.Duration = updateCourseDto.Duration;
+                existingCourse.Price = updateCourseDto.Price;
+                existingCourse.IsHidden = updateCourseDto.IsHidden;
+                existingCourse.Difficulty = updateCourseDto.Difficulty;
+                existingCourse.UpdatedAt = DateTime.UtcNow;
+
+                if (updateCourseDto.Image != null && updateCourseDto.Image.Length > 0)
+                {
+                    var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "UploadedImages", existingCourse.Id.ToString());
+                    if (!Directory.Exists(uploadsRoot))
+                        Directory.CreateDirectory(uploadsRoot);
+
+                    foreach (var existingFile in Directory.GetFiles(uploadsRoot))
+                    {
+                        try { System.IO.File.Delete(existingFile); } catch { }
+                    }
+
+                    var fileName = Path.GetFileName(updateCourseDto.Image.FileName);
+                    var filePath = Path.Combine(uploadsRoot, fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await updateCourseDto.Image.CopyToAsync(stream);
+                    }
+                    existingCourse.ImageUrl = $"/UploadedImages/{existingCourse.Id}/{fileName}";
+                }
+
+                if (updateCourseDto.SubcategoryIds != null)
+                {
+                    var oldSubcategories = existingCourse.CourseSubcategories?.ToList() ?? new List<CourseSubcategory>();
+                    foreach (var cs in oldSubcategories)
+                    {
+                        await _courseService.RemoveCourseSubcategoryAsync(cs.Id);
+                    }
+
+                    foreach (var subId in updateCourseDto.SubcategoryIds)
+                    {
+                        var subcategory = await _courseService.GetSubcategoryByIdAsync(subId);
+                        if (subcategory != null)
+                        {
+                            var courseSubcategory = new CourseSubcategory
+                            {
+                                Id = Guid.NewGuid(),
+                                CourseId = existingCourse.Id,
+                                SubcategoryId = subcategory.Id
+                            };
+                            await _courseService.AddCourseSubcategoryAsync(courseSubcategory);
+                        }
+                    }
+                }
+
+
                 var updatedCourse = await _courseService.UpdateCourseAsync(existingCourse);
                 if (updatedCourse == null)
                 {
@@ -267,6 +270,7 @@ namespace COURSES.API.Controllers
             }
             catch (CourseAlreadyExistsException ex)
             {
+                Console.WriteLine("Z³apano wyj¹tek CourseAlreadyExistsException w kontrolerze!");
                 var errors = new SerializableError
                 {
                     { "Name", new[] { ex.Message } }

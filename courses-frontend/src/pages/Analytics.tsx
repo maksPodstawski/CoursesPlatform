@@ -153,7 +153,7 @@ const Analytics = () => {
 			<div className="analytics-layout">
 				<Sidebar />
 				<div className="analytics-container">
-					<div className="error-message">{error}</div>
+					<div className="analytics-error-message">{error}</div>
 				</div>
 			</div>
 		);
