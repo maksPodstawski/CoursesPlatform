@@ -673,6 +673,71 @@ const CreatorCourses = () => {
                         <span style={{ color: '#b0b0b0', fontSize: 14 }}>{!!editForm?.isHidden ? 'Yes' : 'No'}</span>
                     </label>
                 </div>
+             <div className="form-group" style={{ marginTop: "1.5rem" }}>
+                <label htmlFor="inviteEmail" style={{ marginBottom: "0.5rem" }}>Add creator</label>
+                <input
+                    id="inviteEmail"
+                    type="email"
+                    className="form-input"
+                    placeholder="Write Email"
+                    value={editForm?.inviteEmail || ""}
+                    onChange={(e) =>
+                    setEditForm((prev: any) => ({
+                        ...prev,
+                        inviteEmail: e.target.value,
+                    }))
+                    }
+                    style={{
+                    width: "100%",
+                    marginBottom: "0.75rem", 
+                    }}
+                />
+                <button
+                    className="btn btn-primary"
+                    style={{
+                    width: "100%", 
+                    padding: "0.75rem 1.25rem",
+                    fontWeight: "bold",
+                    }}
+                    onClick={async () => {
+                    if (!editForm?.inviteEmail) {
+                        alert("Wpisz adres email.");
+                        return;
+                    }
+                    try {
+                        const response = await fetch(
+                        `${config.apiBaseUrl}/api/invitation/invite-by-email`,
+                        {
+                            method: "POST",
+                            headers: {
+                            "Content-Type": "application/json",
+                            },
+                            credentials: "include",
+                            body: JSON.stringify({
+                            email: editForm.inviteEmail,
+                            courseId: selectedCourse?.id,
+                            }),
+                        }
+                        );
+                        if (response.ok) {
+                        alert("Zaproszenie zostało wysłane.");
+                        setEditForm((prev: any) => ({
+                            ...prev,
+                            inviteEmail: "",
+                        }));
+                        } else {
+                        const errorText = await response.text();
+                        alert(`Błąd: ${errorText}`);
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        alert("Wystąpił błąd przy wysyłaniu zaproszenia.");
+                    }
+                    }}
+                >
+                    Send invitation
+                </button>
+                </div>
             </div>
             <div className="course-preview">
                 <h3>Course Preview</h3>
