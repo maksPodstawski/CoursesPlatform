@@ -61,7 +61,6 @@ const CreatorCourses = () => {
     const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
     const [isFormValid, setIsFormValid] = useState(true);
     const [stageFieldErrors, setStageFieldErrors] = useState<Partial<Record<string, string>>>({});
-    const [isStageFormValid, setIsStageFormValid] = useState(true);
     const [stageTouched, setStageTouched] = useState<{ [key: string]: boolean }>({});
 
     useEffect(() => {
