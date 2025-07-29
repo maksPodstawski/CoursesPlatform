@@ -22,9 +22,17 @@ namespace COURSES.API.Controllers
         [HttpPost("invite-by-email")]
         public async Task<IActionResult> InviteByEmail([FromBody] InviteByEmailDTO dto)
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
             try
             {
-                var invitation = await _invitationService.InviteCoAuthorByEmailAsync(dto.Email, dto.CourseId);
+                var invitation = await _invitationService.InviteCoAuthorByEmailAsync(
+                    dto.Email,
+                    dto.CourseId,
+                    Guid.Parse(userId)
+                );
                 return Ok(invitation);
             }
             catch (Exception ex)
@@ -39,9 +47,11 @@ namespace COURSES.API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
+
             try
             {
                 await _invitationService.AcceptInvitationAsync(dto.InvitationId, Guid.Parse(userId));
+                
                 return Ok();
             }
             catch (Exception ex)
@@ -78,7 +88,18 @@ namespace COURSES.API.Controllers
         public async Task<IActionResult> GetInvitationsByEmail([FromQuery] string email)
         {
             var invitations = await _invitationService.GetInvitationsByEmailAsync(email);
-            return Ok(invitations);
+
+            var result = invitations.Select(inv => new {
+                inv.Id,
+                inv.Email,
+                inv.Status,
+                inv.CreatedAt,
+                CourseName = inv.Course?.Name,
+                CreatorNames = inv.Course?.Creators.Select(c => c.User.UserName).ToList(),
+                InvitedBy = inv.InvitedBy?.UserName
+            });
+
+            return Ok(result);
         }
     }
 } 

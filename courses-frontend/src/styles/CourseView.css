@@ -20,20 +20,23 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	color: #3dc55f;
-	text-decoration: none;
+	padding: 8px 12px;
 	font-size: 14px;
-	padding: 0;
-	background: none;
-	border: none;
-	cursor: pointer;
+	font-weight: 500;
+	color: #3dc55f;
+	background-color: #1a1a1a;
+	border: 1px solid #3dc55f;
+	border-radius: 6px;
+	text-decoration: none;
+	transition: all 0.2s ease-in-out;
+	width: fit-content;
   }
   
   .back-button:hover {
-	color: #49e670;
-	background-color: #1e1e1e;
-	padding: 4px 8px;
-	border-radius: 4px;
+	background-color: #3dc55f;
+	color: #ffffff;
+	box-shadow: 0 0 6px rgba(61, 197, 95, 0.6);
+	transform: translateY(-1px);
   }
   
   /* Course Header */
@@ -270,11 +273,19 @@
 	background-color: #1e1e1e;
 	border: 1px solid #373737;
 	border-radius: 8px;
+	padding: 24px; /* Wyrównaj z lewą kolumną */
+	width: 500px; /* Taka sama szerokość jak instructor-content */
+  }
+  
+  @media (max-width: 768px) {
+	.content-card {
+	  width: 100%;
+	}
   }
   
   .content-header {
-	padding: 24px;
-	padding-bottom: 0;
+	padding: 0;
+
   }
   
   .content-header h2 {

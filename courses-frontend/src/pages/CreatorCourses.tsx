@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { config } from "../config.ts";
 import { getCourseImageUrl } from "../utils/getCourseImageUrl";
 import '../styles/AddCourse.css';
 import TextEditor from '../components/TextEditor';
-import { getCategories, getSubcategories } from '../services/categoryService';
+import { getCategories, getSubcategoriesByCategoryId } from '../services/categoryService';
 import { Category, Subcategory } from '../types/courses';
 import Sidebar from '../components/Sidebar';
+import { invitationService } from '../services/invitationService';
 import { validateCourseForm, CourseFormData, CourseFieldErrors } from '../validation/courseValidation';
 import { validateStageForm, StageFormData } from '../validation/stageValidation';
+import { getCourseById } from '../services/courseService';
 
 interface CreatorCourse {
     id: string;
@@ -25,6 +27,8 @@ interface CreatorCourse {
     creators: string[];
     difficulty?: number;
     isHidden?: boolean;
+    categoryId?: string; // Dodane pole kategorii
+    categoryName?: string; // Dodane pole nazwy kategorii
 }
 
 interface Stage {
@@ -39,6 +43,7 @@ interface Stage {
 type Tab = 'details' | 'stages' | 'summary';
 
 const CreatorCourses = () => {
+    const isFromCourseRef = useRef(false);
     const [courses, setCourses] = useState<CreatorCourse[]>([]);
     const [loading, setLoading] = useState(true);
     const [courseStagesCountMap, setCourseStagesCountMap] = useState<{ [courseId: string]: number }>({});
@@ -63,6 +68,7 @@ const CreatorCourses = () => {
     const [stageFieldErrors, setStageFieldErrors] = useState<Partial<Record<string, string>>>({});
     const [isStageFormValid, setIsStageFormValid] = useState(true);
     const [stageTouched, setStageTouched] = useState<{ [key: string]: boolean }>({});
+    const [isSettingCategoryFromCourse, setIsSettingCategoryFromCourse] = useState(false); // Dodana flaga
 
     useEffect(() => {
         const fetchCreatorCourses = async () => {
@@ -98,32 +104,73 @@ const CreatorCourses = () => {
         getCategories().then(setCategories).catch(() => setCategories([]));
     }, []);
     useEffect(() => {
-        if (selectedCategory) {
-            getSubcategories(selectedCategory).then(setSubcategories).catch(() => setSubcategories([]));
-        } else {
-            setSubcategories([]);
-            setSelectedSubcategory("");
-        }
-    }, [selectedCategory]);
-
-    useEffect(() => {
         if (selectedCourse) {
-            setEditForm({
-                ...selectedCourse,
-                description: selectedCourse.description || '',
-                duration: selectedCourse.duration ? String(selectedCourse.duration) : '',
-                price: selectedCourse.price ? String(selectedCourse.price) : '',
-            });
-            setImageFile(null);
-            if (selectedCourse.subcategories && selectedCourse.subcategories.length > 0) {
-                setSelectedSubcategory(selectedCourse.subcategories[0]);
-            } else {
+            // Pobierz szczegóły kursu z kategorią
+            getCourseById(selectedCourse.id).then(courseDetails => {
+                setEditForm({
+                    ...selectedCourse,
+                    description: selectedCourse.description || '',
+                    duration: selectedCourse.duration ? String(selectedCourse.duration) : '',
+                    price: selectedCourse.price ? String(selectedCourse.price) : '',
+                });
+                setImageFile(null);
+        
+                // Sprawdź, czy kurs ma categoryId
+                if (courseDetails.categoryId) {
+                    // 🔄 Ustaw flagę przed setSelectedCategory
+                    isFromCourseRef.current = true;
+                    setSelectedCategory(courseDetails.categoryId);
+        
+                    // Poczekaj na załadowanie subkategorii, a potem ustaw selectedSubcategory
+                    getSubcategoriesByCategoryId(courseDetails.categoryId).then(subcats => {
+                        console.log("Subkategorie dla kursu:", subcats);
+                        console.log("courseDetails.subcategories:", courseDetails.subcategories);
+                        console.log("Typ courseDetails.subcategories:", typeof courseDetails.subcategories);
+                        console.log("Czy courseDetails.subcategories jest array:", Array.isArray(courseDetails.subcategories));
+        
+                        setSubcategories(subcats);
+        
+                        // Ustaw subkategorię, jeśli istnieje
+                        if (courseDetails.subcategories && courseDetails.subcategories.length > 0) {
+                            const firstSubcategoryName = courseDetails.subcategories[0];
+                            const foundSubcategory = subcats.find((sub: Subcategory) => sub.name === firstSubcategoryName);
+        
+                            if (foundSubcategory) {
+                                setSelectedSubcategory(foundSubcategory.id);
+                            } else {
+                                setSelectedSubcategory("");
+                            }
+                        } else {
+                            setSelectedSubcategory("");
+                        }
+        
+                        // ✅ Po wszystkim resetujemy flagę
+                        isFromCourseRef.current = false;
+                    }).catch(error => {
+                        console.error("Błąd podczas pobierania subkategorii dla kursu:", error);
+                        setSelectedSubcategory("");
+                        isFromCourseRef.current = false; // ✅ Reset w przypadku błędu
+                    });
+        
+                } else {
+                    // Kurs nie ma przypisanej kategorii
+                    setSelectedCategory("");
+                    setSelectedSubcategory("");
+                    isFromCourseRef.current = false;
+                }
+            }).catch(error => {
+                console.error("Błąd podczas pobierania szczegółów kursu:", error);
+                setEditForm({
+                    ...selectedCourse,
+                    description: selectedCourse.description || '',
+                    duration: selectedCourse.duration ? String(selectedCourse.duration) : '',
+                    price: selectedCourse.price ? String(selectedCourse.price) : '',
+                });
+                setImageFile(null);
+                setSelectedCategory("");
                 setSelectedSubcategory("");
-            }
-            fetch(`${config.apiBaseUrl}/api/stages/course/${selectedCourse.id}`, { credentials: 'include' })
-                .then(res => res.json())
-                .then(data => setLocalStages(data))
-                .catch(() => setLocalStages([]));
+                isFromCourseRef.current = false;
+            });
         }
     }, [selectedCourse]);
 
@@ -148,9 +195,25 @@ const CreatorCourses = () => {
             selectedSubcategory,
             imageFile: imageFile,
         };
+        
+        // Sprawdź, czy kurs ma już zdjęcie
+        const hasExistingImage = editForm?.imageUrl && editForm.imageUrl.trim() !== '';
+        const hasNewImage = imageFile !== null;
+        
         const errors = validateCourseForm(formData);
-        setFieldErrors(errors);
-        setIsFormValid(Object.keys(errors).length === 0);
+        
+        // Jeśli kurs ma już zdjęcie lub wybrano nowe zdjęcie, usuń błąd zdjęcia
+        if ((hasExistingImage || hasNewImage) && errors.imageFile) {
+            delete errors.imageFile;
+        }
+        
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors);
+            setStatusMsg(null);
+            setProgress(0);
+            return;
+        }
+        // --- KONIEC WALIDACJI ---
     }, [editForm, selectedCategory, selectedSubcategory, localStages, imageFile]);
 
     useEffect(() => {
@@ -163,6 +226,42 @@ const CreatorCourses = () => {
         setStageFieldErrors(errors);
         setIsStageFormValid(Object.keys(errors).length === 0);
     }, [newStage]);
+
+    useEffect(() => {
+        if (!selectedCategory) {
+            console.log("Brak wybranej kategorii - czyszczę subkategorie");
+            setSubcategories([]);
+            setSelectedSubcategory("");
+            return;
+        }
+    
+        if (isFromCourseRef.current) {
+            console.log("POMIJAM pobieranie subkategorii – bo ładujemy z kursu");
+            return;
+        }
+    
+        console.log("RĘCZNA ZMIANA KATEGORII - pobieram subkategorie dla:", selectedCategory);
+        getSubcategoriesByCategoryId(selectedCategory)
+            .then(subcats => {
+                console.log("Pobrane subkategorie (ręczna zmiana):", subcats);
+                setSubcategories(subcats);
+                setSelectedSubcategory(""); // Reset tylko przy ręcznym wyborze
+            })
+            .catch(error => {
+                console.error("Błąd podczas pobierania subkategorii:", error);
+                setSubcategories([]);
+                setSelectedSubcategory("");
+            });
+    }, [selectedCategory]);
+
+    useEffect(() => {
+        if (selectedCourse) {
+            setCourseStagesCountMap(prev => ({
+                ...prev,
+                [selectedCourse.id]: localStages.length
+            }));
+        }
+    }, [localStages, selectedCourse]);
 
     const handleCourseFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
@@ -208,7 +307,18 @@ const CreatorCourses = () => {
             selectedSubcategory,
             imageFile: imageFile,
         };
+        
+        // Sprawdź, czy kurs ma już zdjęcie
+        const hasExistingImage = editForm?.imageUrl && editForm.imageUrl.trim() !== '';
+        const hasNewImage = imageFile !== null;
+        
         const errors = validateCourseForm(formData);
+        
+        // Jeśli kurs ma już zdjęcie lub wybrano nowe zdjęcie, usuń błąd zdjęcia
+        if ((hasExistingImage || hasNewImage) && errors.imageFile) {
+            delete errors.imageFile;
+        }
+        
         if (Object.keys(errors).length > 0) {
             setFieldErrors(errors);
             setStatusMsg(null);
@@ -248,7 +358,7 @@ const CreatorCourses = () => {
                 formData.append('SubcategoryIds', selectedSubcategory);
             }
             for (let [key, value] of formData.entries()) {
-                console.log(key, value);
+                
             }
             const res = await fetch(`${config.apiBaseUrl}/api/Courses/${selectedCourse.id}`, {
                 method: 'PUT',
@@ -701,37 +811,54 @@ const CreatorCourses = () => {
                     }}
                     onClick={async () => {
                     if (!editForm?.inviteEmail) {
-                        alert("Wpisz adres email.");
+                        alert("Please enter an email address.");
+                        return;
+                    }
+                    // Walidacja formatu emaila
+                    const email = editForm.inviteEmail.trim();
+                    const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+                    if (!emailRegex.test(email)) {
+                        alert("Please enter a valid email address.");
                         return;
                     }
                     try {
-                        const response = await fetch(
-                        `${config.apiBaseUrl}/api/invitation/invite-by-email`,
-                        {
-                            method: "POST",
-                            headers: {
-                            "Content-Type": "application/json",
-                            },
-                            credentials: "include",
-                            body: JSON.stringify({
-                            email: editForm.inviteEmail,
-                            courseId: selectedCourse?.id,
-                            }),
+                        if (!selectedCourse?.id) {
+                            alert("No course selected. Please save the course first.");
+                            return;
                         }
-                        );
-                        if (response.ok) {
-                        alert("Zaproszenie zostało wysłane.");
+                        
+                        // Sprawdź czy kurs ma poprawny ID (nie jest tymczasowy)
+                        if (selectedCourse.id === "temp" || selectedCourse.id === "") {
+                            alert("Please save the course first before sending invitations.");
+                            return;
+                        }
+                        
+                        // Sprawdź czy użytkownik jest zalogowany
+                        const isLoggedIn = localStorage.getItem("isLoggedIn");
+                        if (!isLoggedIn) {
+                            alert("Please log in to send invitations.");
+                            return;
+                        }
+                        
+                        await invitationService.inviteByEmail(email, selectedCourse.id);
+                        alert("Invitation sent successfully! Note: The invited user must have an account on the platform.");
                         setEditForm((prev: any) => ({
                             ...prev,
                             inviteEmail: "",
                         }));
+                    } catch (err: any) {
+                        console.error("Error sending invitation:", err);
+                        console.error("Course ID:", selectedCourse?.id);
+                        console.error("Email:", email);
+                        
+                        // Sprawdź czy to błąd o nieistniejącym użytkowniku
+                        if (err.message?.includes("User with this email does not exist")) {
+                            alert("Error: User with this email does not exist. The invited person must have an account on the platform.");
+                        } else if (err.message?.includes("Zaproszenie już wysłane")) {
+                            alert("Error: An invitation has already been sent to this email for this course.");
                         } else {
-                        const errorText = await response.text();
-                        alert(`Błąd: ${errorText}`);
+                            alert(err.message || "An error occurred while sending the invitation.");
                         }
-                    } catch (err) {
-                        console.error(err);
-                        alert("Wystąpił błąd przy wysyłaniu zaproszenia.");
                     }
                     }}
                 >

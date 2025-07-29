@@ -21,6 +21,8 @@ import AdminCategoryManagement from "../pages/admin/AdminCategoryManagement.tsx"
 import AdminCoursesManagement from "../pages/admin/AdminCoursesManagement.tsx";
 import AdminReviewsManagement from "../pages/admin/AdminReviewsManagement.tsx";
 import Analytics from "../pages/Analytics.tsx";
+import Invitations from "../pages/Invitations.tsx";
+
 
 const AnimatedRoutes = () => {
 	const location = useLocation();
@@ -55,6 +57,7 @@ const AnimatedRoutes = () => {
 				} />
 				<Route path="/add-stage" element={<PageWrapper><ProtectedRoute><AddStage /></ProtectedRoute></PageWrapper>} />
 				<Route path="/analytics" element={<PageWrapper><ProtectedRoute><Analytics /></ProtectedRoute></PageWrapper>} />
+				<Route path="/invitations" element={<PageWrapper><ProtectedRoute><Invitations /></ProtectedRoute></PageWrapper>} />
 				<Route path="*" element={<PageWrapper><h1>404 - Page Not Found</h1></PageWrapper>} />
 			</Routes>
 		</AnimatePresence>

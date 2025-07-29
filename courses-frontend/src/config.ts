@@ -24,5 +24,6 @@ export const config = {
 		getUserProfile: "/api/user/me",
 
 		addStage: "/api/stages",
+		inviteByEmail: "/api/invitation/invite-by-email",
 	},
 } as const;

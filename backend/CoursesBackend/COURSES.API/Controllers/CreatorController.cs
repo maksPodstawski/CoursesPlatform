@@ -103,9 +103,17 @@ namespace COURSES.API.Controllers
         [HttpPost("invite-coauthor")] 
         public async Task<IActionResult> InviteCoAuthor([FromBody] InviteByEmailDTO dto)
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
             try
             {
-                var invitation = await _invitationService.InviteCoAuthorByEmailAsync(dto.Email, dto.CourseId);
+                var invitation = await _invitationService.InviteCoAuthorByEmailAsync(
+                    dto.Email,
+                    dto.CourseId,
+                    Guid.Parse(userId) 
+                );
                 return Ok(invitation);
             }
             catch (Exception ex)

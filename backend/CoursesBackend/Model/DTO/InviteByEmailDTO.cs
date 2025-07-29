@@ -6,5 +6,6 @@ namespace Model.DTO
     {
         public string Email { get; set; }
         public Guid CourseId { get; set; }
+      
     }
 } 

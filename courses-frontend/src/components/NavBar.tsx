@@ -1,6 +1,6 @@
 import type React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu } from "lucide-react";
+import { Menu, BookOpen, GraduationCap, User, Settings, LogOut, LogIn, UserPlus } from "lucide-react";
 import { useAuth } from "../context/AuthContext.tsx";
 
 interface NavBarProps {
@@ -27,25 +27,46 @@ const NavBar: React.FC<NavBarProps> = ({ sidebarOpen, toggleSidebar }) => {
 		<nav className="nav">
 			<div className="nav-content">
 				<Link to="/" className="logo">
-					{isAdminPanel ? "Administrator Panel" : "Courses Platform"}
+					<span className="logo-text">
+						{isAdminPanel ? "Administrator Panel" : "Courses Platform"}
+					</span>
 				</Link>
 				<div className={`nav-links ${sidebarOpen ? "hide-on-mobile" : ""}`}>
-					<Link to="/courses">Courses</Link>
+					<Link to="/courses" className="nav-link">
+						<BookOpen size={18} />
+						<span>Courses</span>
+					</Link>
 					{isLoggedIn && (
 						<>
-							<Link to="/my-courses">My Courses</Link>
-							<Link to="/creator-panel">Creator Panel</Link>
-							<Link to="/my-profile">My Profile</Link>
+							<Link to="/my-courses" className="nav-link">
+								<GraduationCap size={18} />
+								<span>My Courses</span>
+							</Link>
+							<Link to="/creator-panel" className="nav-link">
+								<Settings size={18} />
+								<span>Creator Panel</span>
+							</Link>
+							<Link to="/my-profile" className="nav-link">
+								<User size={18} />
+								<span>My Profile</span>
+							</Link>
 						</>
 					)}
 					{isLoggedIn ? (
 						<button type="button" onClick={handleLogout} className="btn logout">
-							Logout
+							<LogOut size={18} />
+							<span>Logout</span>
 						</button>
 					) : (
 						<>
-							<Link to="/login">Login</Link>
-							<Link to="/register">Register</Link>
+							<Link to="/login" className="nav-link">
+								<LogIn size={18} />
+								<span>Login</span>
+							</Link>
+							<Link to="/register" className="nav-link">
+								<UserPlus size={18} />
+								<span>Register</span>
+							</Link>
 						</>
 					)}
 				</div>
@@ -58,20 +79,26 @@ const NavBar: React.FC<NavBarProps> = ({ sidebarOpen, toggleSidebar }) => {
 				<button type="button" className="close-btn" onClick={toggleSidebar}>
 					×
 				</button>
-				<Link to="/" onClick={toggleSidebar}>
-					{isAdminPanel ? "Administrator Panel" : "Home"}
+				<Link to="/" onClick={toggleSidebar} className="sidebar-link">
+					<span>{isAdminPanel ? "Administrator Panel" : "Home"}</span>
 				</Link>
-				<Link to="/courses" onClick={toggleSidebar}>
-					Courses
+				<Link to="/courses" onClick={toggleSidebar} className="sidebar-link">
+					<BookOpen size={20} />
+					<span>Courses</span>
 				</Link>
 				{isLoggedIn && (
 					<>
-						<Link to={"/purchased-courses"}>Purchased Courses</Link>
-						<Link to="/my-courses" onClick={toggleSidebar}>
-							My Courses
+						<Link to={"/purchased-courses"} className="sidebar-link">
+							<GraduationCap size={20} />
+							<span>Purchased Courses</span>
 						</Link>
-						<Link to="/chats" onClick={toggleSidebar}>
-							Chats
+						<Link to="/my-courses" onClick={toggleSidebar} className="sidebar-link">
+							<GraduationCap size={20} />
+							<span>My Courses</span>
+						</Link>
+						<Link to="/chats" onClick={toggleSidebar} className="sidebar-link">
+							<User size={20} />
+							<span>Chats</span>
 						</Link>
 					</>
 				)}
@@ -82,17 +109,20 @@ const NavBar: React.FC<NavBarProps> = ({ sidebarOpen, toggleSidebar }) => {
 							handleLogout();
 							toggleSidebar();
 						}}
-						className="btn logout"
+						className="btn logout sidebar-logout"
 					>
-						Logout
+						<LogOut size={20} />
+						<span>Logout</span>
 					</button>
 				) : (
 					<>
-						<Link to="/login" onClick={toggleSidebar}>
-							Login
+						<Link to="/login" onClick={toggleSidebar} className="sidebar-link">
+							<LogIn size={20} />
+							<span>Login</span>
 						</Link>
-						<Link to="/register" onClick={toggleSidebar}>
-							Register
+						<Link to="/register" onClick={toggleSidebar} className="sidebar-link">
+							<UserPlus size={20} />
+							<span>Register</span>
 						</Link>
 					</>
 				)}

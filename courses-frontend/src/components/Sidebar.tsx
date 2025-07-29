@@ -1,14 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Book, MessageCircle, Plus, BarChart, Settings, User } from "lucide-react";
+import { Home, Book, MessageCircle, Plus, BarChart, User , Mail} from "lucide-react";
 import "../styles/Sidebar.css";
 
 const navItems = [
-	{ label: "Dashboard", icon: <Home size={22} />, path: "/creatorpanel" },
+	{ label: "My Profile", icon: <User size={22} />, path: "/my-profile" },
+	{ label: "Create Course", icon: <Plus size={22} />, path: "/add-course" },
 	{ label: "Created Courses", icon: <Book size={22} />, path: "/creator-courses" },
 	{ label: "Student Chats", icon: <MessageCircle size={22} />, path: "/creatorpanel/chats" },
-	{ label: "Create Course", icon: <Plus size={22} />, path: "/add-course" },
+	{ label: "Invitations", icon: <Mail size={22} />, path: "/invitations" },
 	{ label: "Analytics", icon: <BarChart size={22} />, path: "/analytics" },
-	{ label: "Settings", icon: <Settings size={22} />, path: "/settings" },
 ];
 
 export default function Sidebar() {
@@ -17,13 +17,6 @@ export default function Sidebar() {
 	return (
 		<aside className="sidemenu">
 			<div className="sidemenu__top">
-				{/*<div className="sidemenu__profile-section">
-					<User className="sidemenu__avatar" size={48} />
-					<div>
-						<div className="sidemenu__name">Polska Sigma</div>
-						<div className="sidemenu__role">Course Creator</div>
-					</div>
-				</div>*/}
 				<nav className="sidemenu__nav">
 					{navItems.map(({ label, icon, path }) => (
 						<Link key={label} to={path} className={`sidemenu__link ${location.pathname === path ? "active" : ""}`}>
@@ -32,12 +25,6 @@ export default function Sidebar() {
 						</Link>
 					))}
 				</nav>
-			</div>
-			<div className="sidemenu__bottom">
-				<Link to="/my-profile" className="sidemenu__profile-link">
-					<User className="sidemenu__icon" size={22} />
-					Profile
-				</Link>
 			</div>
 		</aside>
 	);

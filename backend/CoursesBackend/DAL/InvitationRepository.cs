@@ -30,15 +30,29 @@ namespace DAL
         }
         public List<Invitation> GetInvitationsByCourse(Guid courseId)
         {
-            return _context.Invitations.Where(i => i.CourseId == courseId).ToList();
+            return _context.Invitations
+                    .Include(i => i.InvitedBy)
+                    .Where(i => i.CourseId == courseId)
+                    .ToList();
         }
         public List<Invitation> GetInvitationsByEmail(string email)
         {
-            return _context.Invitations.Where(i => i.Email == email).ToList();
+            return _context.Invitations
+                        .Include(i => i.Course)
+                        .ThenInclude(c => c.Creators)
+                        .ThenInclude(cr => cr.User)
+                        .Include(i => i.InvitedBy) 
+                        .Where(i => i.Email.ToLower() == email.ToLower())
+                        .ToList();
         }
         public void UpdateInvitation(Invitation invitation)
         {
             _context.Invitations.Update(invitation);
+            _context.SaveChanges();
+        }
+        public void DeleteInvitation(Invitation invitation)
+        {
+            _context.Invitations.Remove(invitation);
             _context.SaveChanges();
         }
     }
