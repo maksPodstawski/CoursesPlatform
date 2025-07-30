@@ -66,7 +66,6 @@ const CreatorCourses = () => {
     const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
     const [isFormValid, setIsFormValid] = useState(true);
     const [stageFieldErrors, setStageFieldErrors] = useState<Partial<Record<string, string>>>({});
-    const [isStageFormValid, setIsStageFormValid] = useState(true);
     const [stageTouched, setStageTouched] = useState<{ [key: string]: boolean }>({});
     const [isSettingCategoryFromCourse, setIsSettingCategoryFromCourse] = useState(false); // Dodana flaga
 
@@ -216,16 +215,6 @@ const CreatorCourses = () => {
         // --- KONIEC WALIDACJI ---
     }, [editForm, selectedCategory, selectedSubcategory, localStages, imageFile]);
 
-    useEffect(() => {
-        const stageData: StageFormData = {
-            name: newStage.name,
-            description: newStage.description,
-            duration: Number(newStage.duration),
-        };
-        const errors = validateStageForm(stageData);
-        setStageFieldErrors(errors);
-        setIsStageFormValid(Object.keys(errors).length === 0);
-    }, [newStage]);
 
     useEffect(() => {
         if (!selectedCategory) {
@@ -498,6 +487,7 @@ const CreatorCourses = () => {
         };
         const errors = validateStageForm(stageData);
         setStageFieldErrors(errors);
+        setStageTouched({ name: true, description: true, duration: true });
         if (Object.keys(errors).length > 0) return;
         setLocalStages(prev => ([...prev, {
             id: Math.random().toString(36).substr(2, 9),
@@ -508,6 +498,8 @@ const CreatorCourses = () => {
             videoPath: newStage.videoFile ? URL.createObjectURL(newStage.videoFile) : undefined,
         }]));
         setNewStage({ name: '', description: '', duration: '', price: '', videoFile: null });
+        setStageFieldErrors({});
+        setStageTouched({});
     };
     const handleRemoveStage = (id: string) => {
         setLocalStages(prev => prev.filter(s => s.id !== id));
@@ -1083,7 +1075,7 @@ const CreatorCourses = () => {
                         <label>Upload Video (optional)</label>
                         <input className="form-input" name="video" type="file" accept="video/*" onChange={handleStageFileChange} />
                     </div>
-                    <button className="btn btn-secondary" type="button" onClick={handleAddStage} disabled={!isStageFormValid}>
+                    <button className="btn btn-secondary" type="button" onClick={handleAddStage}>
                         Add Stage
                     </button>
                 </div>
