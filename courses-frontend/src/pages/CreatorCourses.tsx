@@ -64,10 +64,9 @@ const CreatorCourses = () => {
     const [coursesListOpen, setCoursesListOpen] = useState(true);
     const [fieldErrors, setFieldErrors] = useState<CourseFieldErrors>({});
     const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
-    const [isFormValid, setIsFormValid] = useState(true);
+    const [isFormValid] = useState(true);
     const [stageFieldErrors, setStageFieldErrors] = useState<Partial<Record<string, string>>>({});
     const [stageTouched, setStageTouched] = useState<{ [key: string]: boolean }>({});
-    const [isSettingCategoryFromCourse, setIsSettingCategoryFromCourse] = useState(false); // Dodana flaga
 
     useEffect(() => {
         const fetchCreatorCourses = async () => {
@@ -346,9 +345,7 @@ const CreatorCourses = () => {
             if (selectedSubcategory) {
                 formData.append('SubcategoryIds', selectedSubcategory);
             }
-            for (let [key, value] of formData.entries()) {
-                
-            }
+            
             const res = await fetch(`${config.apiBaseUrl}/api/Courses/${selectedCourse.id}`, {
                 method: 'PUT',
                 credentials: 'include',

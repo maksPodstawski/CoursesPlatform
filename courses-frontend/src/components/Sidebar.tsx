@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Book, MessageCircle, Plus, BarChart, User , Mail} from "lucide-react";
+import { Book, MessageCircle, Plus, BarChart, User , Mail} from "lucide-react";
 import "../styles/Sidebar.css";
 
 const navItems = [
