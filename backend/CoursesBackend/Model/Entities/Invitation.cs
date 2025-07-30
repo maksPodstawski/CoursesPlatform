@@ -26,5 +26,7 @@ namespace Model
         public InvitationStatus Status { get; set; } = InvitationStatus.Pending;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? RespondedAt { get; set; }
+        public Guid InvitedById { get; set; } 
+        public User InvitedBy { get; set; }
     }
 } 

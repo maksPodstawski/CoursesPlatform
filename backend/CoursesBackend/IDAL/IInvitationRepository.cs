@@ -12,5 +12,6 @@ namespace IDAL
         List<Invitation> GetInvitationsByCourse(Guid courseId);
         List<Invitation> GetInvitationsByEmail(string email);
         void UpdateInvitation(Invitation invitation);
+        void DeleteInvitation(Invitation invitation);
     }
 } 

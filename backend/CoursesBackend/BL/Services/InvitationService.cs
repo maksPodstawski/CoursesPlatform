@@ -21,19 +21,25 @@ namespace BL.Services
             _creatorService = creatorService;
         }
 
-        public async Task<Invitation> InviteCoAuthorByEmailAsync(string email, Guid courseId)
+        public async Task<Invitation> InviteCoAuthorByEmailAsync(string email, Guid courseId, Guid invitedById)
         {
             var existing = _invitationRepository.GetPendingInvitation(email, courseId);
             if (existing != null)
                 throw new Exception("Zaproszenie już wysłane.");
-
+            var user = await _userService.GetUserByEmailAsync(email);
+            if (user == null)
+                throw new Exception("User with this email does not exist.");
+            bool isAlreadyCreator = await _creatorService.IsUserCreatorOfCourseAsync(user.Id, courseId);
+            if (isAlreadyCreator)
+                throw new Exception("Użytkownik jest już współtwórcą tego kursu.");
             var invitation = new Invitation
             {
                 Id = Guid.NewGuid(),
                 Email = email,
                 CourseId = courseId,
                 Status = InvitationStatus.Pending,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                InvitedById = invitedById
             };
             _invitationRepository.AddInvitation(invitation);
             return invitation;
@@ -49,7 +55,7 @@ namespace BL.Services
 
             invitation.Status = InvitationStatus.Accepted;
             invitation.RespondedAt = DateTime.UtcNow;
-            _invitationRepository.UpdateInvitation(invitation);
+            _invitationRepository.DeleteInvitation(invitation);
         }
 
         public async Task DeclineInvitationAsync(Guid invitationId, Guid userId)
@@ -59,7 +65,7 @@ namespace BL.Services
                 throw new Exception("Zaproszenie nie istnieje lub zostało już obsłużone.");
             invitation.Status = InvitationStatus.Declined;
             invitation.RespondedAt = DateTime.UtcNow;
-            _invitationRepository.UpdateInvitation(invitation);
+            _invitationRepository.DeleteInvitation(invitation);
         }
 
         public async Task<List<Invitation>> GetInvitationsByCourseAsync(Guid courseId)
@@ -70,6 +76,14 @@ namespace BL.Services
         public async Task<List<Invitation>> GetInvitationsByEmailAsync(string email)
         {
             return _invitationRepository.GetInvitationsByEmail(email);
+        }
+        public async Task DeleteInvitationAsync(Guid invitationId)
+        {
+            var invitation = _invitationRepository.GetInvitationById(invitationId);
+            if (invitation == null)
+                throw new Exception("Zaproszenie nie istnieje.");
+
+            _invitationRepository.DeleteInvitation(invitation);
         }
     }
 } 

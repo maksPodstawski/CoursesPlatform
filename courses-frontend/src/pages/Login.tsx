@@ -37,6 +37,7 @@ export const Login = () => {
 			const userInfo = await authService.getMe();
 			localStorage.setItem("userId", userInfo.id);
 			localStorage.setItem("userName", userInfo.firstName);
+			localStorage.setItem("userEmail", userInfo.email);
 			login();
 			navigate("/");
 		} catch (err) {

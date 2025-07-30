@@ -32,7 +32,10 @@ export const CourseCard = ({ course, rating, actions, variant = "default" }: Cou
 
   const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest('.course-actions')) return;
-    navigate(`/courses/${course.id}`);
+    
+    // Dla wariantu my-courses nawiguj do /course/, dla default do /courses/
+    const route = variant === "my-courses" ? `/course/${course.id}` : `/courses/${course.id}`;
+    navigate(route);
   };
 
   return (
