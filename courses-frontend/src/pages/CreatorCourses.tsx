@@ -113,6 +113,31 @@ const CreatorCourses = () => {
                 });
                 setImageFile(null);
         
+                console.log('Loading stages for course:', selectedCourse.id);
+                fetch(`${config.apiBaseUrl}/api/stages/course/${selectedCourse.id}`, { 
+                    credentials: 'include' 
+                }).then(res => {
+                    if (res.ok) {
+                        return res.json();
+                    }
+                    throw new Error('Failed to fetch stages');
+                }).then(stages => {
+                    console.log('Loaded stages from backend:', stages);
+                    const mappedStages = stages.map((stage: any) => ({
+                        id: stage.id,
+                        name: stage.name,
+                        description: stage.description,
+                        duration: stage.duration,
+                        videoPath: stage.videoPath || null,
+                        videoFile: null
+                    }));
+                    console.log('Mapped stages:', mappedStages);
+                    setLocalStages(mappedStages);
+                }).catch(error => {
+                    console.error('Error loading stages:', error);
+                    setLocalStages([]);
+                });
+        
                 // Sprawdź, czy kurs ma categoryId
                 if (courseDetails.categoryId) {
                     // 🔄 Ustaw flagę przed setSelectedCategory
@@ -168,7 +193,15 @@ const CreatorCourses = () => {
                 setSelectedCategory("");
                 setSelectedSubcategory("");
                 isFromCourseRef.current = false;
+                setLocalStages([]);
             });
+        }
+    }, [selectedCourse]);
+
+    // Reset localStages when no course is selected
+    useEffect(() => {
+        if (!selectedCourse) {
+            setLocalStages([]);
         }
     }, [selectedCourse]);
 
@@ -241,15 +274,6 @@ const CreatorCourses = () => {
                 setSelectedSubcategory("");
             });
     }, [selectedCategory]);
-
-    useEffect(() => {
-        if (selectedCourse) {
-            setCourseStagesCountMap(prev => ({
-                ...prev,
-                [selectedCourse.id]: localStages.length
-            }));
-        }
-    }, [localStages, selectedCourse]);
 
     const handleCourseFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
